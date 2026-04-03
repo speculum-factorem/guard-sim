@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { CHALLENGE_TRACKS } from "../challengeTracks";
+import { CHALLENGE_TRACKS, NEWCOMER_COMPLETION_THRESHOLD } from "../challengeTracks";
 import type { TrackAccent } from "../challengeTracks";
 import { buildRoadPathD, buildRoadPoints } from "../roadmapPath";
 import { fetchPlayerState, fetchScenarios } from "../api";
@@ -212,22 +212,36 @@ export function ChallengesPage() {
           {CHALLENGE_TRACKS.map((track) => {
             const total = track.scenarioIds.length;
             const done = track.scenarioIds.filter((id) => completedIds.has(id)).length;
+            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+            const showNewcomerHint =
+              Boolean(track.recommendedForNewcomers) && completedIds.size < NEWCOMER_COMPLETION_THRESHOLD;
 
             return (
               <section
                 key={track.id}
-                className={`quest-track ${accentClass(track.accent)}`}
+                className={`quest-track ${accentClass(track.accent)}${showNewcomerHint ? " quest-track--recommended" : ""}`}
                 aria-labelledby={`track-${track.id}`}
               >
                 <div className="quest-track-head">
+                  {showNewcomerHint ? (
+                    <span className="quest-track-newcomer-badge" title="Рекомендация для старта">
+                      Начните с этой дорожки
+                    </span>
+                  ) : null}
                   <h2 id={`track-${track.id}`} className="quest-track-title">
                     {track.title}
                   </h2>
                   <p className="quest-track-desc">{track.description}</p>
                   <div className="quest-track-meta" aria-live="polite">
-                    <span className="quest-track-progress">
-                      Пройдено: <strong>{done}</strong> / {total}
-                    </span>
+                    <div className="quest-track-progress-row">
+                      <span className="quest-track-progress">
+                        Пройдено: <strong>{done}</strong> / {total}{" "}
+                        <span className="quest-track-progress-pct">({pct}%)</span>
+                      </span>
+                    </div>
+                    <div className="quest-track-progress-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-label={`Прогресс дорожки: ${pct} процентов`}>
+                      <div className="quest-track-progress-fill" style={{ width: `${pct}%` }} />
+                    </div>
                   </div>
                 </div>
 

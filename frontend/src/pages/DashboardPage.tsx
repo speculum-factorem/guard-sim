@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchPlayerState, fetchScenarios } from "../api";
 import { CareerAchievementsPanel } from "../components/CareerAchievementsPanel";
+import { ContinueTrackHint } from "../components/ContinueTrackHint";
+import { WeeklyGoalBanner } from "../components/WeeklyGoalBanner";
 import { WorkdeskMonitor } from "../components/WorkdeskMonitor";
 import { firstOpenScenarioId, splitScenariosByColumn } from "../scenarioHub";
 import type { PlayerState, ScenarioSummary } from "../types";
@@ -56,6 +58,10 @@ export function DashboardPage() {
       </header>
 
       {error ? <div className="error-banner">{error}</div> : null}
+
+      {items && player ? <ContinueTrackHint items={items} player={player} /> : null}
+
+      {player ? <WeeklyGoalBanner player={player} /> : null}
 
       {player ? <CareerAchievementsPanel player={player} /> : null}
 

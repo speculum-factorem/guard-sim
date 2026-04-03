@@ -11,7 +11,12 @@ export interface ChallengeTrackDef {
   /** id сценариев по порядку прохождения дорожки */
   scenarioIds: string[];
   accent: TrackAccent;
+  /** Рекомендация новичкам: плашка «Начните с этой дорожки», пока мало пройдено всего */
+  recommendedForNewcomers?: boolean;
 }
+
+/** Пока пройдено сценариев меньше этого числа — показываем рекомендацию дорожки для новичков */
+export const NEWCOMER_COMPLETION_THRESHOLD = 5;
 
 export const CHALLENGE_TRACKS: ChallengeTrackDef[] = [
   {
@@ -26,6 +31,7 @@ export const CHALLENGE_TRACKS: ChallengeTrackDef[] = [
       "it-support-lookalike",
     ],
     accent: "mint",
+    recommendedForNewcomers: true,
   },
   {
     id: "social-commerce",

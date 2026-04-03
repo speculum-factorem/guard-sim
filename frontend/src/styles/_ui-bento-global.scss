@@ -361,3 +361,46 @@
   box-shadow: 8px 8px 0 #0a0a0a;
 }
 
+/* Страница дашборда */
+.dashboard-page {
+  padding-bottom: 48px;
+}
+
+.dashboard-header {
+  margin-bottom: 24px;
+}
+
+.dashboard-title {
+  margin-bottom: 8px;
+}
+
+.dashboard-subtitle {
+  margin: 0;
+  max-width: 52ch;
+}
+
+.dashboard-skeleton {
+  margin-bottom: 20px;
+}
+
+.dashboard-tasks-lead {
+  margin-top: 0;
+}
+
+.dashboard-career {
+  margin-bottom: 32px;
+}
+
+.home-mini-hint {
+  text-align: center;
+  font-size: 14px;
+  color: var(--gm-text-secondary);
+  padding: 16px 20px 0;
+  margin: 0;
+}
+
+.home-mini-hint-link {
+  color: var(--bento-orange);
+  font-weight: 600;
+}
+

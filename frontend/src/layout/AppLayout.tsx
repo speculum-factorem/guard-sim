@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { AppFooter } from "../components/AppFooter";
 import { LogoMark } from "../components/LogoMark";
 
 export function AppLayout({ children }: { children: ReactNode }) {
@@ -18,16 +19,17 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <Link to="/" className="app-nav-pill">
               Главная
             </Link>
-            <a href="/#workdesk" className="app-nav-pill">
-              Сценарии
-            </a>
-            <a href="/#workdesk" className="app-nav-pill app-nav-pill--primary">
+            <Link to="/dashboard" className="app-nav-pill">
+              Дашборд
+            </Link>
+            <Link to="/dashboard#tasks" className="app-nav-pill app-nav-pill--primary">
               {isHome ? "Начать" : "К задачам"}
-            </a>
+            </Link>
           </nav>
         </div>
       </header>
       <main className={isHome ? "main main--bento" : "main main--bento main--bento-padded"}>{children}</main>
+      <AppFooter />
     </div>
   );
 }

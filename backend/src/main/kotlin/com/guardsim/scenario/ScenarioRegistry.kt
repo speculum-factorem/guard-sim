@@ -23,7 +23,17 @@ class ScenarioRegistry {
 
     private companion object {
         fun buildAll(): List<InternalScenario> =
-            listOf(phishingEmail(), socialPrizeScam(), maliciousAttachment(), combinedAttack())
+            listOf(
+                phishingEmail(),
+                socialPrizeScam(),
+                maliciousAttachment(),
+                combinedAttack(),
+                vendorPaymentBec(),
+                marketplaceOffPlatform(),
+                hrPortalPhish(),
+                itSupportLookalike(),
+                execWireVishing(),
+            )
 
         /** Фишинговое письмо «срочная смена пароля». */
         fun phishingEmail(): InternalScenario = InternalScenario(
@@ -701,6 +711,561 @@ class ScenarioRegistry {
                 ),
             ),
             requiredRole = CareerRole.SECURITY_ADMIN,
+        )
+
+        /** BEC: «поставщик» меняет банковские реквизиты по email — реальная схема для переводов на счёт мошенников. */
+        fun vendorPaymentBec(): InternalScenario = InternalScenario(
+            id = "vendor-payment-bec",
+            title = "«Поставщик» сменил реквизиты",
+            type = ScenarioType.EMAIL,
+            description = "Письмо якобы от контрагента с новыми банковскими данными. Так перехватывают реальные платежи B2B.",
+            requiredRole = CareerRole.EMPLOYEE,
+            steps = listOf(
+                InternalStep(
+                    id = "vb-1",
+                    situationBrief = """
+                        Вы ведёте закупки. В почте — письмо от «бухгалтерии поставщика»: срочно обновить реквизиты для ближайшего платежа.
+                        Ниже — текст как в почтовом клиенте.
+                    """.trimIndent(),
+                    narrative = """
+                        Тема: «Срочно: новые реквизиты для счёта № 4482».
+                        Текст: просят с завтрашнего дня переводить на новый расчётный счёт; внизу ссылка на «обновлённый договор».
+                        Отправитель: billing@acme-supplier-invoice.com (в договоре у вас указан домен acme-supplier.com).
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "vb-1-a",
+                            label = "Обновлю реквизиты в ERP и платёжке по этому письму — счёт уже согласован",
+                            correct = false,
+                            explanationWhenChosen = "Изменение платёжных данных по одному письму — частый сценарий мошенников. Домен может отличаться на один сегмент от настоящего.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Платёж ушёл на счёт мошенников. Возврат средств не гарантирован, контрагент и аудит задают вопросы.",
+                        ),
+                        InternalChoice(
+                            id = "vb-1-b",
+                            label = "Сверю реквизиты по звонку на номер из действующего договора или официального каталога, не из этого письма",
+                            correct = true,
+                            explanationWhenChosen = "Независимый канал с контактом, известным до письма, — стандарт при любых изменениях оплаты.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "vb-1-c",
+                            label = "Отвечу отправителю: «Подтвердите с корпоративного адреса»",
+                            correct = false,
+                            explanationWhenChosen = "Ответ на тот же ящик может получить тот же атакующий. Нужна проверка по телефону из доверенного источника.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.EMAIL_CLIENT,
+                    emailSubject = "Срочно: новые реквизиты для счёта № 4482",
+                    emailFrom = "billing@acme-supplier-invoice.com",
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "vb-1-dom",
+                            title = "Сверка домена",
+                            body = "В договоре — почта @acme-supplier.com. Домен acme-supplier-invoice.com выглядит похоже, но это отдельная регистрация, типичный приём typosquatting.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "vb-1-h-a",
+                            label = "Обновить реквизиты в системе по письму",
+                            choiceId = "vb-1-a",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "vb-1-h-b",
+                            label = "Позвонить по номеру из договора",
+                            choiceId = "vb-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "vb-1-h-c",
+                            label = "Ответить отправителю в почте",
+                            choiceId = "vb-1-c",
+                            variant = "REPLY",
+                        ),
+                    ),
+                    narrativeNoise = """
+                        ---
+                        С уважением, отдел сопровождения · Acme Supplier Ltd.
+                        Письмо сформировано автоматически. Не отвечайте на этот адрес.
+                    """.trimIndent(),
+                    pressureSeconds = 60,
+                ),
+                InternalStep(
+                    id = "vb-2",
+                    situationBrief = "Подделка подтвердилась. Нужно корректно завершить реакцию.",
+                    narrative = "Вы не меняли реквизиты по этому письму. Что сделать дальше?",
+                    choices = listOf(
+                        InternalChoice(
+                            id = "vb-2-a",
+                            label = "Сообщить в ИБ и финансам по регламенту, сохранить письмо и заголовки",
+                            correct = true,
+                            explanationWhenChosen = "Фиксация инцидента помогает заблокировать домен и предупредить других закупщиков.",
+                            scoreDelta = 3,
+                        ),
+                        InternalChoice(
+                            id = "vb-2-b",
+                            label = "Удалить письмо — деньги же не отправили",
+                            correct = false,
+                            explanationWhenChosen = "Даже без перевода атаку стоит регистрировать: мошенники могут нацелиться на коллег.",
+                            scoreDelta = 0,
+                        ),
+                        InternalChoice(
+                            id = "vb-2-c",
+                            label = "Написать в общий чат с поставщиком «кому верить?»",
+                            correct = false,
+                            explanationWhenChosen = "Публичные чаты раскрывают процессы. Лучше официальные каналы и тикет в ИБ.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.GENERIC,
+                ),
+            ),
+        )
+
+        /** Уход с площадки объявлений: фейковая «безопасная оплата» и давление. */
+        fun marketplaceOffPlatform(): InternalScenario = InternalScenario(
+            id = "marketplace-off-platform",
+            title = "Покупатель просит уйти с Avito",
+            type = ScenarioType.SOCIAL,
+            description = "Реальная схема: перевод на «гаранта» вне площадки, поддельные страницы оплаты, потеря денег и товара.",
+            requiredRole = CareerRole.EMPLOYEE,
+            steps = listOf(
+                InternalStep(
+                    id = "mo-1",
+                    situationBrief = """
+                        Вы продаёте технику на площадке объявлений. В ленте переписки покупатель предлагает перейти в мессенджер и оплатить через «безопасную ссылку» не на сайте Avito.
+                    """.trimIndent(),
+                    narrative = """
+                        Сообщение: «Давайте в Telegram, так быстрее. Вот ссылка на защищённую оплату с эскроу — как у Avito, только без комиссии».
+                        Ссылка ведёт на avito-safe-pay.ru (не домен площадки).
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "mo-1-a",
+                            label = "Перейду по ссылке — если похоже на эскроу, можно оплатить",
+                            correct = false,
+                            explanationWhenChosen = "Эскроу и защита сделки работают только внутри официального приложения или сайта площадки.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Страница сняла данные карты. Банк может отказать в chargeback, если вы сами ввели данные на поддельном сайте.",
+                        ),
+                        InternalChoice(
+                            id = "mo-1-b",
+                            label = "Откажусь от сделки вне площадки и оставлю оплату только через официальный сервис объявлений",
+                            correct = true,
+                            explanationWhenChosen = "Правило: деньги и доставка — только через механизмы, которые даёт площадка.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "mo-1-c",
+                            label = "Скину номер телефона, чтобы «договориться» быстрее",
+                            correct = false,
+                            explanationWhenChosen = "Уход в личку убирает защиту сделки и открывает путь к социнженерии.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.SOCIAL_NOTIFICATION,
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "mo-1-who",
+                            title = "Профиль покупателя",
+                            body = "Аккаунт зарегистрирован сегодня, отзывов нет, аватар стоковый — типичный одноразовый профиль для массовой рассылки.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "mo-1-link",
+                            label = "Ссылка «безопасная оплата»",
+                            choiceId = "mo-1-a",
+                            variant = "LINK",
+                        ),
+                        InternalHotspot(
+                            id = "mo-1-ok",
+                            label = "Только официальная оплата на площадке",
+                            choiceId = "mo-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "mo-1-phone",
+                            label = "Дать телефон в личку",
+                            choiceId = "mo-1-c",
+                            variant = "ACTION",
+                        ),
+                    ),
+                ),
+                InternalStep(
+                    id = "mo-2",
+                    situationBrief = "Покупатель давит: «скидка только если переведёте напрямую сегодня».",
+                    narrative = "Как ответить, не теряя деньги?",
+                    choices = listOf(
+                        InternalChoice(
+                            id = "mo-2-a",
+                            label = "Соглашусь на прямой перевод ради скидки — проверю получателя по ФИО",
+                            correct = false,
+                            explanationWhenChosen = "Скидка под давлением — классический триггер. ФИО в реквизитах легко подделать под легенду.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                        ),
+                        InternalChoice(
+                            id = "mo-2-b",
+                            label = "Сохраню условия только внутри объявления; при отказе от защиты площадки — прекращу сделку",
+                            correct = true,
+                            explanationWhenChosen = "Жёсткая граница снижает риск и отсеивает мошенников.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "mo-2-c",
+                            label = "Попрошу скрин его паспорта для уверенности",
+                            correct = false,
+                            explanationWhenChosen = "Фото документов легко подделать; это не заменяет защищённую сделку.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.SOCIAL_NOTIFICATION,
+                ),
+            ),
+        )
+
+        /** Фишинг «корпоративного портала» и опросов HR — как в атаках на учётные записи Microsoft 365. */
+        fun hrPortalPhish(): InternalScenario = InternalScenario(
+            id = "hr-portal-phish",
+            title = "Обязательный «опрос HR» по ссылке",
+            type = ScenarioType.EMAIL,
+            description = "Реальные кампании: письмо про обязательный опрос или обучение, вход через поддельный SSO на похожем домене.",
+            requiredRole = CareerRole.EMPLOYEE,
+            steps = listOf(
+                InternalStep(
+                    id = "hs-1",
+                    situationBrief = """
+                        В почте письмо про обязательный корпоративный опрос до конца недели.
+                        Отправитель и тема выглядят срочно и официально.
+                    """.trimIndent(),
+                    narrative = """
+                        От: hr-notifications@staff-survey-portal.xyz
+                        Тема: «Просрочите — доступ к почте ограничат: опрос удовлетворённости».
+                        В тексте кнопка «Войти через корпоративный аккаунт (SSO)».
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "hs-1-a",
+                            label = "Войду по кнопке из письма — опрос обязательный",
+                            correct = false,
+                            explanationWhenChosen = "Вход по ссылке из непроверенного письма — основной вектор кражи паролей к Microsoft 365 и аналогам.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Поддельная страница SSO передала учётные данные атакующим. Возможен доступ к почте и файлам.",
+                        ),
+                        InternalChoice(
+                            id = "hs-1-b",
+                            label = "Открою портал сам: через закладку или адрес из внутренней wiki, не из письма",
+                            correct = true,
+                            explanationWhenChosen = "Правильно: доверять только самостоятельно открытому официальному URL.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "hs-1-c",
+                            label = "Перешлю коллегам, пусть тоже пройдут",
+                            correct = false,
+                            explanationWhenChosen = "Распространение подозрительного письма увеличивает число жертв. Лучше пометить как фишинг и написать в ИБ.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.EMAIL_CLIENT,
+                    emailSubject = "Просрочите — доступ к почте ограничат: опрос удовлетворённости",
+                    emailFrom = "hr-notifications@staff-survey-portal.xyz",
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "hs-1-spf",
+                            title = "Домен отправителя",
+                            body = "staff-survey-portal.xyz — публичный дешёвый TLD, не корпоративный домен вашей организации. Опросы обычно приходят с внутреннего адреса или известного поставщика.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "hs-1-sso",
+                            label = "Кнопка «Войти через SSO»",
+                            choiceId = "hs-1-a",
+                            variant = "LINK",
+                        ),
+                        InternalHotspot(
+                            id = "hs-1-manual",
+                            label = "Открыть портал из закладки",
+                            choiceId = "hs-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "hs-1-fwd",
+                            label = "Переслать коллегам",
+                            choiceId = "hs-1-c",
+                            variant = "ACTION",
+                        ),
+                    ),
+                    pressureSeconds = 55,
+                ),
+                InternalStep(
+                    id = "hs-2",
+                    situationBrief = "Нужно отличить настоящий адрес входа от поддельного, как в адресной строке браузера.",
+                    narrative = "Сравните URL. Какой вариант соответствует безопасному решению — не вводить пароль на поддельном сайте?",
+                    choices = listOf(
+                        InternalChoice(
+                            id = "hs-2-a",
+                            label = "Готов ввести пароль, если открыл левый адрес из сравнения",
+                            correct = false,
+                            explanationWhenChosen = "Поддельные SSO часто копируют дизайн. Решает только доверенный домен организации.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                        ),
+                        InternalChoice(
+                            id = "hs-2-b",
+                            label = "Пароль только на официальном поддомене организации (справа), левый закрываю",
+                            correct = true,
+                            explanationWhenChosen = "Верно: *.company.example.com в зоне организации; посторонний домен — нет.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "hs-2-c",
+                            label = "Попробую оба — смотрю, где красивее страница входа",
+                            correct = false,
+                            explanationWhenChosen = "Визуальное сходство не гарантирует подлинность.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                        ),
+                    ),
+                    uiKind = StepUiKind.MINI_URL_COMPARE,
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "hs-2-tip",
+                            title = "Зона домена",
+                            body = "Корпоративный SSO обычно на поддомене вашей организации и с корпоративным TLS-сертификатом. Случайный .tk / .xyz с «login» в пути — подозрительно.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    urlCompareGame = InternalUrlCompareGame(
+                        leftUrl = "https://staff-portal-login.tk/corp/sso?ref=hr",
+                        rightUrl = "https://portal.company.example.com/login",
+                        leftChoiceId = "hs-2-a",
+                        rightChoiceId = "hs-2-b",
+                        caption = "Слева — подозрительный хост (.tk), справа — поддомен организации. Выберите действие, соответствующее безопасному варианту.",
+                    ),
+                    narrativeNoise = "Подсказка: проверьте корневое имя хоста, а не только логотип на странице.",
+                    pressureSeconds = 45,
+                ),
+            ),
+        )
+
+        /** Поддельная «IT-поддержка» и срочная смена пароля — как в credential harvesting. */
+        fun itSupportLookalike(): InternalScenario = InternalScenario(
+            id = "it-support-lookalike",
+            title = "«IT-поддержка»: пароль истекает через час",
+            type = ScenarioType.EMAIL,
+            description = "Распространённый фишинг: письмо от похожего на сервисный адрес, срочность и ссылка на «сброс пароля» вне SSO.",
+            requiredRole = CareerRole.EMPLOYEE,
+            steps = listOf(
+                InternalStep(
+                    id = "il-1",
+                    situationBrief = "В почте уведомление якобы от корпоративной IT-службы о скором блокировании учётной записи.",
+                    narrative = """
+                        От: microsoft-365-security@outlook-verify.co
+                        Тема: «Действие требуется: срок действия пароля истекает через 60 минут».
+                        Текст: «Чтобы избежать блокировки, подтвердите учётную запись по ссылке». Ссылка ведёт на сторонний домен.
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "il-1-a",
+                            label = "Перейду по ссылке и сменю пароль — блокировка помешает работе",
+                            correct = false,
+                            explanationWhenChosen = "Срочность и «технический» отправитель с публичного домена — признак фишинга. Смена пароля — только через официальный портал или Ctrl+Alt+Del / SSO.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Пароль и возможно MFA-коды утекли. Нужна немедленная смена через легитимный канал и тикет в ИБ.",
+                        ),
+                        InternalChoice(
+                            id = "il-1-b",
+                            label = "Игнорирую ссылку; при сомнении открою портал сброса через известный корпоративный адрес или helpdesk",
+                            correct = true,
+                            explanationWhenChosen = "Правильно: самостоятельно открытый доверенный канал.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "il-1-c",
+                            label = "Отвечу на письмо и пришлю логин для проверки",
+                            correct = false,
+                            explanationWhenChosen = "Никогда не отправляйте учётные данные по email. Это усиливает компрометацию.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                        ),
+                    ),
+                    uiKind = StepUiKind.EMAIL_CLIENT,
+                    emailSubject = "Действие требуется: срок действия пароля истекает через 60 минут",
+                    emailFrom = "microsoft-365-security@outlook-verify.co",
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "il-1-link",
+                            label = "Ссылка «подтвердить учётную запись»",
+                            choiceId = "il-1-a",
+                            variant = "LINK",
+                        ),
+                        InternalHotspot(
+                            id = "il-1-portal",
+                            label = "Открыть официальный портал / helpdesk",
+                            choiceId = "il-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "il-1-reply",
+                            label = "Ответить с логином",
+                            choiceId = "il-1-c",
+                            variant = "REPLY",
+                        ),
+                    ),
+                    narrativeNoise = "Мелким шрифтом: «Если вы не запрашивали письмо, проигнорируйте» — типичная вставка, не делающая письмо безопасным.",
+                    pressureSeconds = 70,
+                ),
+                InternalStep(
+                    id = "il-2",
+                    situationBrief = "Сообщить коллегам без паники.",
+                    narrative = "Как лучше предупредить отдел о такой рассылке?",
+                    choices = listOf(
+                        InternalChoice(
+                            id = "il-2-a",
+                            label = "Короткое объявление в корпоративном канале с примером темы и «не кликать по ссылке»",
+                            correct = true,
+                            explanationWhenChosen = "Предупреждение без распространения вредоносной ссылки снижает число жертв.",
+                            scoreDelta = 3,
+                        ),
+                        InternalChoice(
+                            id = "il-2-b",
+                            label = "Переслать всем исходное письмо целиком",
+                            correct = false,
+                            explanationWhenChosen = "Пересылка может содержать трекинг-пиксели и вредоносные вложения. Лучше текстовое предупреждение и тикет в ИБ.",
+                            scoreDelta = 0,
+                        ),
+                        InternalChoice(
+                            id = "il-2-c",
+                            label = "Ничего не писать — кто умный, сам разберётся",
+                            correct = false,
+                            explanationWhenChosen = "Коллективное информирование — часть защиты.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.GENERIC,
+                ),
+            ),
+        )
+
+        /** Vishing / поддельный «голос руководителя» и срочный перевод — для SOC. */
+        fun execWireVishing(): InternalScenario = InternalScenario(
+            id = "exec-wire-vishing",
+            title = "Звонок «от финдира»: срочный перевод",
+            type = ScenarioType.EMAIL,
+            description = "Реальные кейсы: синтез голоса или подмена номера, знание контекста проектов, давление перевести на «новый счёт контрагента».",
+            requiredRole = CareerRole.SECURITY_ADMIN,
+            steps = listOf(
+                InternalStep(
+                    id = "ev-1",
+                    situationBrief = """
+                        В тикет-систему ИБ поступило обращение из бухгалтерии: сотруднику позвонили, представились финансовым директором,
+                        знали названия текущих проектов и попросили срочно инициировать платёж на новые реквизиты «по устной договорённости».
+                    """.trimIndent(),
+                    narrative = """
+                        Звонок шёл с незнакомого мобильного; голос показался знакомым. Просили не отвлекать руководителя в чате — «он в переговорах».
+                        Какой первый совет дать сотруднику?
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "ev-1-a",
+                            label = "Выполнить перевод — голос совпал, проекты названы верно",
+                            correct = false,
+                            explanationWhenChosen = "Deepfake и vishing используют открытые данные. Срочные переводы без второго канала запрещены политикой.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Крупный перевод ушёл мошенникам. Расследование и регуляторы подключаются к инциденту.",
+                        ),
+                        InternalChoice(
+                            id = "ev-1-b",
+                            label = "Перезвонить руководителю по внутреннему номеру из корпоративного справочника, не перезванивая на номер «звонящего»",
+                            correct = true,
+                            explanationWhenChosen = "Независимая верификация через известный канал — единственный надёжный ответ на vishing.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "ev-1-c",
+                            label = "Написать руководителю в Telegram по номеру из письма",
+                            correct = false,
+                            explanationWhenChosen = "Мессенджер и номер из непроверенного источника могут контролироваться атакующими.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                        ),
+                    ),
+                    uiKind = StepUiKind.DESK_TICKET,
+                    emailSubject = "Инцидент: звонок «от финдира» и срочный перевод",
+                    emailFrom = "Портал ИБ · очередь: платежи",
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "ev-1-vish",
+                            title = "Vishing и deepfake",
+                            body = "В 2023–2025 гг. зафиксированы случаи синтеза голоса руководителя и подмены CLI. Контекст проектов берут из утечек и LinkedIn.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "ev-1-pay",
+                            label = "Инициировать перевод по звонку",
+                            choiceId = "ev-1-a",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "ev-1-call",
+                            label = "Перезвонить по справочнику",
+                            choiceId = "ev-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "ev-1-tg",
+                            label = "Написать в Telegram",
+                            choiceId = "ev-1-c",
+                            variant = "ACTION",
+                        ),
+                    ),
+                ),
+                InternalStep(
+                    id = "ev-2",
+                    situationBrief = "Нужна организационная мера после инцидента.",
+                    narrative = "Что усилит защиту от повторения такой схемы?",
+                    choices = listOf(
+                        InternalChoice(
+                            id = "ev-2-a",
+                            label = "Политика: любые изменения платёжных инструкций — только с подтверждением вторым каналом (в т.ч. для «устных» поручений)",
+                            correct = true,
+                            explanationWhenChosen = "Сочетание регламента и технических контролей (лимиты, двойное подписание) снижает ущерб.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "ev-2-b",
+                            label = "Запретить удалённую работу бухгалтерии",
+                            correct = false,
+                            explanationWhenChosen = "Не адресует корень проблемы; важны процедуры верификации, а не локация.",
+                            scoreDelta = 0,
+                        ),
+                        InternalChoice(
+                            id = "ev-2-c",
+                            label = "Доверять звонку, если номер начинается с кода города офиса",
+                            correct = false,
+                            explanationWhenChosen = "Подмена номера (spoofing) обходит такие эвристики.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.GENERIC,
+                ),
+            ),
         )
     }
 }

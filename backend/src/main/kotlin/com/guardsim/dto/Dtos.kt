@@ -2,7 +2,9 @@ package com.guardsim.dto
 
 import com.guardsim.career.CareerRole
 import com.guardsim.scenario.ScenarioType
+import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Size
 
 data class ErrorResponse(val error: String)
 
@@ -132,4 +134,28 @@ data class PlayerStateDto(
     val perfectScenarioStreak: Int,
     val completedScenarioIds: List<String>,
     val achievements: List<PlayerAchievementStateDto>,
+)
+
+data class RegisterRequest(
+    @field:NotBlank @field:Email val email: String,
+    @field:NotBlank @field:Size(min = 8, max = 128) val password: String,
+)
+
+data class LoginRequest(
+    @field:NotBlank @field:Email val email: String,
+    @field:NotBlank val password: String,
+)
+
+data class AuthResponseDto(
+    val accessToken: String,
+    val tokenType: String,
+    val expiresIn: Int,
+    val playerId: String,
+    val email: String,
+)
+
+data class UserMeDto(
+    val playerId: String,
+    val email: String?,
+    val guest: Boolean,
 )

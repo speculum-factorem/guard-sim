@@ -135,3 +135,17 @@ export interface PlayerState {
   completedScenarioIds: string[];
   achievements: PlayerAchievementState[];
 }
+
+export interface AuthResponse {
+  accessToken: string;
+  tokenType: string;
+  expiresIn: number;
+  playerId: string;
+  email: string;
+}
+
+export interface UserMe {
+  playerId: string;
+  email: string | null;
+  guest: boolean;
+}

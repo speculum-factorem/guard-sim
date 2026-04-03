@@ -1,19 +1,27 @@
+import { getAuthToken } from "./authToken";
 import { getPlayerId } from "./playerId";
 import type {
   AnswerResponse,
+  AuthResponse,
   PlayerState,
   ScenarioDetail,
   ScenarioSummary,
   StartSessionResponse,
+  UserMe,
 } from "./types";
 
 const PLAYER_HEADER = "X-GuardSim-Player";
 
 function withPlayerHeaders(base?: HeadersInit): HeadersInit {
-  return {
-    ...base,
+  const token = getAuthToken();
+  const headers: Record<string, string> = {
+    ...(base as Record<string, string>),
     [PLAYER_HEADER]: getPlayerId(),
   };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  return headers;
 }
 
 async function handleJson<T>(res: Response): Promise<T> {
@@ -59,6 +67,29 @@ export async function startSession(scenarioId: string): Promise<StartSessionResp
     method: "POST",
     headers: withPlayerHeaders(),
   });
+  return handleJson(res);
+}
+
+export async function loginRequest(email: string, password: string): Promise<AuthResponse> {
+  const res = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  return handleJson(res);
+}
+
+export async function registerRequest(email: string, password: string): Promise<AuthResponse> {
+  const res = await fetch("/api/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  return handleJson(res);
+}
+
+export async function fetchMe(): Promise<UserMe> {
+  const res = await fetch("/api/auth/me", { headers: withPlayerHeaders() });
   return handleJson(res);
 }
 

@@ -10,12 +10,11 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestHeader
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
-import java.util.UUID
 
 @RestController
 @RequestMapping("/api/scenarios")
@@ -26,8 +25,8 @@ class ScenarioController(
 ) {
 
     @GetMapping
-    fun list(@RequestHeader(name = GuardSimHeaders.PLAYER_ID) rawClientId: String): List<ScenarioSummaryDto> {
-        val id = UUID.fromString(rawClientId)
+    fun list(request: HttpServletRequest): List<ScenarioSummaryDto> {
+        val id = request.requirePlayerId()
         val player = playerService.getOrCreate(id)
         return scenarioService.listSummariesForPlayer(player)
     }
@@ -41,9 +40,9 @@ class ScenarioController(
     @ResponseStatus(HttpStatus.CREATED)
     fun startSession(
         @PathVariable id: String,
-        @RequestHeader(name = GuardSimHeaders.PLAYER_ID) rawClientId: String,
+        request: HttpServletRequest,
     ): StartSessionResponse {
-        val clientId = UUID.fromString(rawClientId)
+        val clientId = request.requirePlayerId()
         return sessionService.startSession(id, clientId)
     }
 }

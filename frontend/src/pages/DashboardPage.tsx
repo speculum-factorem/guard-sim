@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { fetchPlayerState, fetchScenarios } from "../api";
 import { CareerAchievementsPanel } from "../components/CareerAchievementsPanel";
 import { ContinueTrackHint } from "../components/ContinueTrackHint";
+import { GuardsimOnboardingBanner } from "../components/GuardsimOnboardingBanner";
 import { WeeklyGoalBanner } from "../components/WeeklyGoalBanner";
 import { WorkdeskMonitor } from "../components/WorkdeskMonitor";
 import { firstOpenScenarioId, splitScenariosByColumn } from "../scenarioHub";
@@ -56,6 +57,8 @@ export function DashboardPage() {
           ) : null}
         </p>
       </header>
+
+      <GuardsimOnboardingBanner />
 
       {error ? <div className="error-banner">{error}</div> : null}
 

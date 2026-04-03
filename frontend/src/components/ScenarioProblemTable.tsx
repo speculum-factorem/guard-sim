@@ -1,12 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { careerTitle } from "../careerLabels";
+import {
+  loadTaskListFilters,
+  saveTaskListFilters,
+  type TaskChannelFilter,
+  type TaskSortColumn,
+  type TaskSortDir,
+} from "../taskListFiltersStorage";
 import type { CareerRole, ScenarioSummary } from "../types";
 import { channelLabel, hubColumnForScenario } from "../scenarioHub";
 
-type ChannelFilter = "all" | "mail" | "social" | "security";
-type SortColumn = "status" | "title" | "channel" | "role";
-type SortDir = "asc" | "desc";
+type ChannelFilter = TaskChannelFilter;
+type SortColumn = TaskSortColumn;
+type SortDir = TaskSortDir;
 
 const PAGE_SIZES = [10, 25, 50] as const;
 
@@ -92,15 +99,31 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
   const { items, completedIds } = props;
   const completed = useMemo(() => new Set(completedIds), [completedIds]);
 
-  const [query, setQuery] = useState("");
-  const [channel, setChannel] = useState<ChannelFilter>("all");
-  const [sortColumn, setSortColumn] = useState<SortColumn>("status");
-  const [sortDir, setSortDir] = useState<SortDir>("asc");
-  const [pageSize, setPageSize] = useState<number>(10);
+  const initialFilters = useMemo(() => loadTaskListFilters(), []);
+  const [query, setQuery] = useState(initialFilters.query);
+  const [channel, setChannel] = useState<ChannelFilter>(initialFilters.channel);
+  const [sortColumn, setSortColumn] = useState<SortColumn>(initialFilters.sortColumn);
+  const [sortDir, setSortDir] = useState<SortDir>(initialFilters.sortDir);
+  const [pageSize, setPageSize] = useState<number>(initialFilters.pageSize);
+  const [showCompleted, setShowCompleted] = useState(initialFilters.showCompleted);
   const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    saveTaskListFilters({
+      query,
+      channel,
+      sortColumn,
+      sortDir,
+      pageSize,
+      showCompleted,
+    });
+  }, [query, channel, sortColumn, sortDir, pageSize, showCompleted]);
 
   const filtered = useMemo(() => {
     let list = items;
+    if (!showCompleted) {
+      list = list.filter((s) => !completed.has(s.id));
+    }
     if (channel !== "all") {
       list = list.filter((s) => hubColumnForScenario(s) === channel);
     }
@@ -114,7 +137,7 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
       );
     }
     return list;
-  }, [items, channel, query]);
+  }, [items, channel, query, showCompleted, completed]);
 
   const sorted = useMemo(
     () =>
@@ -126,7 +149,7 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
 
   useEffect(() => {
     setPage(1);
-  }, [query, channel, pageSize, sortColumn, sortDir]);
+  }, [query, channel, pageSize, sortColumn, sortDir, showCompleted]);
 
   useEffect(() => {
     setPage((p) => Math.min(p, totalPages));
@@ -169,7 +192,8 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
           </span>
         </div>
         <p className="page-subtitle lc-problems-lead">
-          Найдите сценарий по названию или описанию, отфильтруйте канал и отсортируйте список — всё в одной панели.
+          Поиск, канал, прогресс и сортировка запоминаются в браузере. Используйте «Только непройденные», чтобы убрать
+          пройденные из списка.
         </p>
       </header>
 
@@ -235,6 +259,27 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
                 {label}
               </button>
             ))}
+          </div>
+        </div>
+        <div className="lc-toolbar-row lc-toolbar-row--filters lc-toolbar-row--completion">
+          <span className="lc-filters-label" id="lc-completion-filter-label">
+            Прогресс
+          </span>
+          <div className="lc-toolbar-filters" role="group" aria-labelledby="lc-completion-filter-label">
+            <button
+              type="button"
+              className={`lc-chip${showCompleted ? " lc-chip--on" : ""}`}
+              onClick={() => setShowCompleted(true)}
+            >
+              Включая пройденные
+            </button>
+            <button
+              type="button"
+              className={`lc-chip${!showCompleted ? " lc-chip--on" : ""}`}
+              onClick={() => setShowCompleted(false)}
+            >
+              Только непройденные
+            </button>
           </div>
         </div>
         </div>

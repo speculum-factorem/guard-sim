@@ -598,6 +598,68 @@
   }
 }
 
+/* Онбординг (один раз, localStorage) */
+.gs-onboarding-banner {
+  margin-bottom: 24px;
+}
+
+.gs-onboarding-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  background: linear-gradient(120deg, rgba(37, 99, 255, 0.08) 0%, #fffef8 45%, rgba(255, 219, 88, 0.22) 100%);
+  border: var(--bento-border);
+  border-radius: var(--bento-radius-lg);
+  box-shadow: 5px 5px 0 #0a0a0a;
+}
+
+.gs-onboarding-title {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--bento-ink);
+}
+
+.gs-onboarding-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--gm-text);
+  max-width: 62ch;
+}
+
+.gs-onboarding-list li {
+  margin-bottom: 8px;
+}
+
+.gs-onboarding-list li:last-child {
+  margin-bottom: 0;
+}
+
+.gs-onboarding-list a {
+  font-weight: 700;
+  color: var(--bento-orange);
+}
+
+.gs-onboarding-dismiss {
+  flex-shrink: 0;
+  align-self: center;
+}
+
+@media (max-width: 560px) {
+  .gs-onboarding-dismiss {
+    width: 100%;
+    text-align: center;
+  }
+}
+
 /* Карьера на дашборде — единая bento-карточка */
 .dashboard-page .career-panel.dashboard-career {
   border: var(--bento-border);
@@ -774,5 +836,107 @@
   border-left: none;
   border-right: none;
   box-shadow: none;
+}
+
+/* Навигация: аккаунт */
+.app-nav-auth {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.app-nav-email {
+  font-size: 13px;
+  font-weight: 700;
+  max-width: min(200px, 28vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--bento-ink);
+}
+
+.app-nav-pill--ghost {
+  cursor: pointer;
+  font: inherit;
+  background: var(--ui-white);
+  border: 2px dashed rgba(10, 10, 10, 0.35);
+  color: var(--bento-ink);
+}
+
+.app-nav-pill--ghost:hover {
+  background: var(--bento-yellow);
+  border-style: solid;
+  border-color: #0a0a0a;
+}
+
+.app-nav-pill--secondary {
+  background: var(--bento-yellow);
+}
+
+.app-nav-pill--secondary:hover {
+  filter: brightness(1.03);
+}
+
+/* Вход / регистрация */
+.auth-page {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.auth-page-hero {
+  margin-bottom: 20px;
+}
+
+.auth-page-lead {
+  max-width: none;
+}
+
+.auth-card {
+  padding: 22px 22px 20px;
+  background: var(--ui-white);
+  border: var(--bento-border);
+  border-radius: var(--bento-radius-lg);
+  box-shadow: 6px 6px 0 #0a0a0a;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.auth-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gm-text-secondary);
+}
+
+.auth-input {
+  width: 100%;
+}
+
+.auth-submit {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.auth-demo {
+  margin-top: 10px;
+}
+
+.auth-alt {
+  text-align: center;
+  margin: 18px 0 0;
+  font-size: 14px;
+  color: var(--gm-text-secondary);
+}
+
+.auth-alt a {
+  font-weight: 700;
+  color: var(--bento-orange);
 }
 

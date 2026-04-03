@@ -8,3 +8,8 @@ export function getPlayerId(): string {
   }
   return id;
 }
+
+/** После входа подставляем playerId с сервера */
+export function setPlayerId(id: string): void {
+  globalThis.localStorage.setItem(STORAGE_KEY, id);
+}

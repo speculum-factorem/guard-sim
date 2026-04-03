@@ -51,7 +51,7 @@
   background: linear-gradient(180deg, #c8f5e0 0%, var(--bento-mint) 100%);
   border: var(--bento-border);
   border-radius: var(--radius-pill);
-  box-shadow: 3px 3px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-xs);
 }
 
 .lc-problems-lead {
@@ -67,9 +67,7 @@
   background: var(--ui-white);
   border: var(--bento-border);
   border-radius: var(--bento-radius-lg);
-  box-shadow:
-    6px 6px 0 #0a0a0a,
-    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  box-shadow: var(--shadow-bento-md), var(--shadow-bento-inset);
   overflow: hidden;
 }
 
@@ -143,7 +141,7 @@
 .lc-select {
   font: inherit;
   font-size: 15px;
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: var(--radius-pill);
   background: var(--ui-white);
   padding: 11px 14px;
@@ -182,26 +180,26 @@
   font-size: 13px;
   font-weight: 700;
   padding: 8px 16px;
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: var(--radius-pill);
   background: var(--ui-white);
   cursor: pointer;
   color: var(--bento-ink);
-  box-shadow: 2px 2px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-xs);
   transition: transform 0.14s ease, background 0.14s ease, color 0.14s ease;
 }
 
 .lc-chip:hover {
   background: var(--bento-yellow);
   transform: translateY(-2px);
-  box-shadow: 3px 3px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-xs);
 }
 
 .lc-chip--on {
   background: var(--bento-orange);
   color: #fff;
-  border-color: #0a0a0a;
-  box-shadow: 3px 3px 0 #0a0a0a;
+  border-color: var(--bento-ink);
+  box-shadow: var(--shadow-bento-xs);
 }
 
 .lc-chip--on:hover {
@@ -356,7 +354,7 @@
   font-weight: 700;
   padding: 4px 10px;
   border-radius: var(--radius-pill);
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
 }
 
 .lc-status--todo {
@@ -413,7 +411,7 @@
   font-weight: 700;
   padding: 4px 9px;
   border-radius: var(--bento-radius);
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
 }
 
 .lc-channel--mail {
@@ -451,14 +449,14 @@
   background: var(--bento-orange);
   border: var(--bento-border);
   border-radius: var(--bento-radius);
-  box-shadow: 3px 3px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-xs);
   transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
 }
 
 .lc-btn-solve:hover {
   filter: brightness(1.05);
   transform: translateY(-2px);
-  box-shadow: 4px 4px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-sm);
   color: #fff;
 }
 
@@ -510,11 +508,11 @@
   font-size: 13px;
   font-weight: 700;
   padding: 7px 14px;
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: var(--bento-radius);
   background: var(--ui-white);
   cursor: pointer;
-  box-shadow: 2px 2px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-xs);
 }
 
 .lc-pager-btn:hover:not(:disabled) {
@@ -540,11 +538,11 @@
   font: inherit;
   font-size: 13px;
   font-weight: 700;
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: var(--bento-radius);
   background: var(--ui-white);
   cursor: pointer;
-  box-shadow: 2px 2px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-xs);
 }
 
 .lc-pager-page:hover {
@@ -554,8 +552,8 @@
 .lc-pager-page--current {
   background: var(--bento-orange);
   color: #fff;
-  border-color: #0a0a0a;
-  box-shadow: 3px 3px 0 #0a0a0a;
+  border-color: var(--bento-ink);
+  box-shadow: var(--shadow-bento-xs);
   transform: translateY(-1px);
 }
 
@@ -647,7 +645,7 @@
 @media (max-width: 720px) {
   .lc-problems-surface {
     border-radius: var(--bento-radius);
-    box-shadow: 4px 4px 0 #0a0a0a;
+    box-shadow: var(--shadow-bento-sm);
   }
 
   .lc-toolbar {

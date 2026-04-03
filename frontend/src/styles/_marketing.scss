@@ -1,17 +1,8 @@
-/* ─── Оболочка и панель навигации ─── */
+/* ─── Оболочка и панель навигации (детали шапки — в _ui-bento-global) ─── */
 .app-shell {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-}
-
-.app-bar {
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--gm-border);
-  position: sticky;
-  top: 0;
-  z-index: 50;
 }
 
 .app-bar-inner {
@@ -67,7 +58,7 @@
 }
 
 .app-nav-link:hover {
-  color: var(--ui-primary);
+  color: var(--bento-orange);
   text-decoration: none;
 }
 
@@ -92,7 +83,7 @@
   letter-spacing: 0.02em;
   line-height: 1.05;
   margin: 0;
-  color: var(--ui-black);
+  color: var(--bento-ink);
   font-size: clamp(3rem, 8vw, 5.5rem);
 }
 
@@ -104,7 +95,7 @@
   font-size: clamp(2rem, 5vw, 3.25rem);
   line-height: 1.1;
   margin: 0 0 16px;
-  color: var(--ui-black);
+  color: var(--bento-ink);
 }
 
 .page-title {

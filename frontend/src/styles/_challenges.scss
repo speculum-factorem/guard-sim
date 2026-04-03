@@ -36,7 +36,7 @@
   background: var(--ui-white);
   border: var(--bento-border);
   border-radius: var(--bento-radius-lg);
-  box-shadow: 6px 6px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-md);
   overflow: hidden;
 }
 
@@ -73,9 +73,9 @@
   text-transform: uppercase;
   color: var(--bento-ink);
   background: var(--bento-yellow);
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: var(--radius-pill);
-  box-shadow: 2px 2px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-xs);
 }
 
 .quest-track--recommended.quest-track--mint .quest-track-head {
@@ -322,10 +322,10 @@
   text-transform: uppercase;
   color: var(--bento-ink);
   background: var(--ui-white);
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: 6px;
   padding: 2px 7px;
-  box-shadow: 2px 2px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-xs);
   margin-top: -2px;
 }
 
@@ -361,9 +361,9 @@
   font-variant-numeric: tabular-nums;
   color: #fff;
   background: var(--island-badge, #2563eb);
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: 50%;
-  box-shadow: 2px 2px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-xs);
 }
 
 .quest-node--done .quest-node-badge {
@@ -423,7 +423,7 @@
   flex-shrink: 0;
   font-size: 13px !important;
   padding: 8px 14px !important;
-  box-shadow: 2px 2px 0 #0a0a0a !important;
+  box-shadow: var(--shadow-bento-xs) !important;
 }
 
 .quest-node-action--muted {

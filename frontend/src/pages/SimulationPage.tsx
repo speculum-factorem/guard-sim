@@ -3,7 +3,18 @@ import { Link, useParams } from "react-router-dom";
 import { careerTitle } from "../careerLabels";
 import { StepSimulation } from "../components/simulation/StepSimulation";
 import { fetchScenario, startSession, submitAnswer } from "../api";
-import type { AnswerResponse, CareerSnapshot, ChoicePublic, ScenarioDetail, StepPublic } from "../types";
+import type {
+  AnswerResponse,
+  CareerSnapshot,
+  ChoicePublic,
+  ScenarioDetail,
+  ScenarioType,
+  StepPublic,
+} from "../types";
+
+function scenarioTypeLabel(t: ScenarioType): string {
+  return t === "EMAIL" ? "Почта" : "Лента";
+}
 
 function hotspotChoiceIds(step: StepPublic): Set<string> {
   return new Set(step.hotspots.map((h) => h.choiceId));
@@ -394,8 +405,6 @@ export function SimulationPage() {
     ],
   );
 
-  const progress = totalSteps > 0 ? Math.min(100, Math.round((stepIndex / totalSteps) * 100)) : 0;
-
   const choiceBlockBusy = busy || !!pendingNext || !!consequenceModal;
   const redFlagReady =
     !step?.redFlagGame || redFlagSelectionIds.length === step.redFlagGame.requiredPickCount;
@@ -407,20 +416,30 @@ export function SimulationPage() {
 
   if (error && !detail) {
     return (
-      <>
+      <div className="lc-theme sim-page-lc">
         <div className="error-banner">{error}</div>
-        <Link to="/" className="btn btn-text">
-          ← К сценариям
+        <Link to="/dashboard#tasks" className="btn btn-text">
+          ← К задачам
         </Link>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
-      <Link to="/" className="btn btn-text" style={{ marginBottom: 16, display: "inline-flex" }}>
-        ← Все сценарии
-      </Link>
+    <div className="lc-theme sim-page-lc">
+      {detail ? (
+        <nav className="lc-breadcrumb" aria-label="Навигация по задачам">
+          <Link to="/dashboard#tasks">Задачи</Link>
+          <span className="lc-breadcrumb-sep" aria-hidden>
+            /
+          </span>
+          <span className="lc-breadcrumb-current">{detail.title}</span>
+        </nav>
+      ) : (
+        <Link to="/dashboard#tasks" className="btn btn-text" style={{ marginBottom: 16, display: "inline-flex" }}>
+          ← К задачам
+        </Link>
+      )}
       {error ? <div className="error-banner">{error}</div> : null}
 
       {consequenceModal ? (
@@ -474,15 +493,21 @@ export function SimulationPage() {
       ) : null}
 
       {detail && sessionId ? (
-        <div className="sim-panel">
+        <div className="sim-panel sim-panel--lc">
           <div className="sim-header">
-            <h1>{detail.title}</h1>
-            <span className="score-pill" aria-live="polite">
-              Баллы: {score}
-            </span>
-          </div>
-          <div className="progress-track" aria-hidden>
-            <div className="progress-fill" style={{ width: `${progress}%` }} />
+            <div className="lc-problem-title-row">
+              <h1 className="lc-problem-title">{detail.title}</h1>
+              <div className="lc-problem-meta">
+                <span
+                  className={`lc-diff ${detail.type === "EMAIL" ? "lc-diff--email" : "lc-diff--social"}`}
+                >
+                  {scenarioTypeLabel(detail.type)}
+                </span>
+                <span className="score-pill" aria-live="polite">
+                  Баллы: {score}
+                </span>
+              </div>
+            </div>
           </div>
 
           {completed ? (
@@ -501,8 +526,8 @@ export function SimulationPage() {
                 Вы набрали <strong>{score}</strong> баллов. Доверие клиентов:{" "}
                 <strong>{careerHud?.reputation ?? "—"}%</strong>.
               </p>
-              <Link to="/" className="btn btn-primary">
-                Выбрать другой сценарий
+              <Link to="/dashboard#tasks" className="btn btn-primary">
+                К списку задач
               </Link>
             </div>
           ) : step ? (
@@ -616,6 +641,6 @@ export function SimulationPage() {
           ) : null}
         </div>
       ) : null}
-    </>
+    </div>
   );
 }

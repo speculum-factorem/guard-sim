@@ -1,29 +1,38 @@
 /* Глобальные стили bento для всего приложения */
 
 .ui-frame {
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: var(--bento-radius);
+  box-shadow: var(--shadow-bento-sm);
 }
 
 .app-shell {
-  background: #fffef8;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
 }
 
 .app-bar {
-  background: var(--ui-white);
-  border-bottom: var(--bento-border);
-  backdrop-filter: none;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 253, 248, 0.82);
+  backdrop-filter: blur(18px) saturate(1.12);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+  border-bottom: 1px solid rgba(18, 18, 18, 0.08);
+  box-shadow: 0 4px 28px rgba(0, 0, 0, 0.045);
 }
 
 .app-logo-mark-svg {
   display: block;
   flex-shrink: 0;
-  filter: drop-shadow(3px 3px 0 #0a0a0a);
+  filter: drop-shadow(3px 3px 0 rgba(18, 18, 18, 0.35));
   transition: transform var(--transition-ui);
 }
 
 .app-logo:hover .app-logo-mark-svg {
-  transform: rotate(-4deg) scale(1.04);
+  transform: rotate(-3deg) scale(1.05);
 }
 
 .app-logo-text {
@@ -38,19 +47,33 @@
 /* Кнопки */
 .btn {
   border: var(--bento-border);
-  box-shadow: 4px 4px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-sm);
+  border-radius: var(--bento-radius);
+  transition: transform var(--transition-ui), box-shadow var(--transition-ui), filter var(--transition-ui),
+    background var(--transition-ui);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-bento-sm), var(--focus-ring);
 }
 
 .btn-primary {
-  background: var(--bento-orange);
+  background: linear-gradient(180deg, #ff6a32 0%, var(--bento-orange) 100%);
   border: var(--bento-border);
   color: #fff;
-  box-shadow: 4px 4px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-sm);
 }
 
-.btn-primary:hover {
-  filter: brightness(1.05);
-  box-shadow: 5px 5px 0 #0a0a0a;
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-bento-md);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-bento-xs);
 }
 
 .btn-secondary {
@@ -59,14 +82,24 @@
   color: var(--bento-ink);
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
   background: var(--bento-yellow);
-  border-color: #0a0a0a;
+  border-color: var(--bento-ink);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-bento-md);
 }
 
 .btn-nav-cta {
   border: var(--bento-border);
-  box-shadow: 3px 3px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-xs);
+  border-radius: var(--bento-radius);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+  transform: none;
+  filter: none;
 }
 
 /* Карточки и панели симуляции — на всю ширину, без лишней рамки */
@@ -78,18 +111,18 @@
 }
 
 .choice-btn {
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: var(--bento-radius);
   box-shadow: 3px 3px 0 rgba(10, 10, 10, 0.2);
 }
 
 .choice-btn:hover:not(:disabled) {
   background: var(--bento-yellow);
-  border-color: #0a0a0a;
+  border-color: var(--bento-ink);
 }
 
 .feedback {
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: var(--bento-radius);
 }
 
@@ -114,7 +147,7 @@
 }
 
 .skeleton {
-  border: 2px dashed #0a0a0a;
+  border: 2px dashed var(--bento-ink);
 }
 
 /* Карьера и хаб — без тяжёлой рамки, на всю ширину блока */
@@ -128,12 +161,12 @@
 }
 
 .career-role-pill {
-  border: 2px solid #0a0a0a;
-  box-shadow: 2px 2px 0 #0a0a0a;
+  border: 2px solid var(--bento-ink);
+  box-shadow: var(--shadow-bento-xs);
 }
 
 .career-rep-track {
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: var(--radius-pill);
 }
 
@@ -147,24 +180,24 @@
 }
 
 .ach-unlocked {
-  border-color: #0a0a0a !important;
+  border-color: var(--bento-ink) !important;
   box-shadow: 2px 2px 0 rgba(10, 10, 10, 0.15);
 }
 
 .desk-hub-monitor {
   border: var(--bento-border);
   border-radius: var(--bento-radius-lg);
-  box-shadow: 8px 8px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-lg);
 }
 
 .desk-app {
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: var(--bento-radius);
   box-shadow: 4px 4px 0 rgba(10, 10, 10, 0.12);
 }
 
 .hub-scenario-card {
-  border: 2px solid #0a0a0a !important;
+  border: 2px solid var(--bento-ink) !important;
   border-radius: var(--bento-radius) !important;
   box-shadow: 4px 4px 0 rgba(10, 10, 10, 0.12) !important;
 }
@@ -172,11 +205,11 @@
 .card {
   border: var(--bento-border);
   border-radius: var(--bento-radius-lg);
-  box-shadow: 5px 5px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-md);
 }
 
 .card:hover {
-  border-color: #0a0a0a;
+  border-color: var(--bento-ink);
 }
 
 /* Окно миссии — без внешней толстой рамки */
@@ -200,7 +233,7 @@
 
 .mission-brief {
   background: linear-gradient(180deg, rgba(255, 219, 88, 0.35), transparent 65%);
-  border-bottom: 2px solid #0a0a0a;
+  border-bottom: 2px solid var(--bento-ink);
 }
 
 .mission-brief-title {
@@ -209,8 +242,8 @@
 
 .mission-app-toolbar {
   background: var(--bento-yellow);
-  border-top: 2px solid #0a0a0a;
-  border-bottom: 2px solid #0a0a0a;
+  border-top: 2px solid var(--bento-ink);
+  border-bottom: 2px solid var(--bento-ink);
 }
 
 .mission-app-viewport {
@@ -219,13 +252,13 @@
 }
 
 .mission-app-viewport .ui-frame {
-  box-shadow: 6px 6px 0 rgba(10, 10, 10, 0.12);
-  border: 2px solid #0a0a0a;
+  box-shadow: var(--shadow-bento-md);
+  border: 2px solid var(--bento-ink);
 }
 
 /* Поля и мини-игры */
 .input-kit {
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: var(--bento-radius);
   box-shadow: 2px 2px 0 rgba(10, 10, 10, 0.12);
 }
@@ -236,7 +269,7 @@
 }
 
 .pressure-bar-wrap {
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: var(--bento-radius);
   box-shadow: 3px 3px 0 rgba(10, 10, 10, 0.1);
 }
@@ -246,14 +279,14 @@
 }
 
 .red-flag-game {
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: var(--bento-radius);
   background: #fffbeb;
   box-shadow: 4px 4px 0 rgba(245, 158, 11, 0.35);
 }
 
 .red-flag-chip {
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
 }
 
 .red-flag-chip:hover:not(:disabled) {
@@ -261,13 +294,13 @@
 }
 
 .investigation-dock {
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: var(--bento-radius);
   box-shadow: 4px 4px 0 rgba(10, 10, 10, 0.1);
 }
 
 .narrative-noise {
-  border-top: 2px dashed #0a0a0a;
+  border-top: 2px dashed var(--bento-ink);
 }
 
 /* Модальное последствие */
@@ -278,17 +311,13 @@
 .consequence-dialog {
   border: var(--bento-border);
   border-radius: var(--bento-radius-lg);
-  box-shadow: 10px 10px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-xl);
 }
 
 .score-pill {
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   background: var(--bento-yellow);
   color: var(--bento-ink);
-}
-
-.progress-fill {
-  background: linear-gradient(90deg, var(--bento-orange), var(--bento-mint));
 }
 
 /* Шапка: навигация-«таблетки» */
@@ -300,33 +329,40 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 20px;
+  padding: 10px 18px;
   border-radius: var(--radius-pill);
   border: var(--bento-border);
-  background: var(--ui-white);
-  font-size: 13px;
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--bento-ink);
   text-decoration: none;
-  transition: transform var(--transition-ui), background var(--transition-ui);
+  box-shadow: var(--shadow-bento-xs);
+  transition: transform var(--transition-ui), background var(--transition-ui), box-shadow var(--transition-ui);
 }
 
 .app-nav-pill:hover {
   text-decoration: none;
   transform: translateY(-2px);
   background: var(--bento-yellow);
+  box-shadow: var(--shadow-bento-sm);
+}
+
+.app-nav-pill:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-bento-xs), var(--focus-ring);
 }
 
 .app-nav-pill--primary {
-  background: var(--bento-orange);
+  background: linear-gradient(180deg, #ff6a32 0%, var(--bento-orange) 100%);
   color: var(--ui-white);
   border-color: var(--bento-ink);
 }
 
 .app-nav-pill--primary:hover {
-  background: #e54d12;
+  background: linear-gradient(180deg, #ff7a45 0%, var(--bento-orange-deep) 100%);
   color: var(--ui-white);
 }
 
@@ -344,7 +380,7 @@
 }
 
 .hotspot-chip {
-  border: 2px solid #0a0a0a !important;
+  border: 2px solid var(--bento-ink) !important;
   box-shadow: 2px 2px 0 rgba(10, 10, 10, 0.12);
 }
 
@@ -353,19 +389,19 @@
 }
 
 .investigation-tab {
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
 }
 
 .investigation-tab-active {
   background: var(--bento-yellow);
-  border-color: #0a0a0a;
+  border-color: var(--bento-ink);
 }
 
 .completed-box {
   border: var(--bento-border);
   border-radius: var(--bento-radius-lg);
   background: var(--ui-white);
-  box-shadow: 8px 8px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-lg);
 }
 
 /* Страница дашборда */
@@ -387,7 +423,7 @@
   );
   border: var(--bento-border);
   border-radius: var(--bento-radius-lg);
-  box-shadow: 5px 5px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-md);
 }
 
 .dashboard-title {
@@ -430,7 +466,7 @@
   background: linear-gradient(125deg, rgba(255, 95, 31, 0.12) 0%, #fffef8 42%, rgba(224, 195, 252, 0.2) 100%);
   border: var(--bento-border);
   border-radius: var(--bento-radius-lg);
-  box-shadow: 5px 5px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-md);
 }
 
 .continue-track-hint-title {
@@ -513,7 +549,7 @@
   background: linear-gradient(135deg, rgba(112, 219, 175, 0.2) 0%, #fffef8 50%, rgba(255, 219, 88, 0.25) 100%);
   border: var(--bento-border);
   border-radius: var(--bento-radius-lg);
-  box-shadow: 4px 4px 0 #0a0a0a;
+  box-shadow: 4px 4px 0 var(--bento-ink);
 }
 
 .weekly-goal-banner--done .weekly-goal-banner-inner {
@@ -556,7 +592,7 @@
   font-variant-numeric: tabular-nums;
   padding: 4px 10px;
   background: var(--ui-white);
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   border-radius: var(--radius-pill);
 }
 
@@ -613,7 +649,7 @@
   background: linear-gradient(120deg, rgba(37, 99, 255, 0.08) 0%, #fffef8 45%, rgba(255, 219, 88, 0.22) 100%);
   border: var(--bento-border);
   border-radius: var(--bento-radius-lg);
-  box-shadow: 5px 5px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-md);
 }
 
 .gs-onboarding-title {
@@ -664,7 +700,7 @@
 .dashboard-page .career-panel.dashboard-career {
   border: var(--bento-border);
   border-radius: var(--bento-radius-lg);
-  box-shadow: 6px 6px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-md);
   background: var(--ui-white);
   padding: 20px 22px 22px;
   margin-bottom: 28px;
@@ -711,7 +747,7 @@
   color: var(--bento-ink);
   border: var(--bento-border);
   border-radius: var(--radius-pill);
-  box-shadow: 2px 2px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-xs);
 }
 
 .dashboard-page .challenge-tracks-done-icon {
@@ -777,7 +813,7 @@
 }
 
 .dashboard-page .achievements-list li:hover {
-  border-color: #0a0a0a;
+  border-color: var(--bento-ink);
 }
 
 .dashboard-page .ach-locked {
@@ -788,7 +824,7 @@
   background: linear-gradient(165deg, rgba(255, 219, 88, 0.4) 0%, #fff 55%);
   border: var(--bento-border);
   border-radius: var(--bento-radius);
-  box-shadow: 3px 3px 0 #0a0a0a;
+  box-shadow: 3px 3px 0 var(--bento-ink);
   padding: 12px 16px;
 }
 
@@ -799,7 +835,7 @@
 
 .dashboard-page .career-rep-track {
   height: 12px;
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--bento-ink);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
@@ -867,7 +903,7 @@
 .app-nav-pill--ghost:hover {
   background: var(--bento-yellow);
   border-style: solid;
-  border-color: #0a0a0a;
+  border-color: var(--bento-ink);
 }
 
 .app-nav-pill--secondary {
@@ -908,7 +944,7 @@
   background: var(--ui-white);
   border: var(--bento-border);
   border-radius: var(--bento-radius-lg);
-  box-shadow: 6px 6px 0 #0a0a0a;
+  box-shadow: var(--shadow-bento-md);
 }
 
 .auth-field {

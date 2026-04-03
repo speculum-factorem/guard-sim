@@ -15,6 +15,9 @@ export function AppFooter() {
           <Link to="/dashboard" className="app-footer-link">
             Дашборд
           </Link>
+          <Link to="/challenges" className="app-footer-link">
+            Челленджи
+          </Link>
           <Link to="/dashboard#tasks" className="app-footer-link">
             Задачи
           </Link>

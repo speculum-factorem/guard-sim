@@ -69,11 +69,12 @@
   box-shadow: 3px 3px 0 #0a0a0a;
 }
 
-/* Карточки и панели симуляции */
+/* Карточки и панели симуляции — на всю ширину, без лишней рамки */
 .sim-panel {
-  border: var(--bento-border);
-  border-radius: var(--bento-radius-lg);
-  box-shadow: 6px 6px 0 #0a0a0a;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
 }
 
 .choice-btn {
@@ -116,11 +117,14 @@
   border: 2px dashed #0a0a0a;
 }
 
-/* Карьера и хаб */
+/* Карьера и хаб — без тяжёлой рамки, на всю ширину блока */
 .career-panel {
-  border: var(--bento-border);
-  border-radius: var(--bento-radius-lg);
-  box-shadow: 6px 6px 0 #0a0a0a;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  border-bottom: 1px solid var(--gm-border);
+  padding-bottom: 28px;
+  margin-bottom: 28px;
 }
 
 .career-role-pill {
@@ -175,11 +179,12 @@
   border-color: #0a0a0a;
 }
 
-/* Окно миссии */
+/* Окно миссии — без внешней толстой рамки */
 .mission-window {
-  border: var(--bento-border);
-  border-radius: var(--bento-radius-lg);
-  box-shadow: 8px 8px 0 #0a0a0a;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
 }
 
 .mission-window-chrome {
@@ -331,9 +336,11 @@
 }
 
 .main--bento-padded {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 32px 24px 64px;
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 24px clamp(16px, 3vw, 40px) 56px;
+  box-sizing: border-box;
 }
 
 .hotspot-chip {
@@ -364,23 +371,40 @@
 /* Страница дашборда */
 .dashboard-page {
   padding-bottom: 48px;
+  max-width: 1120px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .dashboard-header {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  padding: 22px 22px 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 219, 88, 0.32) 0%,
+    #fffef8 38%,
+    rgba(112, 219, 175, 0.14) 100%
+  );
+  border: var(--bento-border);
+  border-radius: var(--bento-radius-lg);
+  box-shadow: 5px 5px 0 #0a0a0a;
 }
 
 .dashboard-title {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .dashboard-subtitle {
   margin: 0;
-  max-width: 52ch;
+  max-width: 62ch;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--gm-text-secondary);
 }
 
 .dashboard-skeleton {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  border-radius: var(--bento-radius);
 }
 
 .dashboard-tasks-lead {
@@ -388,7 +412,82 @@
 }
 
 .dashboard-career {
-  margin-bottom: 32px;
+  margin-bottom: 28px;
+}
+
+/* Карьера на дашборде — единая bento-карточка */
+.dashboard-page .career-panel.dashboard-career {
+  border: var(--bento-border);
+  border-radius: var(--bento-radius-lg);
+  box-shadow: 6px 6px 0 #0a0a0a;
+  background: var(--ui-white);
+  padding: 20px 22px 22px;
+  margin-bottom: 28px;
+  border-bottom: none;
+}
+
+.dashboard-page .career-panel-row {
+  padding-bottom: 4px;
+}
+
+.dashboard-page .achievements-block {
+  border-top: 2px dashed rgba(10, 10, 10, 0.12);
+  margin-top: 4px;
+  padding-top: 18px;
+}
+
+.dashboard-page .achievements-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--bento-ink);
+  margin-bottom: 14px;
+}
+
+.dashboard-page .achievements-list {
+  gap: 12px;
+}
+
+.dashboard-page .achievements-list li {
+  border: 2px solid rgba(10, 10, 10, 0.1);
+  padding: 14px 16px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dashboard-page .achievements-list li:hover {
+  border-color: #0a0a0a;
+}
+
+.dashboard-page .ach-locked {
+  background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
+}
+
+.dashboard-page .career-role-pill {
+  background: linear-gradient(165deg, rgba(255, 219, 88, 0.4) 0%, #fff 55%);
+  border: var(--bento-border);
+  border-radius: var(--bento-radius);
+  box-shadow: 3px 3px 0 #0a0a0a;
+  padding: 12px 16px;
+}
+
+.dashboard-page .career-role-pill strong {
+  color: var(--bento-ink);
+  font-size: 1.05rem;
+}
+
+.dashboard-page .career-rep-track {
+  height: 12px;
+  border: 2px solid #0a0a0a;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-page .career-streak {
+  padding: 10px 14px;
+  background: #fffef8;
+  border: 2px dashed rgba(10, 10, 10, 0.2);
+  border-radius: var(--bento-radius);
 }
 
 .home-mini-hint {
@@ -402,5 +501,20 @@
 .home-mini-hint-link {
   color: var(--bento-orange);
   font-weight: 600;
+}
+
+/* Правая колонка миссии: без лишней «рамки» вокруг ui-frame, на всю ширину блока */
+.mission-lc-workspace--fullbleed .mission-app-viewport.mission-app-viewport--lc {
+  padding: 0;
+  background: transparent;
+  border-top: none;
+}
+
+.mission-lc-workspace--fullbleed .mission-app-viewport--lc > .ui-frame {
+  margin-bottom: 0;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  box-shadow: none;
 }
 

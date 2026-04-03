@@ -32,8 +32,9 @@ export function SocialFeedSimulation(props: {
   disabled: boolean;
   onChoose: (choiceId: string) => void;
   childrenFooter?: ReactNode;
+  splitLayout?: boolean;
 }) {
-  const { step, disabled, onChoose, childrenFooter } = props;
+  const { step, disabled, onChoose, childrenFooter, splitLayout = false } = props;
   const noise = step.narrativeNoise ? <NarrativeNoiseBlock text={step.narrativeNoise} /> : null;
 
   const [search, setSearch] = useState("");
@@ -141,7 +142,11 @@ export function SocialFeedSimulation(props: {
                 <div className="social-card-meta">Рекомендации · сейчас</div>
               </div>
             </div>
-            <div className="narrative-frame sim-social-body">{step.narrative}</div>
+            {splitLayout ? (
+              <p className="sim-split-hint sim-social-split-hint">Текст поста — в панели «Условие» слева.</p>
+            ) : (
+              <div className="narrative-frame sim-social-body">{step.narrative}</div>
+            )}
             {noise}
             {step.hotspots.length > 0 ? (
               <div className="sim-social-actions sim-fb-post-actions" role="group">

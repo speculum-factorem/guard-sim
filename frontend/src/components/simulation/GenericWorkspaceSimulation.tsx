@@ -10,8 +10,9 @@ export function GenericWorkspaceSimulation(props: {
   /** Варианты ответа, если нет хотспотов (обычно все варианты шага) */
   choiceButtons: ChoicePublic[];
   childrenFooter?: ReactNode;
+  splitLayout?: boolean;
 }) {
-  const { step, disabled, onChoose, choiceButtons, childrenFooter } = props;
+  const { step, disabled, onChoose, choiceButtons, childrenFooter, splitLayout = false } = props;
   const noise = step.narrativeNoise ? <NarrativeNoiseBlock text={step.narrativeNoise} /> : null;
   const useHotspots = step.hotspots.length > 0;
 
@@ -22,7 +23,11 @@ export function GenericWorkspaceSimulation(props: {
         <span className="sim-generic-badge">GuardSim</span>
       </div>
       <div className="sim-generic-body">
-        <div className="narrative sim-generic-narrative">{step.narrative}</div>
+        {splitLayout ? (
+          <p className="sim-split-hint sim-generic-split-hint">Формулировка — в панели «Условие» слева.</p>
+        ) : (
+          <div className="narrative sim-generic-narrative">{step.narrative}</div>
+        )}
         {noise}
         {useHotspots ? (
           <OrphanHotspotRow hotspots={step.hotspots} disabled={disabled} onChoose={onChoose} />

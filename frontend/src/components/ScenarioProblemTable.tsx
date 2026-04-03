@@ -10,6 +10,21 @@ type SortDir = "asc" | "desc";
 
 const PAGE_SIZES = [10, 25, 50] as const;
 
+function tasksLabel(n: number): string {
+  const abs = Math.abs(n) % 100;
+  const last = abs % 10;
+  if (abs >= 11 && abs <= 14) {
+    return `${n} задач`;
+  }
+  if (last === 1) {
+    return `${n} задача`;
+  }
+  if (last >= 2 && last <= 4) {
+    return `${n} задачи`;
+  }
+  return `${n} задач`;
+}
+
 function roleOrder(role: CareerRole): number {
   if (role === "INTERN") {
     return 0;
@@ -144,81 +159,100 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
 
   return (
     <section className="lc-problems" id="tasks" aria-labelledby="tasks-heading">
-      <div className="lc-problems-head">
-        <h2 className="section-heading lc-problems-title" id="tasks-heading">
-          Задачи
-        </h2>
-        <p className="page-subtitle lc-problems-lead">
-          Сценарии в духе тренажёра: поиск, фильтр по каналу, сортировка по столбцам и постраничный просмотр.
-        </p>
-      </div>
-
-      <div className="lc-toolbar">
-        <label className="lc-search-wrap">
-          <span className="lc-visually-hidden">Поиск по названию и описанию</span>
-          <span className="lc-search-icon" aria-hidden>
-            ⌕
+      <header className="lc-problems-head">
+        <div className="lc-problems-head-row">
+          <h2 className="section-heading lc-problems-title" id="tasks-heading">
+            Задачи
+          </h2>
+          <span className="lc-problems-count-pill" aria-live="polite">
+            {tasksLabel(sorted.length)}
           </span>
-          <input
-            type="search"
-            className="lc-input lc-search-input"
-            placeholder="Поиск по названию, описанию или id…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            autoComplete="off"
-          />
-        </label>
+        </div>
+        <p className="page-subtitle lc-problems-lead">
+          Найдите сценарий по названию или описанию, отфильтруйте канал и отсортируйте список — всё в одной панели.
+        </p>
+      </header>
 
-        <div className="lc-toolbar-filters" role="group" aria-label="Фильтр по каналу">
-          {(
-            [
-              ["all", "Все"],
-              ["mail", "Почта"],
-              ["social", "Лента"],
-              ["security", "ИБ"],
-            ] as const
-          ).map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              className={`lc-chip${channel === key ? " lc-chip--on" : ""}`}
-              onClick={() => setChannel(key)}
+      <div className="lc-problems-surface">
+        <div className="lc-toolbar" role="search">
+        <div className="lc-toolbar-row lc-toolbar-row--primary">
+          <label className="lc-search-wrap">
+            <span className="lc-visually-hidden">Поиск по названию и описанию</span>
+            <span className="lc-search-icon" aria-hidden>
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15zM16.5 16.5L21 21"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+            <input
+              type="search"
+              className="lc-input lc-search-input"
+              placeholder="Название, описание или id…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              autoComplete="off"
+            />
+          </label>
+          <label className="lc-page-size">
+            <span className="lc-page-size-label">На странице</span>
+            <select
+              className="lc-select"
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
             >
-              {label}
-            </button>
-          ))}
+              {PAGE_SIZES.map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className="lc-toolbar-row lc-toolbar-row--filters">
+          <span className="lc-filters-label" id="lc-channel-filter-label">
+            Канал
+          </span>
+          <div className="lc-toolbar-filters" role="group" aria-labelledby="lc-channel-filter-label">
+            {(
+              [
+                ["all", "Все"],
+                ["mail", "Почта"],
+                ["social", "Лента"],
+                ["security", "ИБ"],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                className={`lc-chip${channel === key ? " lc-chip--on" : ""}`}
+                onClick={() => setChannel(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
         </div>
 
-        <label className="lc-page-size">
-          <span className="lc-page-size-label">На странице</span>
-          <select
-            className="lc-select"
-            value={pageSize}
-            onChange={(e) => setPageSize(Number(e.target.value))}
-          >
-            {PAGE_SIZES.map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-
-      <div className="lc-table-wrap">
+        <div className="lc-table-wrap">
         <table className="lc-table">
           <thead>
             <tr>
-              <th scope="col" className="lc-col-status">
-                <button type="button" className="lc-th-btn" onClick={() => toggleSort("status")}>
-                  Статус
-                  {sortIndicator("status")}
-                </button>
-              </th>
               <th scope="col" className="lc-col-title">
                 <button type="button" className="lc-th-btn" onClick={() => toggleSort("title")}>
                   Задача
                   {sortIndicator("title")}
+                </button>
+              </th>
+              <th scope="col" className="lc-col-status">
+                <button type="button" className="lc-th-btn" onClick={() => toggleSort("status")}>
+                  Статус
+                  {sortIndicator("status")}
                 </button>
               </th>
               <th scope="col" className="lc-col-channel">
@@ -234,7 +268,9 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
                 </button>
               </th>
               <th scope="col" className="lc-col-action">
-                <span className="lc-th-static">Действие</span>
+                <span className="lc-th-static">
+                  <span className="lc-visually-hidden">Действие</span>
+                </span>
               </th>
             </tr>
           </thead>
@@ -243,10 +279,7 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
               const col = hubColumnForScenario(s);
               return (
                 <tr key={s.id} className={s.locked ? "lc-tr lc-tr--locked" : "lc-tr"}>
-                  <td>
-                    <StatusPill s={s} completed={completed} />
-                  </td>
-                  <td>
+                  <td className="lc-td-title">
                     <div className="lc-title-cell">
                       {s.locked ? (
                         <span className="lc-title-locked">{s.title}</span>
@@ -259,17 +292,20 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
                     </div>
                   </td>
                   <td>
+                    <StatusPill s={s} completed={completed} />
+                  </td>
+                  <td>
                     <span className={`lc-channel lc-channel--${col}`}>{channelLabel(col)}</span>
                   </td>
                   <td>
                     <span className="lc-role">{careerTitle(s.requiredRole)}</span>
                   </td>
-                  <td>
+                  <td className="lc-td-action">
                     {s.locked ? (
-                      <span className="lc-action-muted">Недоступно</span>
+                      <span className="lc-action-muted">—</span>
                     ) : (
-                      <Link to={`/play/${encodeURIComponent(s.id)}`} className="lc-action-link">
-                        Решить
+                      <Link to={`/play/${encodeURIComponent(s.id)}`} className="lc-btn-solve">
+                        Начать
                       </Link>
                     )}
                   </td>
@@ -281,9 +317,9 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
         {sorted.length === 0 ? (
           <p className="lc-empty">Ничего не найдено. Измените запрос или фильтр.</p>
         ) : null}
-      </div>
+        </div>
 
-      {sorted.length > 0 ? (
+        {sorted.length > 0 ? (
         <nav className="lc-pager" aria-label="Пагинация списка задач">
           <span className="lc-pager-meta">{rangeLabel}</span>
           <div className="lc-pager-btns">
@@ -333,7 +369,8 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
             </button>
           </div>
         </nav>
-      ) : null}
+        ) : null}
+      </div>
     </section>
   );
 }

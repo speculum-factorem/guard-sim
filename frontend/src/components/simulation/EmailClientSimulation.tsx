@@ -38,8 +38,9 @@ export function EmailClientSimulation(props: {
   disabled: boolean;
   onChoose: (choiceId: string) => void;
   childrenFooter?: ReactNode;
+  splitLayout?: boolean;
 }) {
-  const { step, disabled, onChoose, childrenFooter } = props;
+  const { step, disabled, onChoose, childrenFooter, splitLayout = false } = props;
   const subject = step.emailSubject ?? "Без темы";
   const from = step.emailFrom ?? "—";
   const noise = step.narrativeNoise ? <NarrativeNoiseBlock text={step.narrativeNoise} /> : null;
@@ -233,7 +234,11 @@ export function EmailClientSimulation(props: {
                 )}
               </div>
             </div>
-            <div className="narrative-frame sim-email-body">{step.narrative}</div>
+            {splitLayout ? (
+              <p className="sim-split-hint sim-email-split-hint">Текст письма — в панели «Условие» слева. Ниже — элементы интерфейса.</p>
+            ) : (
+              <div className="narrative-frame sim-email-body">{step.narrative}</div>
+            )}
             {linkHs ? (
               <div className="sim-email-inline-link-wrap">
                 <button

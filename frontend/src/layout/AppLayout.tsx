@@ -22,6 +22,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <Link to="/dashboard" className="app-nav-pill">
               Дашборд
             </Link>
+            <Link to="/challenges" className="app-nav-pill">
+              Челленджи
+            </Link>
             <Link to="/dashboard#tasks" className="app-nav-pill app-nav-pill--primary">
               {isHome ? "Начать" : "К задачам"}
             </Link>

@@ -22,8 +22,9 @@ export function TicketSimulation(props: {
   disabled: boolean;
   onChoose: (choiceId: string) => void;
   childrenFooter?: ReactNode;
+  splitLayout?: boolean;
 }) {
-  const { step, disabled, onChoose, childrenFooter } = props;
+  const { step, disabled, onChoose, childrenFooter, splitLayout = false } = props;
   const subject = step.emailSubject ?? "Без темы";
   const from = step.emailFrom ?? "—";
   const noise = step.narrativeNoise ? <NarrativeNoiseBlock text={step.narrativeNoise} /> : null;
@@ -50,7 +51,11 @@ export function TicketSimulation(props: {
             <p className="ticket-from">{from}</p>
           </div>
           <div className="ticket-body sim-ticket-body">
-            <div className="narrative-frame">{step.narrative}</div>
+            {splitLayout ? (
+              <p className="sim-split-hint sim-ticket-split-hint">Описание тикета — в панели «Условие» слева.</p>
+            ) : (
+              <div className="narrative-frame">{step.narrative}</div>
+            )}
             {noise}
           </div>
           <div className="sim-ticket-actions">

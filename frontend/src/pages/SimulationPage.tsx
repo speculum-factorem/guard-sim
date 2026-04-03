@@ -53,34 +53,13 @@ function missionBriefText(step: StepPublic): string {
   }
 }
 
-function MissionWindow(props: {
-  step: StepPublic;
-  stepIndex: number;
-  totalSteps: number;
-  children: ReactNode;
-}) {
-  const { step, stepIndex, totalSteps, children } = props;
-  const label = missionWindowLabel(step);
+function MissionWindow(props: { children: ReactNode; bodyClassName?: string }) {
+  const { children, bodyClassName } = props;
   return (
     <div className="mission-window">
-      <header className="mission-window-chrome">
-        <div className="mission-window-traffic" aria-hidden>
-          <span className="mission-window-dot mission-window-dot-close" />
-          <span className="mission-window-dot mission-window-dot-min" />
-          <span className="mission-window-dot mission-window-dot-max" />
-        </div>
-        <div className="mission-window-chrome-center">
-          <span className="mission-window-product">GuardSim</span>
-          <span className="mission-window-sep" aria-hidden>
-            ·
-          </span>
-          <span className="mission-window-app-title">{label}</span>
-        </div>
-        <span className="mission-window-step-pill">
-          Шаг {stepIndex + 1} / {totalSteps}
-        </span>
-      </header>
-      <div className="mission-window-body">{children}</div>
+      <div className={bodyClassName ? `mission-window-body ${bodyClassName}` : "mission-window-body"}>
+        {children}
+      </div>
     </div>
   );
 }
@@ -528,69 +507,96 @@ export function SimulationPage() {
             </div>
           ) : step ? (
             <div className="sim-body">
-              <MissionWindow step={step} stepIndex={stepIndex} totalSteps={totalSteps}>
-                <section className="mission-brief" aria-labelledby="mission-brief-heading">
-                  <h2 id="mission-brief-heading" className="mission-brief-title">
-                    Ситуация
-                  </h2>
-                  <p className="mission-brief-text">{missionBriefText(step)}</p>
-                </section>
+              <MissionWindow bodyClassName="mission-window-body--lc">
+                <div className="mission-lc">
+                    <aside className="mission-lc-desc" aria-label="Условие задания">
+                      <div className="mission-lc-tabs" role="tablist" aria-label="Разделы задания">
+                        <div className="mission-lc-tabs-main">
+                          <span className="mission-lc-tab mission-lc-tab--active" role="tab" aria-selected={true}>
+                            Условие
+                          </span>
+                          <span className="mission-lc-tab mission-lc-tab--muted" aria-hidden>
+                            Разбор
+                          </span>
+                        </div>
+                        <span className="mission-lc-step-badge">
+                          Шаг {stepIndex + 1} / {totalSteps}
+                        </span>
+                      </div>
+                      <div className="mission-lc-scroll">
+                        <section className="mission-lc-block">
+                          <h2 className="mission-lc-h2">Ситуация</h2>
+                          <p className="mission-lc-text">{missionBriefText(step)}</p>
+                        </section>
+                        {step.narrative.trim().length > 0 ? (
+                          <section className="mission-lc-block">
+                            <h3 className="mission-lc-h3">Материал для анализа</h3>
+                            <div className="mission-lc-narrative">{step.narrative}</div>
+                          </section>
+                        ) : null}
 
-                {step.pressureSeconds != null && step.pressureSeconds > 0 ? (
-                  <PressureTimer totalSeconds={step.pressureSeconds} stepId={step.id} frozen={choiceBlockBusy} />
-                ) : null}
+                        {step.pressureSeconds != null && step.pressureSeconds > 0 ? (
+                          <PressureTimer
+                            totalSeconds={step.pressureSeconds}
+                            stepId={step.id}
+                            frozen={choiceBlockBusy}
+                          />
+                        ) : null}
 
-                <InvestigationDock
-                  step={step}
-                  disabled={choiceBlockBusy}
-                  viewedIds={viewedInvestigationIds}
-                  onViewPanel={markPanelViewed}
-                />
+                        <InvestigationDock
+                          step={step}
+                          disabled={choiceBlockBusy}
+                          viewedIds={viewedInvestigationIds}
+                          onViewPanel={markPanelViewed}
+                        />
 
-                {step.redFlagGame ? (
-                  <RedFlagPicker
-                    game={step.redFlagGame}
-                    selectedIds={redFlagSelectionIds}
-                    onChange={setRedFlagSelectionIds}
-                    disabled={choiceBlockBusy}
-                  />
-                ) : null}
+                        {step.redFlagGame ? (
+                          <RedFlagPicker
+                            game={step.redFlagGame}
+                            selectedIds={redFlagSelectionIds}
+                            onChange={setRedFlagSelectionIds}
+                            disabled={choiceBlockBusy}
+                          />
+                        ) : null}
+                      </div>
+                    </aside>
 
-                <section className="mission-app" aria-label={`Симуляция: ${missionWindowLabel(step)}`}>
-                  <div className="mission-app-toolbar">
-                    <span className="mission-app-toolbar-label">Интерфейс</span>
-                    <strong className="mission-app-toolbar-value">{missionWindowLabel(step)}</strong>
-                  </div>
-                  <div className="mission-app-viewport">
-                    <StepSimulation
-                      step={step}
-                      disabled={stepActionsLocked}
-                      onChoose={onChoose}
-                      genericChoices={step.choices}
-                      childrenFooter={
-                        fallbacks.length > 0 ? (
-                          <div
-                            className="choice-list choice-list-fallback"
-                            role="group"
-                            aria-label="Дополнительные действия"
-                          >
-                            {fallbacks.map((c) => (
-                              <button
-                                key={c.id}
-                                type="button"
-                                className="choice-btn"
-                                disabled={stepActionsLocked}
-                                onClick={() => onChoose(c.id)}
+                    <div
+                      className="mission-lc-workspace mission-lc-workspace--fullbleed"
+                      aria-label={`Симуляция: ${missionWindowLabel(step)}`}
+                    >
+                      <div className="mission-app-viewport mission-app-viewport--lc">
+                        <StepSimulation
+                          step={step}
+                          disabled={stepActionsLocked}
+                          onChoose={onChoose}
+                          genericChoices={step.choices}
+                          splitLayout
+                          childrenFooter={
+                            fallbacks.length > 0 ? (
+                              <div
+                                className="choice-list choice-list-fallback"
+                                role="group"
+                                aria-label="Дополнительные действия"
                               >
-                                {c.label}
-                              </button>
-                            ))}
-                          </div>
-                        ) : null
-                      }
-                    />
+                                {fallbacks.map((c) => (
+                                  <button
+                                    key={c.id}
+                                    type="button"
+                                    className="choice-btn"
+                                    disabled={stepActionsLocked}
+                                    onClick={() => onChoose(c.id)}
+                                  >
+                                    {c.label}
+                                  </button>
+                                ))}
+                              </div>
+                            ) : null
+                          }
+                        />
+                      </div>
+                    </div>
                   </div>
-                </section>
               </MissionWindow>
 
               {feedback ? (

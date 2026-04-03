@@ -15,9 +15,11 @@
 }
 
 .app-bar-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 16px 24px;
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 16px clamp(16px, 3vw, 40px);
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 16px;

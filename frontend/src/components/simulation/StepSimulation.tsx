@@ -13,20 +13,42 @@ export function StepSimulation(props: {
   /** Варианты ответа для режима «общий» (GENERIC), если у шага нет хотспотов */
   genericChoices: ChoicePublic[];
   childrenFooter?: ReactNode;
+  /** Режим «как LeetCode»: условие слева, интерфейс справа — длинный текст не дублируется в макете справа */
+  splitLayout?: boolean;
 }) {
-  const { step, disabled, onChoose, genericChoices, childrenFooter } = props;
+  const { step, disabled, onChoose, genericChoices, childrenFooter, splitLayout = false } = props;
 
   switch (step.uiKind) {
     case "EMAIL_CLIENT":
       return (
-        <EmailClientSimulation step={step} disabled={disabled} onChoose={onChoose} childrenFooter={childrenFooter} />
+        <EmailClientSimulation
+          step={step}
+          disabled={disabled}
+          onChoose={onChoose}
+          childrenFooter={childrenFooter}
+          splitLayout={splitLayout}
+        />
       );
     case "SOCIAL_NOTIFICATION":
       return (
-        <SocialFeedSimulation step={step} disabled={disabled} onChoose={onChoose} childrenFooter={childrenFooter} />
+        <SocialFeedSimulation
+          step={step}
+          disabled={disabled}
+          onChoose={onChoose}
+          childrenFooter={childrenFooter}
+          splitLayout={splitLayout}
+        />
       );
     case "DESK_TICKET":
-      return <TicketSimulation step={step} disabled={disabled} onChoose={onChoose} childrenFooter={childrenFooter} />;
+      return (
+        <TicketSimulation
+          step={step}
+          disabled={disabled}
+          onChoose={onChoose}
+          childrenFooter={childrenFooter}
+          splitLayout={splitLayout}
+        />
+      );
     case "MINI_URL_COMPARE":
       if (step.urlCompareGame) {
         return (
@@ -40,6 +62,7 @@ export function StepSimulation(props: {
           onChoose={onChoose}
           choiceButtons={genericChoices}
           childrenFooter={childrenFooter}
+          splitLayout={splitLayout}
         />
       );
     default:
@@ -50,6 +73,7 @@ export function StepSimulation(props: {
           onChoose={onChoose}
           choiceButtons={genericChoices}
           childrenFooter={childrenFooter}
+          splitLayout={splitLayout}
         />
       );
   }

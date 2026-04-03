@@ -1,0 +1,363 @@
+/* Глобальные стили bento для всего приложения */
+
+.ui-frame {
+  border: 2px solid #0a0a0a;
+  border-radius: var(--bento-radius);
+}
+
+.app-shell {
+  background: #fffef8;
+}
+
+.app-bar {
+  background: var(--ui-white);
+  border-bottom: var(--bento-border);
+  backdrop-filter: none;
+}
+
+.app-logo-mark-svg {
+  display: block;
+  flex-shrink: 0;
+  filter: drop-shadow(3px 3px 0 #0a0a0a);
+  transition: transform var(--transition-ui);
+}
+
+.app-logo:hover .app-logo-mark-svg {
+  transform: rotate(-4deg) scale(1.04);
+}
+
+.app-logo-text {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--bento-ink);
+}
+
+/* Кнопки */
+.btn {
+  border: var(--bento-border);
+  box-shadow: 4px 4px 0 #0a0a0a;
+}
+
+.btn-primary {
+  background: var(--bento-orange);
+  border: var(--bento-border);
+  color: #fff;
+  box-shadow: 4px 4px 0 #0a0a0a;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.05);
+  box-shadow: 5px 5px 0 #0a0a0a;
+}
+
+.btn-secondary {
+  background: var(--ui-white);
+  border: var(--bento-border);
+  color: var(--bento-ink);
+}
+
+.btn-secondary:hover {
+  background: var(--bento-yellow);
+  border-color: #0a0a0a;
+}
+
+.btn-nav-cta {
+  border: var(--bento-border);
+  box-shadow: 3px 3px 0 #0a0a0a;
+}
+
+/* Карточки и панели симуляции */
+.sim-panel {
+  border: var(--bento-border);
+  border-radius: var(--bento-radius-lg);
+  box-shadow: 6px 6px 0 #0a0a0a;
+}
+
+.choice-btn {
+  border: 2px solid #0a0a0a;
+  border-radius: var(--bento-radius);
+  box-shadow: 3px 3px 0 rgba(10, 10, 10, 0.2);
+}
+
+.choice-btn:hover:not(:disabled) {
+  background: var(--bento-yellow);
+  border-color: #0a0a0a;
+}
+
+.feedback {
+  border: 2px solid #0a0a0a;
+  border-radius: var(--bento-radius);
+}
+
+.feedback.ok {
+  border-color: #166534;
+  box-shadow: 3px 3px 0 rgba(22, 101, 52, 0.35);
+}
+
+.feedback.bad {
+  border-color: #c5221f;
+  box-shadow: 3px 3px 0 rgba(197, 34, 31, 0.25);
+}
+
+.error-banner {
+  border: var(--bento-border);
+  border-radius: var(--bento-radius);
+  box-shadow: 4px 4px 0 rgba(197, 34, 31, 0.35);
+}
+
+.loading {
+  color: var(--bento-ink);
+}
+
+.skeleton {
+  border: 2px dashed #0a0a0a;
+}
+
+/* Карьера и хаб */
+.career-panel {
+  border: var(--bento-border);
+  border-radius: var(--bento-radius-lg);
+  box-shadow: 6px 6px 0 #0a0a0a;
+}
+
+.career-role-pill {
+  border: 2px solid #0a0a0a;
+  box-shadow: 2px 2px 0 #0a0a0a;
+}
+
+.career-rep-track {
+  border: 2px solid #0a0a0a;
+  border-radius: var(--radius-pill);
+}
+
+.career-rep-fill {
+  background: linear-gradient(90deg, var(--bento-mint), var(--bento-orange));
+}
+
+.achievements-list li {
+  border-radius: var(--bento-radius);
+  border: 2px solid var(--gm-border);
+}
+
+.ach-unlocked {
+  border-color: #0a0a0a !important;
+  box-shadow: 2px 2px 0 rgba(10, 10, 10, 0.15);
+}
+
+.desk-hub-monitor {
+  border: var(--bento-border);
+  border-radius: var(--bento-radius-lg);
+  box-shadow: 8px 8px 0 #0a0a0a;
+}
+
+.desk-app {
+  border: 2px solid #0a0a0a;
+  border-radius: var(--bento-radius);
+  box-shadow: 4px 4px 0 rgba(10, 10, 10, 0.12);
+}
+
+.hub-scenario-card {
+  border: 2px solid #0a0a0a !important;
+  border-radius: var(--bento-radius) !important;
+  box-shadow: 4px 4px 0 rgba(10, 10, 10, 0.12) !important;
+}
+
+.card {
+  border: var(--bento-border);
+  border-radius: var(--bento-radius-lg);
+  box-shadow: 5px 5px 0 #0a0a0a;
+}
+
+.card:hover {
+  border-color: #0a0a0a;
+}
+
+/* Окно миссии */
+.mission-window {
+  border: var(--bento-border);
+  border-radius: var(--bento-radius-lg);
+  box-shadow: 8px 8px 0 #0a0a0a;
+}
+
+.mission-window-chrome {
+  background: var(--bento-ink);
+  border-bottom: var(--bento-border);
+}
+
+.mission-window-step-pill {
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: var(--bento-orange);
+  color: #fff;
+}
+
+.mission-brief {
+  background: linear-gradient(180deg, rgba(255, 219, 88, 0.35), transparent 65%);
+  border-bottom: 2px solid #0a0a0a;
+}
+
+.mission-brief-title {
+  color: var(--bento-ink);
+}
+
+.mission-app-toolbar {
+  background: var(--bento-yellow);
+  border-top: 2px solid #0a0a0a;
+  border-bottom: 2px solid #0a0a0a;
+}
+
+.mission-app-viewport {
+  background: linear-gradient(180deg, #e8f5e0 0%, #fffef8 100%);
+  border-top: none;
+}
+
+.mission-app-viewport .ui-frame {
+  box-shadow: 6px 6px 0 rgba(10, 10, 10, 0.12);
+  border: 2px solid #0a0a0a;
+}
+
+/* Поля и мини-игры */
+.input-kit {
+  border: 2px solid #0a0a0a;
+  border-radius: var(--bento-radius);
+  box-shadow: 2px 2px 0 rgba(10, 10, 10, 0.12);
+}
+
+.input-kit:focus {
+  border-color: var(--bento-orange);
+  box-shadow: 3px 3px 0 rgba(255, 95, 31, 0.45);
+}
+
+.pressure-bar-wrap {
+  border: 2px solid #0a0a0a;
+  border-radius: var(--bento-radius);
+  box-shadow: 3px 3px 0 rgba(10, 10, 10, 0.1);
+}
+
+.pressure-bar-fill {
+  background: linear-gradient(90deg, var(--bento-mint), var(--bento-orange));
+}
+
+.red-flag-game {
+  border: 2px solid #0a0a0a;
+  border-radius: var(--bento-radius);
+  background: #fffbeb;
+  box-shadow: 4px 4px 0 rgba(245, 158, 11, 0.35);
+}
+
+.red-flag-chip {
+  border: 2px solid #0a0a0a;
+}
+
+.red-flag-chip:hover:not(:disabled) {
+  background: var(--bento-yellow);
+}
+
+.investigation-dock {
+  border: 2px solid #0a0a0a;
+  border-radius: var(--bento-radius);
+  box-shadow: 4px 4px 0 rgba(10, 10, 10, 0.1);
+}
+
+.narrative-noise {
+  border-top: 2px dashed #0a0a0a;
+}
+
+/* Модальное последствие */
+.consequence-overlay {
+  background: rgba(10, 10, 10, 0.75);
+}
+
+.consequence-dialog {
+  border: var(--bento-border);
+  border-radius: var(--bento-radius-lg);
+  box-shadow: 10px 10px 0 #0a0a0a;
+}
+
+.score-pill {
+  border: 2px solid #0a0a0a;
+  background: var(--bento-yellow);
+  color: var(--bento-ink);
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, var(--bento-orange), var(--bento-mint));
+}
+
+/* Шапка: навигация-«таблетки» */
+.app-nav {
+  gap: 10px;
+}
+
+.app-nav-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  border: var(--bento-border);
+  background: var(--ui-white);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bento-ink);
+  text-decoration: none;
+  transition: transform var(--transition-ui), background var(--transition-ui);
+}
+
+.app-nav-pill:hover {
+  text-decoration: none;
+  transform: translateY(-2px);
+  background: var(--bento-yellow);
+}
+
+.app-nav-pill--primary {
+  background: var(--bento-orange);
+  color: var(--ui-white);
+  border-color: var(--bento-ink);
+}
+
+.app-nav-pill--primary:hover {
+  background: #e54d12;
+  color: var(--ui-white);
+}
+
+.main--bento {
+  max-width: none;
+  padding: 0;
+}
+
+.main--bento-padded {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.hotspot-chip {
+  border: 2px solid #0a0a0a !important;
+  box-shadow: 2px 2px 0 rgba(10, 10, 10, 0.12);
+}
+
+.hotspot-chip:hover:not(:disabled) {
+  background: var(--bento-yellow);
+}
+
+.investigation-tab {
+  border: 2px solid #0a0a0a;
+}
+
+.investigation-tab-active {
+  background: var(--bento-yellow);
+  border-color: #0a0a0a;
+}
+
+.completed-box {
+  border: var(--bento-border);
+  border-radius: var(--bento-radius-lg);
+  background: var(--ui-white);
+  box-shadow: 8px 8px 0 #0a0a0a;
+}
+

@@ -41,6 +41,16 @@
   --gm-shadow-hover: var(--shadow-card-hover);
   --gm-radius: var(--radius-pill);
   --gm-radius-sm: var(--radius-sm);
+
+  /* Палитра лендинга (bento / neo-brutalism) */
+  --bento-orange: #ff5f1f;
+  --bento-yellow: #ffdb58;
+  --bento-mint: #70dbaf;
+  --bento-lilac: #e0c3fc;
+  --bento-ink: #0a0a0a;
+  --bento-border: 3px solid var(--bento-ink);
+  --bento-radius: 14px;
+  --bento-radius-lg: 20px;
 }
 
 *,

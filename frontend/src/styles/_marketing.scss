@@ -38,18 +38,7 @@
   text-decoration: none;
 }
 
-.app-logo-mark {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: var(--gradient-primary);
-  box-shadow: var(--gm-shadow);
-  transition: transform var(--transition-ui);
-}
-
-.app-logo:hover .app-logo-mark {
-  transform: scale(1.03);
-}
+/* Марка логотипа — см. компонент LogoMark и _ui-bento-global.scss */
 
 .app-logo-text {
   font-family: var(--font-display);

@@ -1,0 +1,429 @@
+/* Лендинг: герой, bento-сетка, слайдер (шапка и кнопки — в _ui-bento-global) */
+
+/* Герой */
+.home-page {
+  margin: 0;
+  padding-bottom: 24px;
+  background: var(--bento-yellow);
+}
+
+.hero.hero-bento {
+  min-height: min(72vh, 560px);
+  padding: 56px 20px 48px;
+  background: var(--bento-yellow);
+  border-bottom: var(--bento-border);
+}
+
+.hero-bento .hero-bg {
+  display: none;
+}
+
+.hero-bento .hero-sticker {
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  background: var(--ui-white);
+  border: var(--bento-border);
+  border-radius: 50%;
+  box-shadow: 6px 6px 0 var(--bento-ink);
+}
+
+.hero-bento-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 0.95;
+  margin: 0 0 20px;
+  color: var(--bento-ink);
+  font-size: clamp(2.5rem, 10vw, 5.2rem);
+  text-shadow: 3px 3px 0 rgba(255, 255, 255, 0.5);
+}
+
+.hero-bento .hero-lead {
+  color: var(--bento-ink);
+  font-weight: 500;
+  max-width: 520px;
+}
+
+.hero-bento .hero-cta {
+  gap: 12px;
+}
+
+.hero-bento .btn-primary {
+  background: var(--bento-orange);
+  border: var(--bento-border);
+  box-shadow: 4px 4px 0 var(--bento-ink);
+  color: var(--ui-white);
+}
+
+.hero-bento .btn-secondary {
+  background: var(--ui-white);
+  border: var(--bento-border);
+  box-shadow: 4px 4px 0 var(--bento-ink);
+}
+
+/* Bento-сетка фич */
+.bento-features {
+  padding: 48px 20px 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.bento-section-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 28px;
+  color: var(--bento-ink);
+  text-align: center;
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .bento-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+.bento-cell {
+  border: var(--bento-border);
+  border-radius: var(--bento-radius-lg);
+  padding: 28px 24px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 6px 6px 0 var(--bento-ink);
+}
+
+.bento-cell--orange {
+  background: var(--bento-orange);
+  color: var(--ui-white);
+}
+
+.bento-cell--yellow {
+  background: var(--bento-yellow);
+  color: var(--bento-ink);
+}
+
+.bento-cell--mint {
+  background: var(--bento-mint);
+  color: var(--bento-ink);
+}
+
+.bento-cell--lilac {
+  background: var(--bento-lilac);
+  color: var(--bento-ink);
+}
+
+.bento-cell--white {
+  background: var(--ui-white);
+  color: var(--bento-ink);
+}
+
+.bento-cell-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  opacity: 0.9;
+}
+
+.bento-cell h3 {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.bento-cell p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  opacity: 0.95;
+}
+
+.bento-illus {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 140px;
+}
+
+.bento-illus-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: var(--bento-border);
+  background: var(--bento-lilac);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.75rem;
+  box-shadow: 5px 5px 0 var(--bento-ink);
+}
+
+.bento-illus-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.bento-illus-phone {
+  width: 88px;
+  height: 150px;
+  border: var(--bento-border);
+  border-radius: 16px;
+  background: var(--bento-mint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  box-shadow: 5px 5px 0 var(--bento-ink);
+}
+
+.bento-illus-input {
+  padding: 12px 18px;
+  border: var(--bento-border);
+  border-radius: var(--bento-radius);
+  background: var(--ui-white);
+  font-family: ui-monospace, monospace;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+}
+
+.bento-illus-shield {
+  width: 120px;
+  height: 120px;
+  border: var(--bento-border);
+  border-radius: 24px;
+  background: linear-gradient(145deg, #c4b5fd 0%, var(--bento-lilac) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  box-shadow: 6px 6px 0 var(--bento-ink);
+}
+
+/* Тёмная полоса */
+.bento-dark-band {
+  background: var(--bento-ink);
+  color: var(--ui-white);
+  text-align: center;
+  padding: 36px 20px;
+  border-top: var(--bento-border);
+  border-bottom: var(--bento-border);
+}
+
+.bento-dark-band p {
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+/* Слайдер (мятный блок) */
+.bento-slider-wrap {
+  padding: 40px 20px 48px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.bento-slider {
+  position: relative;
+  background: var(--bento-mint);
+  border: var(--bento-border);
+  border-radius: 24px;
+  padding: 36px 28px 52px;
+  box-shadow: 8px 8px 0 var(--bento-ink);
+  overflow: hidden;
+}
+
+.bento-slider::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cpath fill='%23ffffff' fill-opacity='0.15' d='M0 40 Q20 20 40 40 T80 40'/%3E%3C/svg%3E");
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.bento-slider-inner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.bento-slider-icon {
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 16px;
+  border: var(--bento-border);
+  border-radius: 20px;
+  background: var(--ui-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  box-shadow: 4px 4px 0 var(--bento-ink);
+}
+
+.bento-slider h3 {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  text-transform: uppercase;
+  margin: 0 0 10px;
+  color: var(--bento-ink);
+}
+
+.bento-slider p {
+  margin: 0 auto 20px;
+  max-width: 420px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--bento-ink);
+}
+
+.bento-slider-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.bento-slider-arrow {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: var(--bento-border);
+  background: var(--ui-white);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-ui), background var(--transition-ui);
+}
+
+.bento-slider-arrow:hover {
+  background: var(--bento-yellow);
+  transform: scale(1.05);
+}
+
+.bento-slider-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.bento-slider-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--bento-ink);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.bento-slider-dot--active {
+  background: var(--bento-ink);
+}
+
+/* Нижний CTA перед рабочим столом */
+.bento-cta {
+  text-align: center;
+  padding: 48px 20px 32px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.bento-cta h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+  margin: 0 0 24px;
+  color: var(--bento-ink);
+}
+
+.bento-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.bento-cta .btn-primary {
+  background: var(--bento-orange);
+  border: var(--bento-border);
+  box-shadow: 4px 4px 0 var(--bento-ink);
+  color: var(--ui-white);
+}
+
+.bento-cta .btn-secondary {
+  background: var(--ui-white);
+  border: var(--bento-border);
+  box-shadow: 4px 4px 0 var(--bento-ink);
+}
+
+/* Рабочий стол и карьера — bento-настроение */
+.home-page .section-heading {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.home-page .career-panel {
+  border: var(--bento-border);
+  border-radius: var(--bento-radius-lg);
+  box-shadow: 6px 6px 0 var(--bento-ink);
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.home-page .desk-hub-monitor {
+  border: var(--bento-border);
+  border-radius: var(--bento-radius-lg);
+  box-shadow: 8px 8px 0 var(--bento-ink);
+}
+
+.home-page .desk-app {
+  border-width: 2px;
+}
+
+.home-page .hub-scenario-card {
+  border: 2px solid var(--bento-ink);
+  border-radius: var(--bento-radius);
+  box-shadow: 4px 4px 0 rgba(10, 10, 10, 0.15);
+}
+
+.home-page .section-heading,
+.home-page .page-subtitle {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.home-page .desk-hub {
+  padding-left: 20px;
+  padding-right: 20px;
+}

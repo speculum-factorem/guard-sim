@@ -3,10 +3,12 @@
 // Порядок важен для каскада — не переставлять без проверки визуала
 @use "styles/tokens-and-reset";
 @use "styles/marketing";
+@use "styles/landing-bento";
 @use "styles/simulation-and-hub";
 @use "styles/step-ui-and-browser";
 @use "styles/mission-shell";
 @use "styles/gmail-and-email-reading";
 @use "styles/facebook-and-social";
 @use "styles/ticket-and-generic";
+@use "styles/ui-bento-global";
 @use "styles/responsive";

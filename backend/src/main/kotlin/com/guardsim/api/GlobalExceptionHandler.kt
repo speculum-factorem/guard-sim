@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
-import org.springframework.web.bind.MissingRequestHeaderException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.server.ResponseStatusException
@@ -25,14 +24,6 @@ class GlobalExceptionHandler {
         val msg = ex.bindingResult.fieldErrors.joinToString("; ") { "${it.field}: ${it.defaultMessage}" }
         return ResponseEntity.badRequest().body(ErrorResponse(msg))
     }
-
-    @ExceptionHandler(MissingRequestHeaderException::class)
-    fun handleMissingHeader(ex: MissingRequestHeaderException): ResponseEntity<ErrorResponse> =
-        ResponseEntity.badRequest().body(
-            ErrorResponse(
-                "Нужен заголовок ${ex.headerName} (UUID игрока). В UI он подставляется автоматически; для curl: -H \"${ex.headerName}: …\"",
-            ),
-        )
 
     @ExceptionHandler(HttpMessageNotReadableException::class)
     fun handleUnreadable(ex: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> =

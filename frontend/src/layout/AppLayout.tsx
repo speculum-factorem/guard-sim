@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { fetchMe } from "../api";
+import { notifyAuthChanged, subscribeAuthChanged } from "../authEvents";
 import { clearAuthToken, getAuthToken } from "../authToken";
 import { AppFooter } from "../components/AppFooter";
 import { LogoMark } from "../components/LogoMark";
@@ -14,35 +15,40 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const [me, setMe] = useState<UserMe | null>(null);
 
   useEffect(() => {
-    if (!getAuthToken()) {
-      setMe(null);
-      return;
+    let gen = 0;
+    function syncMe() {
+      const my = ++gen;
+      if (!getAuthToken()) {
+        setMe(null);
+        return;
+      }
+      fetchMe()
+        .then((m) => {
+          if (my === gen) setMe(m);
+        })
+        .catch(() => {
+          if (my === gen) {
+            clearAuthToken();
+            setMe(null);
+            notifyAuthChanged();
+          }
+        });
     }
-    let cancelled = false;
-    fetchMe()
-      .then((m) => {
-        if (!cancelled) {
-          setMe(m);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          clearAuthToken();
-          setMe(null);
-        }
-      });
+    syncMe();
+    const unsub = subscribeAuthChanged(syncMe);
     return () => {
-      cancelled = true;
+      gen += 1;
+      unsub();
     };
-  }, [pathname]);
+  }, []);
 
   function logout() {
     clearAuthToken();
-    setMe(null);
+    notifyAuthChanged();
     navigate("/", { replace: true });
   }
 
-  const loggedIn = Boolean(me && !me.guest && me.email);
+  const loggedIn = Boolean(me && !me.guest);
 
   return (
     <div className="app-shell">

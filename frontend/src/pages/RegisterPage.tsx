@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerRequest } from "../api";
+import { notifyAuthChanged } from "../authEvents";
 import { setAuthToken } from "../authToken";
 import { navigateToGuestDashboard } from "../guestDemoNav";
 import { setPlayerId } from "../playerId";
@@ -20,6 +21,7 @@ export function RegisterPage() {
       const r = await registerRequest(email.trim(), password);
       setAuthToken(r.accessToken);
       setPlayerId(r.playerId);
+      notifyAuthChanged();
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка регистрации");

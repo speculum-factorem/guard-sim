@@ -13,6 +13,6 @@ fun HttpServletRequest.requirePlayerId(): UUID {
     val id = getAttribute(GuardsimAttributes.PLAYER_ID) as? UUID
     return id ?: throw ResponseStatusException(
         HttpStatus.UNAUTHORIZED,
-        "Нужен вход (Authorization: Bearer …) или заголовок ${GuardSimHeaders.PLAYER_ID} с UUID игрока",
+        ApiMessages.playerIdOrAuthRequired(),
     )
 }

@@ -884,6 +884,17 @@
   margin: 0 auto;
 }
 
+.landing-gate {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.landing-gate-text {
+  margin: 0;
+  font-size: 15px;
+  color: var(--gm-text-secondary);
+}
+
 .auth-page-hero {
   margin-bottom: 20px;
 }

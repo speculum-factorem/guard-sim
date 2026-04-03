@@ -13,3 +13,10 @@ export function getPlayerId(): string {
 export function setPlayerId(id: string): void {
   globalThis.localStorage.setItem(STORAGE_KEY, id);
 }
+
+/** Новый гостевой UUID (режим «Демо» без привязки к прошлому локальному игроку). */
+export function resetGuestPlayerId(): string {
+  const id = globalThis.crypto.randomUUID();
+  globalThis.localStorage.setItem(STORAGE_KEY, id);
+  return id;
+}

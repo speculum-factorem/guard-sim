@@ -1,0 +1,318 @@
+/* Поля ввода (вспомогательные) */
+.input-kit {
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-input);
+  padding: 12px 16px;
+  font-size: 16px;
+  font-family: inherit;
+  width: 100%;
+}
+
+.input-kit:focus {
+  outline: none;
+  border-color: var(--ui-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 255, 0.2);
+}
+
+/* Шум в письме, таймер давления, красные флаги */
+.narrative-noise {
+  margin: 0;
+  padding: 12px 18px 16px;
+  border-top: 1px dashed var(--gm-border);
+  background: var(--ui-light-gray);
+}
+
+.narrative-noise-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gm-text-secondary);
+  margin-bottom: 8px;
+}
+
+.narrative-noise-body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #6b7280;
+  white-space: pre-wrap;
+}
+
+.pressure-bar-wrap {
+  border: 1px solid var(--gm-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  background: var(--gm-surface);
+}
+
+.pressure-bar-wrap.pressure-expired {
+  border-color: rgba(37, 99, 255, 0.25);
+  background: var(--gm-blue-light);
+}
+
+.pressure-bar-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.pressure-bar-label {
+  color: var(--gm-text-secondary);
+}
+
+.pressure-bar-seconds {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-primary);
+}
+
+.pressure-bar-track {
+  height: 6px;
+  background: var(--ui-light-gray);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.pressure-bar-fill {
+  height: 100%;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-pill);
+  transition: width 1s linear;
+}
+
+.pressure-hint,
+.pressure-relaxed {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--gm-text-secondary);
+}
+
+.pressure-relaxed {
+  color: var(--gm-text);
+}
+
+.red-flag-game {
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 251, 235, 0.95);
+  padding: 14px 16px 16px;
+  margin-bottom: 18px;
+}
+
+.red-flag-instruction {
+  margin: 0 0 12px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--gm-text);
+}
+
+.red-flag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.red-flag-chip {
+  border: 1px solid var(--gm-border);
+  background: var(--gm-surface);
+  border-radius: var(--radius-pill);
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+  color: var(--gm-text);
+  max-width: 100%;
+}
+
+.red-flag-chip:hover:not(:disabled) {
+  border-color: var(--ui-primary);
+  background: var(--gm-blue-light);
+}
+
+.red-flag-chip:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.red-flag-chip-on {
+  border-color: #f59e0b;
+  background: #fff7ed;
+  box-shadow: 0 0 0 1px #fbbf24;
+}
+
+.red-flag-progress {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--gm-text-secondary);
+}
+
+/* Окно задания: ситуация + симуляция интерфейса */
+.mission-window {
+  border: 1px solid var(--gm-border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(30, 27, 75, 0.12);
+  background: var(--gm-surface);
+}
+
+.mission-window-chrome {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--ui-dark-purple);
+  color: var(--ui-white);
+}
+
+.mission-window-traffic {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.mission-window-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.mission-window-dot-close {
+  background: #ff5f57;
+}
+.mission-window-dot-min {
+  background: #febc2e;
+}
+.mission-window-dot-max {
+  background: #28c840;
+}
+
+.mission-window-chrome-center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mission-window-product {
+  opacity: 0.85;
+  letter-spacing: 0.04em;
+}
+
+.mission-window-sep {
+  opacity: 0.5;
+}
+
+.mission-window-app-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mission-window-step-pill {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.mission-window-body {
+  padding: 0;
+}
+
+.mission-brief {
+  padding: 20px 22px 18px;
+  background: linear-gradient(180deg, rgba(37, 99, 255, 0.06), transparent 60%);
+  border-bottom: 1px solid var(--gm-border);
+}
+
+.mission-brief-title {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ui-dark-purple);
+}
+
+.mission-brief-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--gm-text);
+  max-width: 72ch;
+}
+
+.mission-window-body .pressure-bar-wrap {
+  margin: 16px 20px 0;
+  width: auto;
+}
+
+.mission-window-body .investigation-dock {
+  margin: 16px 20px 0;
+}
+
+.mission-window-body .red-flag-game {
+  margin: 16px 20px 0;
+}
+
+.mission-app {
+  margin-top: 8px;
+}
+
+.mission-app-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px;
+  background: var(--ui-light-gray);
+  border-top: 1px solid var(--gm-border);
+  border-bottom: 1px solid var(--gm-border);
+}
+
+.mission-app-toolbar-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gm-text-secondary);
+}
+
+.mission-app-toolbar-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ui-dark-gray);
+}
+
+.mission-app-viewport {
+  padding: 16px 20px 24px;
+  background: linear-gradient(180deg, #e5e7eb 0%, #f3f4f6 100%);
+  min-height: 120px;
+
+  .ui-frame {
+    margin-bottom: 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  > .ui-frame-url-compare,
+  > .ui-frame-email,
+  > .ui-frame-social,
+  > .ui-frame-ticket {
+    border-radius: var(--radius-sm);
+  }
+}
+

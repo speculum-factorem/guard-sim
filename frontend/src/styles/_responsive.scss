@@ -1,0 +1,53 @@
+@media (max-width: 720px) {
+  .sim-gmail-body {
+    flex-direction: column;
+  }
+
+  .sim-gmail-rail {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #e8eaed;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .sim-gmail-compose {
+    width: auto;
+    margin: 0;
+  }
+
+  .sim-gmail-folders {
+    flex-direction: row;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+
+  .sim-gmail-folder {
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .sim-gmail-split {
+    flex-direction: column;
+  }
+
+  .sim-gmail-list-col {
+    width: 100%;
+    max-height: 120px;
+    border-right: none;
+    border-bottom: 1px solid #e8eaed;
+  }
+
+  .sim-ticket-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sim-ticket-aside {
+    border-right: none;
+    border-bottom: 1px solid var(--gm-border);
+  }
+}

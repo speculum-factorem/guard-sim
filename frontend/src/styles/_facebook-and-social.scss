@@ -1,0 +1,323 @@
+/* Facebook-подобная лента */
+.sim-fb-root.ui-frame {
+  position: relative;
+  background: #f0f2f5;
+  border-color: #ccd0d5;
+}
+
+.sim-fb-topbar {
+  background: #1877f2;
+  padding: 0 16px;
+  border-bottom: 1px solid #29487d;
+}
+
+.sim-fb-topbar-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+}
+
+.sim-fb-brand {
+  flex-shrink: 0;
+}
+
+.sim-fb-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-weight: 800;
+  font-size: 22px;
+  font-family: system-ui, sans-serif;
+}
+
+.sim-fb-search-wrap {
+  flex: 1;
+  max-width: 520px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #f0f2f5;
+}
+
+.sim-fb-search-icon {
+  font-size: 14px;
+  opacity: 0.5;
+}
+
+.sim-fb-search {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  min-width: 0;
+  outline: none;
+  cursor: default;
+  color: #050505;
+}
+
+.sim-fb-search::placeholder {
+  color: #65676b;
+}
+
+.sim-fb-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.sim-fb-nav-btn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  opacity: 0.95;
+}
+
+.sim-fb-nav-btn-active {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.sim-fb-nav-menu {
+  margin-left: 4px;
+}
+
+.sim-fb-page {
+  display: flex;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 12px 24px;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.sim-fb-sidebar {
+  width: 180px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sim-fb-shortcut {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #050505;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font: inherit;
+}
+
+.sim-fb-shortcut:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.sim-fb-shortcut-active {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.sim-fb-feed-col {
+  flex: 1;
+  min-width: 0;
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sim-fb-card {
+  background: var(--gm-surface);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.sim-fb-skeleton {
+  padding: 12px 16px 16px;
+}
+
+.sim-fb-skeleton:not(.sim-fb-skeleton-interactive) {
+  pointer-events: none;
+}
+
+.sim-fb-skeleton-interactive {
+  cursor: pointer;
+}
+
+.sim-fb-skeleton-head {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.sim-fb-skeleton-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #e4e6eb 0%, #f0f2f5 50%, #e4e6eb 100%);
+  background-size: 200% 100%;
+  animation: sim-fb-shimmer 1.6s ease-in-out infinite;
+}
+
+.sim-fb-skeleton-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.sim-fb-skeleton-line {
+  display: block;
+  height: 10px;
+  border-radius: 4px;
+  background: #e4e6eb;
+}
+
+.sim-fb-skeleton-line-short {
+  width: 40%;
+}
+
+.sim-fb-skeleton-line-meta {
+  width: 28%;
+  height: 8px;
+  opacity: 0.7;
+}
+
+.sim-fb-skeleton-line-medium {
+  width: 72%;
+}
+
+.sim-fb-skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@keyframes sim-fb-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.sim-fb-card-main.sim-social-card {
+  margin: 0;
+  border: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.sim-fb-post-actions {
+  border-top: 1px solid #e4e6eb;
+  padding-top: 6px;
+}
+
+.sim-fb-action-btn {
+  border-radius: 6px;
+  border-color: transparent;
+  background: #e4e6eb;
+  color: #050505;
+  font-weight: 600;
+}
+
+.sim-fb-action-btn:hover:not(:disabled) {
+  background: #d8dadf;
+}
+
+@media (max-width: 900px) {
+  .sim-fb-sidebar {
+    display: none;
+  }
+
+  .sim-fb-page {
+    padding: 12px 8px 20px;
+  }
+}
+
+.sim-social-top {
+  justify-content: space-between;
+}
+
+.sim-social-search {
+  font-size: 13px;
+  color: var(--gm-text-secondary);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.sim-social-card {
+  margin: 12px;
+  border: 1px solid var(--gm-border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.sim-social-card-head {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px 0;
+  align-items: center;
+}
+
+.sim-social-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--ui-light-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--gm-text-secondary);
+}
+
+.sim-social-author {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.sim-social-body {
+  padding: 8px 16px 0;
+}
+
+.sim-social-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 16px 16px;
+}
+
+.sim-social-action-btn {
+  border: 1px solid var(--gm-border);
+  border-radius: var(--radius-pill);
+  padding: 10px 14px;
+  background: var(--gm-surface);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+}
+

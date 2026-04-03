@@ -1,0 +1,117 @@
+.sim-ticket-grid {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  min-height: 260px;
+}
+
+.sim-ticket-aside {
+  border-right: 1px solid var(--gm-border);
+  background: var(--ui-light-gray);
+  padding: 16px 12px;
+}
+
+.sim-ticket-aside-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--gm-text-secondary);
+}
+
+.sim-ticket-id {
+  font-weight: 700;
+  font-size: 15px;
+  margin: 8px 0;
+  font-family: ui-monospace, monospace;
+}
+
+.sim-ticket-aside-meta {
+  font-size: 12px;
+  color: var(--gm-text-secondary);
+}
+
+.sim-ticket-main {
+  min-width: 0;
+}
+
+.sim-ticket-header {
+  border-bottom: none;
+}
+
+.sim-ticket-body {
+  padding: 0 20px 12px;
+}
+
+.sim-ticket-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--gm-border);
+  background: var(--ui-bg);
+}
+
+.sim-ticket-attach-btn {
+  border: 1px dashed var(--gm-border);
+  background: var(--gm-surface);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.sim-ticket-primary {
+  flex: 1 1 180px;
+}
+
+.sim-ticket-secondary {
+  border: 1px solid var(--gm-border);
+  background: var(--gm-surface);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.sim-generic-workspace {
+  overflow: hidden;
+}
+
+.sim-generic-chrome {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--ui-dark-purple);
+  color: var(--ui-white);
+}
+
+.sim-generic-title {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+.sim-generic-badge {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.sim-generic-body {
+  padding: 20px;
+  background: var(--gm-surface);
+}
+
+.sim-generic-narrative {
+  margin: 0 0 16px;
+}
+
+.sim-generic-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sim-generic-choice {
+  margin: 0;
+}
+

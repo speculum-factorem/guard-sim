@@ -1,0 +1,84 @@
+/* ═══════════════════════════════════════════════════════════════════
+   UI Kit — Fintech (в духе Slush) — токены дизайна и поверхности GuardSim
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --ui-primary: #2563ff;
+  --ui-purple: #6b5cff;
+  --ui-dark-purple: #1e1b4b;
+  --ui-yellow: #ffd84d;
+  --ui-green: #22c55e;
+  --ui-black: #000000;
+  --ui-dark-gray: #1f2937;
+  --ui-gray: #9ca3af;
+  --ui-light-gray: #f3f4f6;
+  --ui-bg: #f9fafb;
+  --ui-white: #ffffff;
+  --ui-border: #e5e7eb;
+  --gradient-primary: linear-gradient(135deg, #2563ff 0%, #6b5cff 100%);
+  --gradient-blob: radial-gradient(circle at 30% 40%, rgba(37, 99, 255, 0.45), transparent 60%),
+    radial-gradient(circle at 70% 60%, rgba(107, 92, 255, 0.42), transparent 60%);
+  --font-display: "Anton", "Bebas Neue", Impact, system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover: 0 14px 40px rgba(37, 99, 255, 0.12);
+  --radius-pill: 999px;
+  --radius-card: 20px;
+  --radius-sm: 12px;
+  --radius-input: 12px;
+  --transition-ui: 0.2s ease;
+
+  /* Устаревшие псевдонимы — остальной CSS использует прежние имена */
+  --gm-blue: var(--ui-primary);
+  --gm-blue-hover: #1d4ed8;
+  --gm-blue-light: #e8edff;
+  --gm-surface: var(--ui-white);
+  --gm-bg: var(--ui-bg);
+  --gm-text: var(--ui-black);
+  --gm-text-secondary: var(--ui-gray);
+  --gm-border: var(--ui-border);
+  --gm-shadow: var(--shadow-card);
+  --gm-shadow-hover: var(--shadow-card-hover);
+  --gm-radius: var(--radius-pill);
+  --gm-radius-sm: var(--radius-sm);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--gm-text);
+  background: var(--gm-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--ui-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font-family: inherit;
+}
+

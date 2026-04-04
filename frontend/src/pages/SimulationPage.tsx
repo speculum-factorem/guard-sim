@@ -282,6 +282,7 @@ export function SimulationPage() {
   const [totalSteps, setTotalSteps] = useState(0);
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
+  const [countedAsCompleted, setCountedAsCompleted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null);
@@ -411,6 +412,7 @@ export function SimulationPage() {
     setFeedback({ ok: res.correct, text: res.explanation });
     setScore(res.totalScore);
     setCompleted(res.completed);
+    if (res.completed) setCountedAsCompleted(res.countedAsCompleted);
     setStepIndex(res.stepIndex);
     setTotalSteps(res.totalSteps);
     if (res.completed) {
@@ -642,24 +644,59 @@ export function SimulationPage() {
           </div>
 
           {completed ? (
-            <div className="completed-box">
-              <h2 id="complete-title">Сценарий завершён</h2>
-              {feedback ? (
-                <div
-                  className={`feedback ${feedback.ok ? "ok" : "bad"}`}
-                  style={{ textAlign: "left", maxWidth: 560, margin: "0 auto 20px" }}
-                >
-                  <strong>Разбор: </strong>
-                  {feedback.text}
-                </div>
-              ) : null}
-              <p aria-labelledby="complete-title">
-                Вы набрали <strong>{score}</strong> баллов. Доверие клиентов:{" "}
-                <strong>{careerHud?.reputation ?? "—"}%</strong>.
-              </p>
-              <Link to={DASHBOARD_TASKS_HREF} className="btn btn-primary">
-                К списку задач
-              </Link>
+            <div className={`completed-box${countedAsCompleted ? " completed-box--success" : " completed-box--failed"}`}>
+              {countedAsCompleted ? (
+                <>
+                  <div className="completed-box-icon" aria-hidden>✓</div>
+                  <h2 id="complete-title">Задание выполнено!</h2>
+                  {feedback ? (
+                    <div
+                      className={`feedback ${feedback.ok ? "ok" : "bad"}`}
+                      style={{ textAlign: "left", maxWidth: 560, margin: "0 auto 20px" }}
+                    >
+                      <strong>Разбор: </strong>
+                      {feedback.text}
+                    </div>
+                  ) : null}
+                  <p aria-labelledby="complete-title">
+                    Вы набрали <strong>{score}</strong> баллов.{" "}
+                    Опыт: <strong>+{careerHud?.experienceDelta ?? 0} XP</strong>.{" "}
+                    Доверие: <strong>{careerHud?.reputation ?? "—"}%</strong>.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="completed-box-icon completed-box-icon--fail" aria-hidden>✗</div>
+                  <h2 id="complete-title" className="completed-box-title--fail">Задание не засчитано</h2>
+                  {feedback ? (
+                    <div
+                      className="feedback bad"
+                      style={{ textAlign: "left", maxWidth: 560, margin: "0 auto 20px" }}
+                    >
+                      <strong>Разбор: </strong>
+                      {feedback.text}
+                    </div>
+                  ) : null}
+                  <p className="completed-box-fail-hint">
+                    В этой попытке были ошибки — задание не записано как выполненное и опыт не начислен.
+                    Пройдите заново без ошибок, чтобы получить зачёт и <strong>+45 XP</strong>.
+                  </p>
+                </>
+              )}
+              <div className="completed-box-actions">
+                {!countedAsCompleted ? (
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => bootstrapSession({ restart: true })}
+                  >
+                    Попробовать снова
+                  </button>
+                ) : null}
+                <Link to={DASHBOARD_TASKS_HREF} className={countedAsCompleted ? "btn btn-primary" : "btn btn-text"}>
+                  К списку задач
+                </Link>
+              </div>
             </div>
           ) : step ? (
             <div className="sim-body" ref={missionPhaseAnchorRef}>

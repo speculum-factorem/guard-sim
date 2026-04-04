@@ -372,7 +372,10 @@
   border: 1px solid rgba(0, 212, 255, 0.18);
   border-radius: var(--bento-radius);
   box-shadow: var(--shadow-bento-md);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-bottom: 20px;
+  box-sizing: border-box;
 }
 
 /* Сначала экран «Условие», затем симуляция (одна колонка) */

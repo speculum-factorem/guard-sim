@@ -57,45 +57,71 @@ class PlayerService(
         scenarioId: String,
         hadIncorrectStep: Boolean,
     ): CareerSnapshotDto {
-        val completed = parseCsv(player.completedScenarioIdsCsv).toMutableSet()
-        completed.add(scenarioId)
-        player.completedScenarioIdsCsv = joinCsv(completed)
-
-        if (!hadIncorrectStep) {
-            player.perfectScenarioStreak += 1
-        } else {
-            player.perfectScenarioStreak = 0
-        }
-
         val levelBefore = levelFromExperience(player.experiencePoints)
-        val xpGain = if (hadIncorrectStep) 25 else 45
-        player.experiencePoints = (player.experiencePoints + xpGain).coerceAtMost(1_000_000)
-
         val existing = parseCsv(player.achievementIdsCsv).toMutableSet()
         val newAchievements = mutableListOf<AchievementDefinition>()
+        var xpGain = 0
 
-        if (scenarioId == BASIC_PHISHING && !hadIncorrectStep) {
-            unlockAchievement(existing, newAchievements, ACH_FIRST_PHISHING)
-        }
-        if (player.perfectScenarioStreak >= 7) {
-            unlockAchievement(existing, newAchievements, ACH_ZERO_LEAK_WEEK)
-        }
-        if (player.perfectScenarioStreak >= 10) {
-            unlockAchievement(existing, newAchievements, ACH_TEN_PERFECT)
+        if (!hadIncorrectStep) {
+            // ── Безошибочное прохождение: засчитываем, выдаём XP и прогресс ──
+            val completed = parseCsv(player.completedScenarioIdsCsv).toMutableSet()
+            completed.add(scenarioId)
+            player.completedScenarioIdsCsv = joinCsv(completed)
+
+            player.perfectScenarioStreak += 1
+            xpGain = 45
+            bumpWeeklyGoal(player)
+
+            if (scenarioId == BASIC_PHISHING) {
+                unlockAchievement(existing, newAchievements, ACH_FIRST_PHISHING)
+            }
+            if (player.perfectScenarioStreak >= 7) {
+                unlockAchievement(existing, newAchievements, ACH_ZERO_LEAK_WEEK)
+            }
+            if (player.perfectScenarioStreak >= 10) {
+                unlockAchievement(existing, newAchievements, ACH_TEN_PERFECT)
+            }
+            if (TRACK_INBOX.all { it in completed }) {
+                unlockAchievement(existing, newAchievements, ACH_TRACK_INBOX)
+            }
+            if (TRACK_SOCIAL.all { it in completed }) {
+                unlockAchievement(existing, newAchievements, ACH_TRACK_SOCIAL)
+            }
+            if (TRACK_SOC.all { it in completed }) {
+                unlockAchievement(existing, newAchievements, ACH_TRACK_SOC)
+            }
+            if (TRACK_CONSUMER.all { it in completed }) {
+                unlockAchievement(existing, newAchievements, ACH_TRACK_CONSUMER)
+            }
+            if (TRACK_SMOKESCREEN.all { it in completed }) {
+                unlockAchievement(existing, newAchievements, ACH_TRACK_SMOKESCREEN)
+            }
+            if (TRACK_MALWARE_ENDPOINTS.all { it in completed }) {
+                unlockAchievement(existing, newAchievements, ACH_TRACK_MALWARE)
+            }
+            if (TRACK_SEARCH_PERIMETER.all { it in completed }) {
+                unlockAchievement(existing, newAchievements, ACH_TRACK_SEARCH_PERIMETER)
+            }
+            if (TRACK_BENIGN.all { it in completed }) {
+                unlockAchievement(existing, newAchievements, ACH_TRACK_BENIGN)
+            }
+        } else {
+            // ── Были ошибки: задание НЕ засчитывается, XP не выдаётся, стрик сбрасывается ──
+            player.perfectScenarioStreak = 0
+            xpGain = 0
         }
 
-        if (TRACK_INBOX.all { it in completed }) {
-            unlockAchievement(existing, newAchievements, ACH_TRACK_INBOX)
+        if (player.reputation >= 80) {
+            unlockAchievement(existing, newAchievements, ACH_TRUST_80)
         }
-        if (TRACK_SOCIAL.all { it in completed }) {
-            unlockAchievement(existing, newAchievements, ACH_TRACK_SOCIAL)
-        }
-        if (TRACK_SOC.all { it in completed }) {
-            unlockAchievement(existing, newAchievements, ACH_TRACK_SOC)
+        if (player.reputation >= 95) {
+            unlockAchievement(existing, newAchievements, ACH_TRUST_95)
         }
 
         player.achievementIdsCsv = joinCsv(existing)
-        bumpWeeklyGoal(player)
+        if (xpGain > 0) {
+            player.experiencePoints = (player.experiencePoints + xpGain).coerceAtMost(1_000_000)
+        }
         players.save(player)
 
         val levelAfter = levelFromExperience(player.experiencePoints)
@@ -175,6 +201,13 @@ class PlayerService(
         private const val ACH_TRACK_INBOX = "challenge-track-inbox"
         private const val ACH_TRACK_SOCIAL = "challenge-track-social"
         private const val ACH_TRACK_SOC = "challenge-track-soc"
+        private const val ACH_TRACK_CONSUMER = "challenge-track-consumer"
+        private const val ACH_TRACK_SMOKESCREEN = "challenge-track-smokescreen"
+        private const val ACH_TRACK_MALWARE = "challenge-track-malware-endpoints"
+        private const val ACH_TRACK_SEARCH_PERIMETER = "challenge-track-search-perimeter"
+        private const val ACH_TRACK_BENIGN = "challenge-track-benign"
+        private const val ACH_TRUST_80 = "trust-80"
+        private const val ACH_TRUST_95 = "trust-95"
 
         private val TRACK_INBOX: Set<String> = setOf(
             "phishing-email",
@@ -190,6 +223,30 @@ class PlayerService(
         private val TRACK_SOC: Set<String> = setOf(
             "combined-ceo-phish",
             "exec-wire-vishing",
+        )
+        private val TRACK_CONSUMER: Set<String> = setOf(
+            "smishing-bank-card-unblock",
+            "vishing-bank-fake-security-call",
+            "credential-stuffing-fake-lockout",
+            "chat-friend-new-card-scam",
+        )
+        private val TRACK_SMOKESCREEN: Set<String> = setOf(
+            "sms-bomber-phishing-smokescreen",
+        )
+        private val TRACK_MALWARE_ENDPOINTS: Set<String> = setOf(
+            "vpn-colleague-virustotal-clean",
+            "winlocker-safe-mode-cleanup",
+            "rat-incident-response",
+        )
+        private val TRACK_SEARCH_PERIMETER: Set<String> = setOf(
+            "search-bank-official-serp",
+            "perimeter-ddos-net-shield",
+        )
+        private val TRACK_BENIGN: Set<String> = setOf(
+            "email-it-maintenance-benign",
+            "messenger-internal-benign",
+            "calendar-legit-invite",
+            "extension-allowlist-benign",
         )
     }
 }

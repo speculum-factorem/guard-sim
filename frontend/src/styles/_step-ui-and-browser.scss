@@ -192,13 +192,12 @@
   text-align: left;
   color: var(--bento-ink);
   box-shadow: var(--shadow-bento-xs);
-  transition: transform var(--transition-ui), border-color var(--transition-ui), box-shadow var(--transition-ui);
+  transition: border-color var(--transition-ui), box-shadow var(--transition-ui), background var(--transition-ui);
 }
 
 .hotspot-chip:hover:not(:disabled) {
   border-color: var(--bento-orange);
   background: rgba(255, 90, 31, 0.1);
-  transform: translateY(-1px);
   box-shadow: var(--shadow-bento-sm);
 }
 

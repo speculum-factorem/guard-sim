@@ -146,6 +146,12 @@ class SessionService(
         }
         sessions.save(entity)
 
+        // Задание засчитывается только при безошибочном прохождении всех шагов
+        val countedAsCompleted = completed && !entity.hadIncorrectStep
+
+        // При ошибках обнуляем счёт в ответе — баллы не выдаются
+        val reportedScore = if (completed && entity.hadIncorrectStep) 0 else entity.score
+
         val totalRepDelta = repDelta + investigationDelta
         val career = if (completed) {
             val snap = playerService.onScenarioFinished(
@@ -173,8 +179,9 @@ class SessionService(
         return AnswerResponse(
             correct = correct,
             explanation = chosen.explanationWhenChosen,
-            totalScore = entity.score,
+            totalScore = reportedScore,
             completed = completed,
+            countedAsCompleted = countedAsCompleted,
             nextStep = nextStep,
             stepIndex = if (completed) scenario.steps.size else nextIndex,
             totalSteps = scenario.steps.size,

@@ -8,6 +8,7 @@ import { resetGuestPlayerId } from "../playerId";
 import { experienceSummary, levelLabel, xpIntoCurrentLevel } from "../progressLabels";
 import { useAccountScrollSpy } from "../hooks/useAccountScrollSpy";
 import { DASHBOARD_TASKS_HREF } from "../navigationConstants";
+import { sortAchievementsForDisplay } from "../achievementSort";
 import { resolveWeeklyGoal } from "../weeklyGoalStorage";
 import type { PlayerState, ScenarioSummary, UserMe } from "../types";
 
@@ -89,6 +90,11 @@ export function AccountPage() {
     const pct = total === 0 ? 0 : Math.round((solved / total) * 100);
     return { total, solved, pct };
   }, [player, scenarios]);
+
+  const achievementsSorted = useMemo(
+    () => (player ? sortAchievementsForDisplay(player.achievements) : []),
+    [player],
+  );
 
   const historyRows = useMemo(() => {
     if (!player || !scenarios) {
@@ -357,16 +363,17 @@ export function AccountPage() {
                     Награды
                   </h2>
                   <p className="account-rewards-lead">
-                    Достижения разблокируются по мере прохождения сценариев и роста доверия.
+                    Награды открываются за прохождение дорожек челленджей, идеальные сценарии подряд и высокий показатель
+                    доверия. Сначала в списке показаны уже полученные бейджи.
                   </p>
                   <ul className="account-rewards-grid">
-                    {player.achievements.map((a) => (
+                    {achievementsSorted.map((a) => (
                       <li
                         key={a.id}
-                        className={`account-reward-tile${a.unlocked ? " account-reward-tile--on" : ""}`}
+                        className={`account-reward-tile${a.unlocked ? " account-reward-tile--on" : " account-reward-tile--off"}`}
                       >
-                        <span className="account-reward-ico" aria-hidden>
-                          {a.unlocked ? "★" : "○"}
+                        <span className="account-reward-ico" aria-hidden title={a.unlocked ? "Получено" : "Ещё не получено"}>
+                          {a.unlocked ? "✓" : "🔒"}
                         </span>
                         <div className="account-reward-text">
                           <span className="account-reward-name">{a.title}</span>

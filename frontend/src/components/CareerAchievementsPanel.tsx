@@ -1,3 +1,5 @@
+import { sortAchievementsForDisplay } from "../achievementSort";
+import { useMemo } from "react";
 import { CHALLENGE_TRACKS } from "../challengeTracks";
 import { getCompletedTracks } from "../challengeTrackProgress";
 import { levelLabel, xpIntoCurrentLevel } from "../progressLabels";
@@ -7,6 +9,7 @@ export function CareerAchievementsPanel({ player }: { player: PlayerState }) {
   const completed = new Set(player.completedScenarioIds);
   const tracksDone = getCompletedTracks(CHALLENGE_TRACKS, completed);
   const xpInLevel = xpIntoCurrentLevel(player.experience);
+  const achievementsSorted = useMemo(() => sortAchievementsForDisplay(player.achievements), [player.achievements]);
 
   return (
     <section className="career-panel dashboard-career" aria-label="Прогресс и достижения">
@@ -55,11 +58,15 @@ export function CareerAchievementsPanel({ player }: { player: PlayerState }) {
       ) : null}
       <div className="achievements-block">
         <h2 className="achievements-title">Бейджи и достижения</h2>
+        <p className="achievements-lead">
+          За полное прохождение дорожек челленджей и за высокое доверие клиентов открываются награды ниже. Идеальные сценарии
+          подряд тоже считаются.
+        </p>
         <ul className="achievements-list">
-          {player.achievements.map((a) => (
+          {achievementsSorted.map((a) => (
             <li key={a.id} className={a.unlocked ? "ach-unlocked" : "ach-locked"}>
-              <span className="ach-icon" aria-hidden>
-                {a.unlocked ? "★" : "○"}
+              <span className="ach-icon" aria-hidden title={a.unlocked ? "Получено" : "Ещё не получено"}>
+                {a.unlocked ? "✓" : "🔒"}
               </span>
               <div>
                 <div className="ach-name">{a.title}</div>

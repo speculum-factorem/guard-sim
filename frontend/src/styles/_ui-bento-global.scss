@@ -279,12 +279,10 @@
 
 .btn-primary:hover:not(:disabled) {
   filter: brightness(1.04);
-  transform: translateY(-1px);
   box-shadow: var(--shadow-bento-md);
 }
 
 .btn-primary:active:not(:disabled) {
-  transform: translateY(1px);
   box-shadow: var(--shadow-bento-xs);
 }
 
@@ -297,7 +295,6 @@
 .btn-secondary:hover:not(:disabled) {
   background: rgba(0, 212, 255, 0.1);
   border-color: rgba(0, 212, 255, 0.6);
-  transform: translateY(-1px);
   box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
 }
 
@@ -329,9 +326,9 @@
 }
 
 .choice-btn:hover:not(:disabled) {
-  background: rgba(0, 212, 255, 0.08);
+  background: rgba(0, 212, 255, 0.1);
   border-color: rgba(0, 212, 255, 0.5);
-  box-shadow: 0 0 18px rgba(0, 212, 255, 0.2);
+  box-shadow: 0 0 18px rgba(0, 212, 255, 0.22);
 }
 
 .feedback {
@@ -1089,6 +1086,14 @@ button.app-nav-pill.app-nav-pill--icon:disabled {
   text-transform: uppercase;
   color: var(--bento-ink);
   margin-bottom: 14px;
+}
+
+.dashboard-page .achievements-lead {
+  margin: -6px 0 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--bento-ink);
+  opacity: 0.78;
 }
 
 .dashboard-page .achievements-list {

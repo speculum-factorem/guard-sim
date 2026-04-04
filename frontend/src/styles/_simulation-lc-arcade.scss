@@ -935,6 +935,14 @@
   color: var(--lc-muted);
 }
 
+.lc-theme .sim-panel--lc .completed-box-fail-hint {
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-panel--lc .completed-box--failed {
+  border-color: rgba(255, 59, 48, 0.3);
+}
+
 .lc-theme .sim-chat-body {
   background: linear-gradient(180deg, rgba(12, 14, 26, 0.5) 0%, rgba(7, 8, 15, 0.98) 45%);
 }
@@ -942,6 +950,16 @@
 .lc-theme .sim-chat-bubble {
   background: rgba(10, 11, 22, 0.98);
   border-color: rgba(0, 212, 255, 0.2);
+}
+
+.lc-theme .sim-chat-typing-bubble {
+  background: rgba(10, 11, 22, 0.92);
+  border-color: rgba(0, 212, 255, 0.18);
+}
+
+.lc-theme .sim-chat-bubble-meta,
+.lc-theme .sim-chat-msg-time {
+  color: var(--lc-muted);
 }
 
 .lc-theme .sim-cal-card,

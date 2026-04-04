@@ -38,6 +38,41 @@ object AchievementCatalog {
             title = "Дорожка: ИБ — инциденты",
             description = "Вы завершили все сценарии дорожки для ответа на сложные инциденты.",
         ),
+        AchievementDefinition(
+            id = "challenge-track-consumer",
+            title = "Дорожка: Учётки и деньги (быт)",
+            description = "Вы завершили все сценарии дорожки про смсишинг, вишинг и схемы с учётными записями.",
+        ),
+        AchievementDefinition(
+            id = "challenge-track-smokescreen",
+            title = "Дорожка: Шум и vishing",
+            description = "Вы прошли дорожку про SMS-бомбинг как фон и звонок «поддержки».",
+        ),
+        AchievementDefinition(
+            id = "challenge-track-malware-endpoints",
+            title = "Дорожка: Вредоносы и эндпоинты",
+            description = "Вы завершили все сценарии дорожки про VPN/VirusTotal, винлокер и RAT.",
+        ),
+        AchievementDefinition(
+            id = "challenge-track-search-perimeter",
+            title = "Дорожка: Поиск и периметр",
+            description = "Вы завершили дорожку про выбор сайта в поиске и защиту периметра от DDoS.",
+        ),
+        AchievementDefinition(
+            id = "challenge-track-benign",
+            title = "Дорожка: Когда угрозы нет",
+            description = "Вы завершили все сценарии дорожки про штатные уведомления без ложной тревоги.",
+        ),
+        AchievementDefinition(
+            id = "trust-80",
+            title = "Высокое доверие",
+            description = "Показатель доверия клиентов достиг 80% и выше.",
+        ),
+        AchievementDefinition(
+            id = "trust-95",
+            title = "Эталон надёжности",
+            description = "Показатель доверия клиентов достиг 95% и выше.",
+        ),
     )
 
     private val byId: Map<String, AchievementDefinition> = ALL.associateBy { it.id }

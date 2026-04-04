@@ -186,6 +186,8 @@ data class AnswerResponse(
     val explanation: String,
     val totalScore: Int,
     val completed: Boolean,
+    /** true — задание засчитано (все ответы верны), false — были ошибки, XP и запись в completedScenarios не выдаются. */
+    val countedAsCompleted: Boolean,
     val nextStep: StepPublicDto?,
     val stepIndex: Int,
     val totalSteps: Int,

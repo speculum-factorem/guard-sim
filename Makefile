@@ -1,4 +1,4 @@
-.PHONY: help install build backend frontend dev clean free-port docker-up
+.PHONY: help install build backend frontend dev clean free-port docker-up docker-logs-postgres docker-reset-volumes
 
 BACKEND  := backend
 FRONTEND := frontend
@@ -14,6 +14,8 @@ help:
 	@echo "  make build      Сборка бэкенда и production-бандла фронтенда"
 	@echo "  make clean      mvn clean и удаление $(FRONTEND)/dist"
 	@echo "  make docker-up  Сборка и запуск через Docker Compose: PostgreSQL + API + web (см. .env.example)"
+	@echo "  make docker-logs-postgres  Логи контейнера postgres (диагностика exit 1)"
+	@echo "  make docker-reset-volumes  docker compose down -v — сброс тома БД, если postgres не стартует"
 	@echo ""
 	@echo "Перед первым запуском: make install"
 	@echo "Docker: cp .env.example .env, задайте GUARDSIM_JWT_SECRET и POSTGRES_PASSWORD, затем: docker compose up --build"
@@ -69,3 +71,11 @@ clean:
 
 docker-up:
 	docker compose up --build
+
+docker-logs-postgres:
+	docker compose logs postgres
+
+docker-reset-volumes:
+	@echo "Останавливаю контейнеры и удаляю тома Compose (в т.ч. данные PostgreSQL)."
+	docker compose down -v
+	@echo "Готово. Запустите: docker compose up --build"

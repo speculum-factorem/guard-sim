@@ -198,6 +198,8 @@ export interface AnswerResponse {
   explanation: string;
   totalScore: number;
   completed: boolean;
+  /** true — задание засчитано (все шаги без ошибок), false — были ошибки, XP и запись не выдаются */
+  countedAsCompleted: boolean;
   nextStep: StepPublic | null;
   stepIndex: number;
   totalSteps: number;

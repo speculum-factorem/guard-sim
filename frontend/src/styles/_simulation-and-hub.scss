@@ -60,14 +60,13 @@
   cursor: pointer;
   font-size: 15px;
   color: var(--gm-text);
-  transition: border-color var(--transition-ui), background var(--transition-ui), transform var(--transition-ui);
+  transition: border-color var(--transition-ui), background var(--transition-ui), box-shadow var(--transition-ui);
 }
 
 .choice-btn:hover:not(:disabled) {
   border-color: var(--ui-primary);
   background: var(--gm-blue-light);
   box-shadow: var(--gm-shadow);
-  transform: scale(1.01);
 }
 
 .choice-btn:disabled {
@@ -114,6 +113,49 @@
   margin: 0 0 24px;
   color: var(--gm-text-secondary);
   font-size: 17px;
+}
+
+/* ── Иконка и варианты завершения ── */
+.completed-box-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  background: rgba(52, 199, 89, 0.15);
+  border: 2px solid rgba(52, 199, 89, 0.5);
+  color: #34c759;
+}
+
+.completed-box-icon--fail {
+  background: rgba(255, 59, 48, 0.12);
+  border-color: rgba(255, 59, 48, 0.4);
+  color: #ff3b30;
+}
+
+.completed-box--failed h2,
+.completed-box-title--fail {
+  color: #ff3b30 !important;
+}
+
+.completed-box-fail-hint {
+  max-width: 480px;
+  margin: 0 auto 24px !important;
+  font-size: 15px !important;
+  line-height: 1.55;
+  color: var(--gm-text-secondary);
+}
+
+.completed-box-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 4px;
 }
 
 .error-banner {
@@ -237,6 +279,13 @@
   font-weight: 600;
 }
 
+.achievements-lead {
+  margin: -4px 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--gm-text-secondary);
+}
+
 .achievements-list {
   list-style: none;
   margin: 0;
@@ -266,8 +315,11 @@
 }
 
 .ach-icon {
-  font-weight: 700;
-  width: 1.25rem;
+  flex-shrink: 0;
+  width: 1.5rem;
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.2;
 }
 
 .ach-name {

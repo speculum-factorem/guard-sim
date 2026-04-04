@@ -551,6 +551,15 @@
   opacity: 1;
 }
 
+.account-reward-tile--off {
+  opacity: 0.55;
+}
+
+.account-reward-tile--off .account-reward-ico {
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px dashed rgba(0, 212, 255, 0.2);
+}
+
 .account-reward-ico {
   flex-shrink: 0;
   width: 28px;

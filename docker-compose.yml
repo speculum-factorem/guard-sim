@@ -1,10 +1,16 @@
 # GuardSim: nginx (статика + прокси /api) + Spring Boot + PostgreSQL.
-# 1) cp .env.example .env — задайте GUARDSIM_JWT_SECRET и POSTGRES_PASSWORD.
+# 1) cp .env.example .env — задайте GUARDSIM_JWT_SECRET и POSTGRES_PASSWORD (непустой пароль).
 # 2) docker compose up --build
 # 3) http://localhost:8080 (порт GUARDSIM_WEB_PORT, см. .env.example)
+#
+# Если postgres сразу выходит с кодом 1:
+#   docker compose logs postgres
+# Часто помогает сброс тома (данные БД пропадут): make docker-reset-volumes
+# Затем снова: docker compose up --build
 services:
   postgres:
     image: postgres:16-alpine
+    shm_size: 256mb
     environment:
       POSTGRES_DB: guardsim
       POSTGRES_USER: guardsim

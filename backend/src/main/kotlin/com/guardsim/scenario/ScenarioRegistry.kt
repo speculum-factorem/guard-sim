@@ -63,7 +63,7 @@ class ScenarioRegistry {
                 consumerBankVishing(),
                 credentialStuffingPhishEmail(),
                 personalRequisitesScamMessenger(),
-            ).map { it.copy(visible = false) }
+            )
             return legacy + featured
         }
 

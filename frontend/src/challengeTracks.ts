@@ -61,6 +61,14 @@ export const CHALLENGE_TRACKS: ChallengeTrackDef[] = [
     accent: "lilac",
   },
   {
+    id: "search-and-perimeter",
+    title: "Поиск и периметр",
+    description:
+      "Два разных интерфейса: распознать официальный сайт в выдаче и среагировать на перегрузку периметра, не роняя легитимный трафик.",
+    scenarioIds: ["search-bank-official-serp", "perimeter-ddos-net-shield"],
+    accent: "orange",
+  },
+  {
     id: "benign-baseline",
     title: "Когда угрозы нет",
     description:

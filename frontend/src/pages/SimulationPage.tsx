@@ -33,12 +33,28 @@ function hotspotChoiceIds(step: StepPublic): Set<string> {
   return new Set(step.hotspots.map((h) => h.choiceId));
 }
 
+function serpPickChoiceIds(step: StepPublic): Set<string> {
+  const g = step.serpPickGame;
+  if (!g) return new Set();
+  return new Set(g.results.map((r) => r.choiceId));
+}
+
+function netShieldChoiceIds(step: StepPublic): Set<string> {
+  const g = step.netShieldGame;
+  if (!g) return new Set();
+  return new Set(g.rows.map((r) => r.choiceId));
+}
+
 function fallbackChoices(step: StepPublic): ChoicePublic[] {
   const fromHotspots = hotspotChoiceIds(step);
   const game = step.urlCompareGame;
+  const serp = serpPickChoiceIds(step);
+  const net = netShieldChoiceIds(step);
   return step.choices.filter((c) => {
     if (fromHotspots.has(c.id)) return false;
     if (game && (c.id === game.leftChoiceId || c.id === game.rightChoiceId)) return false;
+    if (serp.has(c.id)) return false;
+    if (net.has(c.id)) return false;
     return true;
   });
 }
@@ -53,6 +69,10 @@ function missionWindowLabel(step: StepPublic): string {
       return "Тикет ИБ";
     case "MINI_URL_COMPARE":
       return "Окно браузера";
+    case "SEARCH_ENGINE_RESULTS":
+      return "Поисковая выдача";
+    case "NET_SHIELD_CONSOLE":
+      return "Консоль периметра";
     case "CHAT_MESSENGER":
       return "Мессенджер";
     case "CALENDAR_INVITE":

@@ -8,6 +8,10 @@ import com.guardsim.dto.ScenarioSummaryDto
 import com.guardsim.dto.StepPublicDto
 import com.guardsim.dto.RedFlagCandidatePublicDto
 import com.guardsim.dto.RedFlagGameDto
+import com.guardsim.dto.NetShieldGameDto
+import com.guardsim.dto.NetShieldRowDto
+import com.guardsim.dto.SerpPickGameDto
+import com.guardsim.dto.SerpResultDto
 import com.guardsim.dto.UrlCompareGameDto
 import com.guardsim.scenario.ScenarioHubChannel
 import com.guardsim.scenario.ScenarioRegistry
@@ -16,6 +20,8 @@ import com.guardsim.scenario.internal.InternalChoice
 import com.guardsim.scenario.internal.InternalScenario
 import com.guardsim.scenario.internal.InternalStep
 import com.guardsim.scenario.internal.InternalRedFlagGame
+import com.guardsim.scenario.internal.InternalNetShieldGame
+import com.guardsim.scenario.internal.InternalSerpPickGame
 import com.guardsim.scenario.internal.InternalUrlCompareGame
 import org.springframework.stereotype.Service
 
@@ -63,6 +69,8 @@ class ScenarioService(
         val panels = step.investigationPanels.map { InvestigationPanelDto(it.id, it.title, it.body) }
         val hotspots = step.hotspots.map { HotspotDto(it.id, it.label, it.choiceId, it.variant) }
         val urlGame = step.urlCompareGame?.let { g -> toUrlCompareDto(g) }
+        val serpGame = step.serpPickGame?.let { toSerpPickDto(it) }
+        val netGame = step.netShieldGame?.let { toNetShieldDto(it) }
         val redGame = step.redFlagGame?.let { toRedFlagDto(it) }
         return StepPublicDto(
             id = step.id,
@@ -75,6 +83,8 @@ class ScenarioService(
             investigationBonusThreshold = step.investigationBonusThreshold,
             hotspots = hotspots,
             urlCompareGame = urlGame,
+            serpPickGame = serpGame,
+            netShieldGame = netGame,
             narrativeNoise = step.narrativeNoise,
             pressureSeconds = step.pressureSeconds,
             redFlagGame = redGame,
@@ -104,6 +114,34 @@ class ScenarioService(
             leftChoiceId = g.leftChoiceId,
             rightChoiceId = g.rightChoiceId,
             caption = g.caption,
+        )
+
+    private fun toSerpPickDto(g: InternalSerpPickGame): SerpPickGameDto =
+        SerpPickGameDto(
+            query = g.query,
+            results = g.results.map { r ->
+                SerpResultDto(
+                    title = r.title,
+                    displayUrl = r.displayUrl,
+                    snippet = r.snippet,
+                    choiceId = r.choiceId,
+                )
+            },
+        )
+
+    private fun toNetShieldDto(g: InternalNetShieldGame): NetShieldGameDto =
+        NetShieldGameDto(
+            consoleTitle = g.consoleTitle,
+            rows = g.rows.map { row ->
+                NetShieldRowDto(
+                    id = row.id,
+                    remoteIp = row.remoteIp,
+                    remoteHost = row.remoteHost,
+                    rateLabel = row.rateLabel,
+                    note = row.note,
+                    choiceId = row.choiceId,
+                )
+            },
         )
 
     fun findChoice(scenario: InternalScenario, stepId: String, choiceId: String): InternalChoice? {

@@ -24,6 +24,8 @@ export type StepUiKind =
   | "SOCIAL_NOTIFICATION"
   | "DESK_TICKET"
   | "MINI_URL_COMPARE"
+  | "SEARCH_ENGINE_RESULTS"
+  | "NET_SHIELD_CONSOLE"
   | "CHAT_MESSENGER"
   | "CALENDAR_INVITE"
   | "EXTENSION_STORE"
@@ -51,6 +53,32 @@ export interface UrlCompareGame {
   caption: string;
 }
 
+export interface SerpResult {
+  title: string;
+  displayUrl: string;
+  snippet: string;
+  choiceId: string;
+}
+
+export interface SerpPickGame {
+  query: string;
+  results: SerpResult[];
+}
+
+export interface NetShieldRow {
+  id: string;
+  remoteIp: string;
+  remoteHost: string;
+  rateLabel: string;
+  note: string | null;
+  choiceId: string;
+}
+
+export interface NetShieldGame {
+  consoleTitle: string;
+  rows: NetShieldRow[];
+}
+
 export interface RedFlagCandidatePublic {
   id: string;
   label: string;
@@ -73,6 +101,8 @@ export interface StepPublic {
   investigationBonusThreshold: number;
   hotspots: Hotspot[];
   urlCompareGame: UrlCompareGame | null;
+  serpPickGame: SerpPickGame | null;
+  netShieldGame: NetShieldGame | null;
   /** Лишний текст в письме — «шум» */
   narrativeNoise: string | null;
   /** Секунды для мягкого таймера давления (без санкций при нуле) */

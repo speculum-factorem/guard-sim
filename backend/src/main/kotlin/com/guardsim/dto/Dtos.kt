@@ -30,6 +30,32 @@ data class UrlCompareGameDto(
     val caption: String,
 )
 
+data class SerpResultDto(
+    val title: String,
+    val displayUrl: String,
+    val snippet: String,
+    val choiceId: String,
+)
+
+data class SerpPickGameDto(
+    val query: String,
+    val results: List<SerpResultDto>,
+)
+
+data class NetShieldRowDto(
+    val id: String,
+    val remoteIp: String,
+    val remoteHost: String,
+    val rateLabel: String,
+    val note: String?,
+    val choiceId: String,
+)
+
+data class NetShieldGameDto(
+    val consoleTitle: String,
+    val rows: List<NetShieldRowDto>,
+)
+
 /** Без поля «правильный» — клиент не знает, какие из фрагментов опасны. */
 data class RedFlagCandidatePublicDto(
     val id: String,
@@ -53,6 +79,8 @@ data class StepPublicDto(
     val investigationBonusThreshold: Int,
     val hotspots: List<HotspotDto>,
     val urlCompareGame: UrlCompareGameDto?,
+    val serpPickGame: SerpPickGameDto?,
+    val netShieldGame: NetShieldGameDto?,
     val narrativeNoise: String?,
     val pressureSeconds: Int?,
     val redFlagGame: RedFlagGameDto?,

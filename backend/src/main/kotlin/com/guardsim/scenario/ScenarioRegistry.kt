@@ -8,6 +8,10 @@ import com.guardsim.scenario.internal.InternalRedFlagGame
 import com.guardsim.scenario.ScenarioHubChannel
 import com.guardsim.scenario.internal.InternalScenario
 import com.guardsim.scenario.internal.InternalStep
+import com.guardsim.scenario.internal.InternalNetShieldGame
+import com.guardsim.scenario.internal.InternalNetShieldRow
+import com.guardsim.scenario.internal.InternalSerpPickGame
+import com.guardsim.scenario.internal.InternalSerpResult
 import com.guardsim.scenario.internal.InternalUrlCompareGame
 import com.guardsim.scenario.internal.StepUiKind
 import org.springframework.stereotype.Component
@@ -27,6 +31,8 @@ class ScenarioRegistry {
                 aptSilentAgent(),
                 terminalTrojanScript(),
                 oauthConsentTrap(),
+                searchBankOfficialSerp(),
+                perimeterDdosNetShield(),
             )
             val legacy = listOf(
                 phishingEmail(),
@@ -2903,6 +2909,235 @@ echo "[INFO] Maintenance complete. $(date)" """.trimIndent(),
                             scoreDelta = 0,
                         ),
                     ),
+                ),
+            ),
+        )
+
+        /** Поисковая выдача: выбрать официальный сайт по домену (не «сравнение двух URL»). */
+        fun searchBankOfficialSerp(): InternalScenario = InternalScenario(
+            id = "search-bank-official-serp",
+            title = "Поиск: какой сайт банка настоящий",
+            type = ScenarioType.EMAIL,
+            description = "Вы ввели запрос в поисковике и видите несколько похожих сниппетов. Нужно открыть именно официальный ресурс по домену.",
+            attackTypeLabel = "Typosquatting / поддельный сайт в выдаче",
+            hubChannel = ScenarioHubChannel.SECURITY,
+            steps = listOf(
+                InternalStep(
+                    id = "sbs-1",
+                    situationBrief = """
+                        Вы хотите зайти в интернет-банк «Банк Центр-инвест» и в поисковой строке набрали что-то вроде
+                        «центр инвест личный кабинет». Ниже — учебная выдача: кликните по тому результату, которому
+                        доверили бы на практике (ориентир — официальный домен организации, а не «похожее» название).
+                    """.trimIndent(),
+                    narrative = """
+                        Проверьте заголовок, строку ссылки и сниппет. Официальный публичный сайт этого банка в РФ —
+                        centrinvest.ru (без лишних слов «login», «online» в домене и без опечаток в написании).
+                        Остальные варианты в списке — учебные подделки для тренировки внимательности.
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "sbs-1-a",
+                            label = "Результат: centr-invest-login.ru",
+                            correct = false,
+                            explanationWhenChosen = "Домен выглядит «банковским», но это не centrinvest.ru. Отдельный домен со словом login часто используют в фишинге.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Вы могли попасть на поддельную форму входа. В реальности — закрыть вкладку, проверить домен по карте/договору и зайти через закладку или приложение банка.",
+                        ),
+                        InternalChoice(
+                            id = "sbs-1-b",
+                            label = "Результат: centrinvestt.ru",
+                            correct = false,
+                            explanationWhenChosen = "Опечатка в домене (лишняя буква) — классический typosquatting. Визуально почти как оригинал, но это другой сайт.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Поддельная страница могла перехватить ввод. Сообщите в банк по официальному номеру и смените пароль, если что-то вводили.",
+                        ),
+                        InternalChoice(
+                            id = "sbs-1-c",
+                            label = "Результат: www.centrinvest.ru",
+                            correct = true,
+                            explanationWhenChosen = "Верно: домен centrinvest.ru совпадает с официальным публичным сайтом банка. При сомнениях всё равно лучше открывать банк из приложения или сохранённой закладки, а не из первой строки выдачи.",
+                            scoreDelta = 5,
+                        ),
+                        InternalChoice(
+                            id = "sbs-1-d",
+                            label = "Результат: www-centrinvest.com",
+                            correct = false,
+                            explanationWhenChosen = "Составной домен с дефисом и зона .com — типичный шаблон подделки. Официальный домен банка — centrinvest.ru.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Сторонний домен мог вести на фишинг. Не вводите реквизиты на таких страницах.",
+                        ),
+                    ),
+                    uiKind = StepUiKind.SEARCH_ENGINE_RESULTS,
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "sbs-1-hint",
+                            title = "Как сверять домен",
+                            body = "Ищите корневой домен второго уровня: centrinvest.ru. Поддомены вроде ib.centrinvest.ru могут быть легитимными, если корень совпадает. Подозрительно: другой корень, опечатка, слова secure/login/bank в корне.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    serpPickGame = InternalSerpPickGame(
+                        query = "центр инвест личный кабинет официальный",
+                        results = listOf(
+                            InternalSerpResult(
+                                title = "Вход в интернет-банк — Центр Инвест (обновление 2025)",
+                                displayUrl = "https://centr-invest-login.ru/ib",
+                                snippet = "Быстрый вход в личный кабинет. Подтвердите личность по SMS за 30 секунд. Работаем 24/7.",
+                                choiceId = "sbs-1-a",
+                            ),
+                            InternalSerpResult(
+                                title = "Centrinvest — официальный кабинет клиента",
+                                displayUrl = "https://centrinvestt.ru/lk",
+                                snippet = "Личный кабинет физлица: карты, вклады, переводы. Войти без очереди.",
+                                choiceId = "sbs-1-b",
+                            ),
+                            InternalSerpResult(
+                                title = "Банк Центр-инвест — личный кабинет",
+                                displayUrl = "https://www.centrinvest.ru/page/ibank.htm",
+                                snippet = "Интернет-банк для частных клиентов. Вход по логину и паролю на официальном сайте кредитной организации.",
+                                choiceId = "sbs-1-c",
+                            ),
+                            InternalSerpResult(
+                                title = "CENTER INVEST — secure client portal",
+                                displayUrl = "https://www-centrinvest.com/login",
+                                snippet = "Official-looking portal. Verify your device to continue. English support.",
+                                choiceId = "sbs-1-d",
+                            ),
+                        ),
+                    ),
+                    pressureSeconds = 70,
+                ),
+            ),
+        )
+
+        /** Периметр: учебная DDoS, разрыв только вредоносных потоков с учётом белого списка доменов. */
+        fun perimeterDdosNetShield(): InternalScenario = InternalScenario(
+            id = "perimeter-ddos-net-shield",
+            title = "Периметр: волна запросов (DDoS)",
+            type = ScenarioType.EMAIL,
+            description = "Консоль защиты показывает всплеск соединений. Нужно разорвать сессии с явно вредоносных узлов, не трогая легитимный трафик к известным сервисам.",
+            attackTypeLabel = "DDoS / перегрузка периметра",
+            hubChannel = ScenarioHubChannel.SECURITY,
+            steps = listOf(
+                InternalStep(
+                    id = "pdn-1",
+                    situationBrief = """
+                        Вы дежурный по сети. На пограничном узле сработала сигнализация: резкий рост входящих соединений.
+                        Открыта учебная консоль «NetShield»: таблица активных потоков. Часть трафика — обычный фон
+                        (API карт, обновления, госсервисы), часть — похожа на ботнет к несуществующему у вас хосту.
+                    """.trimIndent(),
+                    narrative = """
+                        Доверенные направления (не блокируйте без тикета в ИБ, если нет прямого приказа):
+                        хосты в зонах yandex.ru, vk.com, microsoft.com, gosuslugi.ru, cloudflare.com —
+                        у пользователей это типичный легитимный трафик.
+
+                        Задача: нажать «Разорвать сессию» ровно у того потока, который с наибольшей вероятностью
+                        является учебной атакой на ваш периметр (чужой домен, аномально высокий rate, не ваш сервис).
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "pdn-1-a",
+                            label = "Разорвать поток к api-maps.yandex.ru",
+                            correct = false,
+                            explanationWhenChosen = "Высокий rate у CDN/API Яндекса может быть нормальным фоном. Блокировка без анализа ломает сервисы пользователей.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Карты и геосервисы перестали открываться в офисе. Инцидент эскалирован: откат правил.",
+                        ),
+                        InternalChoice(
+                            id = "pdn-1-b",
+                            label = "Разорвать поток к flood-syn.xyz",
+                            correct = true,
+                            explanationWhenChosen = "Верно: домен не относится к вашим сервисам и доверенному списку, rate зашкаливает — типичный признак ботнет-нагрузки на периметр.",
+                            scoreDelta = 6,
+                        ),
+                        InternalChoice(
+                            id = "pdn-1-c",
+                            label = "Разорвать поток к cdnjs.cloudflare.com",
+                            correct = false,
+                            explanationWhenChosen = "Cloudflare CDN — часть нормальной веб-инфраструктуры. Резать такой поток без подтверждения рискованно.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Перестали грузиться скрипты с CDN — часть внутренних порталов «сломалась».",
+                        ),
+                        InternalChoice(
+                            id = "pdn-1-d",
+                            label = "Разорвать поток к outlook.office365.com",
+                            correct = false,
+                            explanationWhenChosen = "Microsoft 365 — из доверенного контура. Это не цель учебной атаки; блокировка ударит по почте.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Outlook отвалился у части пользователей. Срочный откат.",
+                        ),
+                        InternalChoice(
+                            id = "pdn-1-e",
+                            label = "Разорвать поток к gosuslugi.ru",
+                            correct = false,
+                            explanationWhenChosen = "Госуслуги в белом списке доверенных доменов для этого шага. Блокировать без веской причины нельзя.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Нарушен доступ к госсервисам — репутационный и организационный ущерб.",
+                        ),
+                    ),
+                    uiKind = StepUiKind.NET_SHIELD_CONSOLE,
+                    emailSubject = "perimeter-gw-03",
+                    netShieldGame = InternalNetShieldGame(
+                        consoleTitle = "NetShield — активные входящие (TCP/443)",
+                        rows = listOf(
+                            InternalNetShieldRow(
+                                id = "pdn-r1",
+                                remoteIp = "87.250.250.3",
+                                remoteHost = "api-maps.yandex.ru",
+                                rateLabel = "11 200 сессий/с",
+                                note = "геосервисы",
+                                choiceId = "pdn-1-a",
+                            ),
+                            InternalNetShieldRow(
+                                id = "pdn-r2",
+                                remoteIp = "45.153.91.200",
+                                remoteHost = "flood-syn.xyz",
+                                rateLabel = "41 800 сессий/с",
+                                note = "SYN flood · неизвестный хост",
+                                choiceId = "pdn-1-b",
+                            ),
+                            InternalNetShieldRow(
+                                id = "pdn-r3",
+                                remoteIp = "104.21.80.11",
+                                remoteHost = "cdnjs.cloudflare.com",
+                                rateLabel = "920 сессий/с",
+                                note = "CDN",
+                                choiceId = "pdn-1-c",
+                            ),
+                            InternalNetShieldRow(
+                                id = "pdn-r4",
+                                remoteIp = "52.98.123.45",
+                                remoteHost = "outlook.office365.com",
+                                rateLabel = "380 сессий/с",
+                                note = "Microsoft 365",
+                                choiceId = "pdn-1-d",
+                            ),
+                            InternalNetShieldRow(
+                                id = "pdn-r5",
+                                remoteIp = "95.173.136.88",
+                                remoteHost = "gosuslugi.ru",
+                                rateLabel = "112 сессий/с",
+                                note = "госсервис",
+                                choiceId = "pdn-1-e",
+                            ),
+                        ),
+                    ),
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "pdn-1-asn",
+                            title = "Что смотреть в таблице",
+                            body = "Сверяйте имя узла с белым списком. Аномалия — не высокий rate сам по себе, а сочетание: незнакомый домен + на порядки больше, чем у соседей + нет бизнес-причины.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    pressureSeconds = 85,
                 ),
             ),
         )

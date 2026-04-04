@@ -12,6 +12,8 @@ data class InternalStep(
     val investigationBonusThreshold: Int = 0,
     val hotspots: List<InternalHotspot> = emptyList(),
     val urlCompareGame: InternalUrlCompareGame? = null,
+    val serpPickGame: InternalSerpPickGame? = null,
+    val netShieldGame: InternalNetShieldGame? = null,
     /** Лишний текст (подпись, юр. мелкий шрифт) — имитация «шума» в письме */
     val narrativeNoise: String? = null,
     /** Секунды на шаг: клиент показывает таймер; без санкций при нуле (см. интерфейс) */

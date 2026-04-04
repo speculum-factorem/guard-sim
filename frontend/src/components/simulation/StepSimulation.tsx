@@ -6,7 +6,9 @@ import { ChatMessengerSimulation } from "./ChatMessengerSimulation";
 import { EmailClientSimulation } from "./EmailClientSimulation";
 import { ExtensionStoreSimulation } from "./ExtensionStoreSimulation";
 import { GenericWorkspaceSimulation } from "./GenericWorkspaceSimulation";
+import { NetShieldSimulation } from "./NetShieldSimulation";
 import { OAuthApprovalSimulation } from "./OAuthApprovalSimulation";
+import { SearchSerpSimulation } from "./SearchSerpSimulation";
 import { SocialFeedSimulation } from "./SocialFeedSimulation";
 import { TerminalSessionSimulation } from "./TerminalSessionSimulation";
 import { TicketSimulation } from "./TicketSimulation";
@@ -58,6 +60,38 @@ export function StepSimulation(props: {
       if (step.urlCompareGame) {
         return (
           <BrowserSimulation step={step} disabled={disabled} onChoose={onChoose} childrenFooter={childrenFooter} />
+        );
+      }
+      return (
+        <GenericWorkspaceSimulation
+          step={step}
+          disabled={disabled}
+          onChoose={onChoose}
+          choiceButtons={genericChoices}
+          childrenFooter={childrenFooter}
+          splitLayout={splitLayout}
+        />
+      );
+    case "SEARCH_ENGINE_RESULTS":
+      if (step.serpPickGame) {
+        return (
+          <SearchSerpSimulation step={step} disabled={disabled} onChoose={onChoose} childrenFooter={childrenFooter} />
+        );
+      }
+      return (
+        <GenericWorkspaceSimulation
+          step={step}
+          disabled={disabled}
+          onChoose={onChoose}
+          choiceButtons={genericChoices}
+          childrenFooter={childrenFooter}
+          splitLayout={splitLayout}
+        />
+      );
+    case "NET_SHIELD_CONSOLE":
+      if (step.netShieldGame) {
+        return (
+          <NetShieldSimulation step={step} disabled={disabled} onChoose={onChoose} childrenFooter={childrenFooter} />
         );
       }
       return (

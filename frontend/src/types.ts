@@ -165,6 +165,19 @@ export interface ScenarioDetail {
   steps: StepPublic[];
 }
 
+export interface AttackTechnique {
+  techniqueId: string;
+  techniqueName: string;
+  tactic: string;
+  description: string;
+}
+
+export interface AttackBreakdown {
+  summary: string;
+  techniques: AttackTechnique[];
+  howToDefend: string;
+}
+
 export interface StartSessionResponse {
   sessionId: string;
   scenarioId: string;
@@ -174,6 +187,7 @@ export interface StartSessionResponse {
   totalSteps: number;
   resumed?: boolean;
   totalScore?: number;
+  attackBreakdown?: AttackBreakdown | null;
 }
 
 export interface AchievementDto {

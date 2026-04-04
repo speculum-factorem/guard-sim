@@ -7,6 +7,19 @@ import jakarta.validation.constraints.Size
 
 data class ErrorResponse(val error: String)
 
+data class AttackTechniqueDto(
+    val techniqueId: String,
+    val techniqueName: String,
+    val tactic: String,
+    val description: String,
+)
+
+data class AttackBreakdownDto(
+    val summary: String,
+    val techniques: List<AttackTechniqueDto>,
+    val howToDefend: String,
+)
+
 data class ChoicePublicDto(val id: String, val label: String)
 
 data class InvestigationPanelDto(
@@ -156,6 +169,8 @@ data class StartSessionResponse(
     val resumed: Boolean = false,
     /** Баллы в сессии (при возобновлении — сохранённые) */
     val totalScore: Int = 0,
+    /** База знаний: разбор атаки с MITRE ATT&CK маппингом. null — раздел не отображается. */
+    val attackBreakdown: AttackBreakdownDto? = null,
 )
 
 data class AnswerRequest(

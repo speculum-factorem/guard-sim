@@ -561,3 +561,132 @@
   margin-top: 24px;
 }
 
+
+/* ─── ATT&CK BREAKDOWN PANEL ─────────────────────────────────────────────── */
+
+.attack-breakdown {
+  margin: 28px auto 0;
+  max-width: 640px;
+  text-align: left;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f8f9fc;
+}
+
+.attack-breakdown-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 14px 18px 12px;
+  margin: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  background: #fff;
+  color: #1a1a2e;
+  letter-spacing: 0.02em;
+}
+
+.attack-breakdown-mitre-badge {
+  display: inline-block;
+  background: #e63946;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  padding: 3px 7px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.attack-breakdown-summary {
+  font-size: 13px;
+  line-height: 1.65;
+  color: #3a3a5c;
+  padding: 14px 18px 10px;
+  margin: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.attack-breakdown-techniques {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.attack-technique-card {
+  padding: 10px 6px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.attack-technique-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  flex-wrap: wrap;
+}
+
+.attack-technique-id {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  color: #e63946;
+  background: rgba(230, 57, 70, 0.08);
+  border: 1px solid rgba(230, 57, 70, 0.2);
+  border-radius: 3px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+.attack-technique-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.attack-technique-tactic {
+  font-size: 10px;
+  color: #6b7c99;
+  background: rgba(107, 124, 153, 0.1);
+  border-radius: 3px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+.attack-technique-desc {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #4a4a6a;
+  margin: 0;
+}
+
+.attack-breakdown-defend {
+  padding: 12px 18px 16px;
+  background: rgba(61, 255, 160, 0.06);
+  border-top: 2px solid rgba(61, 255, 160, 0.25);
+}
+
+.attack-breakdown-defend-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #1a7a4a;
+  margin-bottom: 6px;
+}
+
+.attack-breakdown-defend-text {
+  font-size: 13px;
+  line-height: 1.65;
+  color: #2a4a3a;
+  margin: 0;
+}

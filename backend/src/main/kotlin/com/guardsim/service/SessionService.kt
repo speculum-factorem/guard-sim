@@ -50,6 +50,7 @@ class SessionService(
                         totalSteps = scenario.steps.size,
                         resumed = true,
                         totalScore = e.score,
+                        attackBreakdown = scenario.attackBreakdown?.let { scenarios.toBreakdownDto(it) },
                     )
                 }
                 sessions.deleteById(e.id)
@@ -77,6 +78,7 @@ class SessionService(
             totalSteps = scenario.steps.size,
             resumed = false,
             totalScore = 0,
+            attackBreakdown = scenario.attackBreakdown?.let { scenarios.toBreakdownDto(it) },
         )
     }
 

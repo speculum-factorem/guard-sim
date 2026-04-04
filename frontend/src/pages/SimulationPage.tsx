@@ -11,6 +11,7 @@ import { simulationHttpErrorMessage } from "../simulationErrorMessage";
 import { missionBriefText, stepAnalysisText } from "../missionText";
 import type {
   AnswerResponse,
+  AttackBreakdown,
   CareerSnapshot,
   ChoicePublic,
   ScenarioDetail,
@@ -293,6 +294,7 @@ export function SimulationPage() {
   const [consequenceModal, setConsequenceModal] = useState<string | null>(null);
   const [lastInvestigationRepDelta, setLastInvestigationRepDelta] = useState<number | null>(null);
   const [redFlagSelectionIds, setRedFlagSelectionIds] = useState<string[]>([]);
+  const [attackBreakdown, setAttackBreakdown] = useState<AttackBreakdown | null>(null);
 
   const pendingAfterConsequenceRef = useRef<AnswerResponse | null>(null);
   /** Увеличивается при каждом bootstrap — отбрасываем ответы устаревших запросов (Strict Mode / смена сценария). */
@@ -385,6 +387,7 @@ export function SimulationPage() {
         setLastInvestigationRepDelta(null);
         setRedFlagSelectionIds([]);
         setResumedNote(!!start.resumed);
+        setAttackBreakdown(start.attackBreakdown ?? null);
       } catch (e) {
         if (gen !== sessionLoadGenerationRef.current) {
           return;
@@ -683,6 +686,32 @@ export function SimulationPage() {
                   </p>
                 </>
               )}
+              {attackBreakdown ? (
+                <div className="attack-breakdown">
+                  <h3 className="attack-breakdown-title">
+                    <span className="attack-breakdown-mitre-badge">MITRE ATT&amp;CK</span>
+                    Разбор атаки
+                  </h3>
+                  <p className="attack-breakdown-summary">{attackBreakdown.summary}</p>
+                  <div className="attack-breakdown-techniques">
+                    {attackBreakdown.techniques.map((t) => (
+                      <div key={t.techniqueId} className="attack-technique-card">
+                        <div className="attack-technique-header">
+                          <span className="attack-technique-id">{t.techniqueId}</span>
+                          <span className="attack-technique-name">{t.techniqueName}</span>
+                          <span className="attack-technique-tactic">{t.tactic}</span>
+                        </div>
+                        <p className="attack-technique-desc">{t.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="attack-breakdown-defend">
+                    <span className="attack-breakdown-defend-label">Как защититься:</span>
+                    <p className="attack-breakdown-defend-text">{attackBreakdown.howToDefend}</p>
+                  </div>
+                </div>
+              ) : null}
+
               <div className="completed-box-actions">
                 {!countedAsCompleted ? (
                   <button

@@ -1,5 +1,7 @@
 package com.guardsim.scenario
 
+import com.guardsim.scenario.internal.AttackBreakdown
+import com.guardsim.scenario.internal.AttackTechnique
 import com.guardsim.scenario.internal.InternalChoice
 import com.guardsim.scenario.internal.InternalHotspot
 import com.guardsim.scenario.internal.InternalInvestigationPanel
@@ -290,6 +292,16 @@ class ScenarioRegistry {
                         ),
                     ),
                 ),
+            ),
+            attackBreakdown = AttackBreakdown(
+                summary = "Классический фишинг: поддельное письмо + фейковая страница входа для кражи пароля.",
+                techniques = listOf(
+                    AttackTechnique("T1566.001", "Spearphishing Link", "Initial Access",
+                        "Письмо имитирует официальное уведомление банка со ссылкой на поддельный сайт входа."),
+                    AttackTechnique("T1204.001", "Malicious Link", "Execution",
+                        "Жертву подталкивают кликнуть ссылку и ввести учётные данные на фишинговом домене."),
+                ),
+                howToDefend = "Проверяй домен в адресной строке (не в письме), испол��зуй 2FA — даже если пароль украден, вход не удастся. Сомнительные письма — немедленно в службу ИБ.",
             ),
         )
 
@@ -2489,6 +2501,20 @@ echo "[INFO] Maintenance complete. $(date)" """.trimIndent(),
                     ),
                 ),
             ),
+            attackBreakdown = AttackBreakdown(
+                summary = "Living-off-the-Land: вредонос маскируется под штатный скрипт обслуживания. Ключевой признак — curl | bash скачивает и сразу выполняет код с внешнего IP.",
+                techniques = listOf(
+                    AttackTechnique("T1566.001", "Spearphishing Link", "Initial Access",
+                        "Письмо с «официальным» скриптом обслуживания от имени коллеги из DevOps."),
+                    AttackTechnique("T1059.004", "Unix Shell", "Execution",
+                        "Bash-скрипт выполняет произвольные команды на системе под видом обслуживания."),
+                    AttackTechnique("T1105", "Ingress Tool Transfer", "Command and Control",
+                        "curl -s URL | bash: скачивает и сразу выполняет вредоносный код без сохранения на диск."),
+                    AttackTechnique("T1036", "Masquerading", "Defense Evasion",
+                        "Вредоносная строка спрятана среди десятков легитимных команд обслуживания."),
+                ),
+                howToDefend = "Всегда читай скрипты перед запуском. Запрещай curl | bash корпоративной политикой. Верифицируй скрипты через официальный репозиторий, а не личную переписку.",
+            ),
         )
 
         /** OAuth Consent Phishing: приложение запрашивает Mail.Read.All и Files.ReadWrite.All. */
@@ -2657,6 +2683,18 @@ echo "[INFO] Maintenance complete. $(date)" """.trimIndent(),
                         ),
                     ),
                 ),
+            ),
+            attackBreakdown = AttackBreakdown(
+                summary = "Consent Phishing (OAuth-фишинг): приложение получает постоянный доступ к почте и файлам через стандартный механизм авторизации. 2FA не спасает.",
+                techniques = listOf(
+                    AttackTechnique("T1534", "Internal Spearphishing", "Initial Access",
+                        "Коллега в мессенджере просит одобрить OAuth-приложение через корпоративный портал."),
+                    AttackTechnique("T1528", "Steal Application Access Token", "Credential Access",
+                        "Приложение получает OAuth-токен с правами Mail.Read.All и Files.ReadWrite.All — полный доступ к данным."),
+                    AttackTechnique("T1550.001", "Use Alternate Authentication Material", "Defense Evasion",
+                        "Атакующий использует легитимный OAuth-токен: ни пароль не нужен, ни 2FA не помогает."),
+                ),
+                howToDefend = "Внимательно читай запрашиваемые OAuth-разрешения. Mail.Read.All или Files.ReadWrite.All от стороннего приложения — всегда отказ. Авторизуй приложения только из корпоративного каталога.",
             ),
         )
 
@@ -2919,6 +2957,18 @@ echo "[INFO] Maintenance complete. $(date)" """.trimIndent(),
                     ),
                 ),
             ),
+            attackBreakdown = AttackBreakdown(
+                summary = "Трёхшаговая APT-цепочка: письмо → браузерное расширение → давление через мессенджер. Два канала одновременно — признак скоординированной атаки.",
+                techniques = listOf(
+                    AttackTechnique("T1566.001", "Spearphishing Link", "Initial Access",
+                        "Поддельное письмо от «IT-безопасности» с домена-тайпсквота corp-vpn-guard.ru (зарегистрирован 6 дней назад)."),
+                    AttackTechnique("T1176", "Browser Extensions", "Persistence",
+                        "Вредоносное расширение с правами «читать все данные на всех сайтах» перехватывает сессии и куки."),
+                    AttackTechnique("T1534", "Internal Spearphishing", "Collection",
+                        "Скоординированное давление через Telegram: «коллега» подтверждает легитимность расширения."),
+                ),
+                howToDefend = "Проверяй возраст домена отправителя. Никогда не устанавливай расширения по письмам — только через официальный корпоративный магазин. Запросы ИТ верифицируй через внутренние тикеты, не Telegram.",
+            ),
         )
 
         /** Поисковая выдача: выбрать официальный сайт по домену (не «сравнение двух URL»). */
@@ -3018,6 +3068,16 @@ echo "[INFO] Maintenance complete. $(date)" """.trimIndent(),
                     ),
                     pressureSeconds = 70,
                 ),
+            ),
+            attackBreakdown = AttackBreakdown(
+                summary = "Typosquatting и SEO-отравление: поддельный домен банка продвигается в поисковой выдаче выше официального.",
+                techniques = listOf(
+                    AttackTechnique("T1583.001", "Acquire Infrastructure: Domains", "Resource Development",
+                        "Атакующий регистрирует тайпсквот-домены, визуально имитирующие официальный сайт банка."),
+                    AttackTechnique("T1608.006", "Stage Capabilities: SEO Poisoning", "Initial Access",
+                        "Поддельный сайт продвигается в поисковой выдаче выше официального через платную рекламу или SEO."),
+                ),
+                howToDefend = "Не ищи сайт банка через поисковик по общему запросу. Официальный адрес — в приложении, на карте или в договоре. Обращай внимание на значок рекламы в выдаче.",
             ),
         )
 
@@ -3147,6 +3207,16 @@ echo "[INFO] Maintenance complete. $(date)" """.trimIndent(),
                     investigationBonusThreshold = 1,
                     pressureSeconds = 85,
                 ),
+            ),
+            attackBreakdown = AttackBreakdown(
+                summary = "DDoS-атака: цель — исчерпать ресурсы периметра. Задача защиты — разорвать только вредоносные потоки, сохранив легитимный трафик.",
+                techniques = listOf(
+                    AttackTechnique("T1498.001", "Network Denial of Service: Direct Network Flood", "Impact",
+                        "Массированный поток UDP/HTTP-запросов с ботнет-узлов перегружает периметр."),
+                    AttackTechnique("T1499", "Endpoint Denial of Service", "Impact",
+                        "Перегрузка периметра блокирует доступ легитимных пользователей к сервисам."),
+                ),
+                howToDefend = "Применяй rate limiting и CDN с DDoS-защитой (Cloudflare, AWS Shield). Фильтруй по репутации IP. Не блокируй трафик огульно — это навредит легитимным пользователям.",
             ),
         )
 
@@ -3305,6 +3375,16 @@ echo "[INFO] Maintenance complete. $(date)" """.trimIndent(),
                     pressureSeconds = 50,
                 ),
             ),
+            attackBreakdown = AttackBreakdown(
+                summary = "Zero-hour атака: вредоносное ПО настолько свежее, что ни один антивирус его ещё не знает. «Чистый» VirusTotal ≠ безопасный файл.",
+                techniques = listOf(
+                    AttackTechnique("T1566.002", "Spearphishing via Service", "Initial Access",
+                        "Ссылка распространяется через корпоративный мессенджер от имени коллеги (или угнанного аккаунта)."),
+                    AttackTechnique("T1036", "Masquerading", "Defense Evasion",
+                        "Файл ещё не попал в антивирусные базы — VirusTotal показывает 0 детектов. Классический случай нулевого часа."),
+                ),
+                howToDefend = "VirusTotal — один из инструментов, не финальный вердикт. Проверяй: знаком ли источник, ожидал ли ты этот файл. Свежие угрозы всегда проходят мимо сигнатурного анализа.",
+            ),
         )
 
         /** Винлокер: безопасный режим, удаление файла и записи автозагрузки — короткая цепочка. */
@@ -3446,6 +3526,16 @@ echo "[INFO] Maintenance complete. $(date)" """.trimIndent(),
                     ),
                     pressureSeconds = 40,
                 ),
+            ),
+            attackBreakdown = AttackBreakdown(
+                summary = "Ransomware-подобный winlocker: блокирует ОС, закрепляется через реестр. Безопасный режим отключает автозапуск и позволяет удалить вредонос вручную.",
+                techniques = listOf(
+                    AttackTechnique("T1486", "Data Encrypted for Impact", "Impact",
+                        "Winlocker блокирует рабочий стол и требует выкуп, угрожая удалением файлов."),
+                    AttackTechnique("T1547.001", "Boot/Logon Autostart: Registry Run Keys", "Persistence",
+                        "Вредонос прописан в HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run для автозапуска при каждом входе."),
+                ),
+                howToDefend = "Безопасный режим (F8) отключает сторонние записи автозагрузки. Удали исполняемый файл и ключ Run в реестре. Регулярные бэкапы позволяют восстановить данные без выкупа.",
             ),
         )
 
@@ -3598,6 +3688,18 @@ echo "[INFO] Maintenance complete. $(date)" """.trimIndent(),
                     pressureSeconds = 40,
                 ),
             ),
+            attackBreakdown = AttackBreakdown(
+                summary = "RAT (Remote Access Trojan): атакующий управляет заражённой машиной в реальном времени — перехватывает ввод, видит экран, скачивает файлы. Немедленная изоляция критична.",
+                techniques = listOf(
+                    AttackTechnique("T1219", "Remote Access Software", "Command and Control",
+                        "RAT обеспечивает постоянный скрытый доступ через зашифрованный C2-канал."),
+                    AttackTechnique("T1547", "Boot/Logon Autostart", "Persistence",
+                        "Троян закрепляется в автозапуске для выживания после перезагрузки."),
+                    AttackTechnique("T1041", "Exfiltration Over C2 Channel", "Exfiltration",
+                        "Скриншоты, кейлоггинг и файлы браузера уходят через тот же C2-канал."),
+                ),
+                howToDefend = "При подозрении на RAT — сразу сетевая изоляция хоста, никакого ввода паролей до очистки. Далее: форензика процессов и автозапуска, смена всех паролей, которые мог перехватить кейлоггер.",
+            ),
         )
 
         /** SMS-бомбинг как шум: на фоне — «важный» звонок «антифрода» (vishing под прикрытием). */
@@ -3708,6 +3810,18 @@ echo "[INFO] Maintenance complete. $(date)" """.trimIndent(),
                     ),
                     pressureSeconds = 75,
                 ),
+            ),
+            attackBreakdown = AttackBreakdown(
+                summary = "SMS-бомбинг как прикрытие: поток сервисных SMS парализует внимание — именно в этот момент звонит «сотрудник безопасности». Шум = сигнал атаки.",
+                techniques = listOf(
+                    AttackTechnique("T1566.006", "Phishing via SMS (Smishing)", "Initial Access",
+                        "Массовая SMS-рассылка создаёт хаос и отвлекает внимание жертвы от реальной операции."),
+                    AttackTechnique("T1598", "Phishing for Information", "Reconnaissance",
+                        "Голосовой звонок «из банка» под прикрытием SMS-шторма выманивает коды и данные карты."),
+                    AttackTechnique("T1562", "Impair Defenses", "Defense Evasion",
+                        "Поток уведомлений подавляет критическое мышление и маскирует реальную мошенническую транзакцию."),
+                ),
+                howToDefend = "SMS-шторм сам по себе — признак атаки. Положи трубку, перезвони в банк самостоятельно по номеру с карты или официального сайта. Никогда не называй коды из SMS по входящему звонку.",
             ),
         )
     }

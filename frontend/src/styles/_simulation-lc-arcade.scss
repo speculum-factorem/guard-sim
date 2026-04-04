@@ -973,3 +973,54 @@
   border-color: rgba(0, 212, 255, 0.18);
   color: var(--lc-muted);
 }
+
+/* ATT&CK breakdown — dark overrides */
+.lc-theme .attack-breakdown {
+  background: rgba(10, 12, 26, 0.8);
+  border-color: rgba(0, 212, 255, 0.12);
+}
+
+.lc-theme .attack-breakdown-title {
+  background: rgba(10, 12, 26, 0.95);
+  color: #e0e8ff;
+  border-bottom-color: rgba(0, 212, 255, 0.1);
+}
+
+.lc-theme .attack-breakdown-summary {
+  color: rgba(200, 215, 240, 0.8);
+  border-bottom-color: rgba(0, 212, 255, 0.08);
+}
+
+.lc-theme .attack-technique-name {
+  color: #e0e8ff;
+}
+
+.lc-theme .attack-technique-desc {
+  color: rgba(180, 200, 230, 0.75);
+}
+
+.lc-theme .attack-technique-tactic {
+  background: rgba(0, 212, 255, 0.1);
+  color: rgba(0, 212, 255, 0.7);
+}
+
+.lc-theme .attack-breakdown-techniques {
+  border-bottom-color: rgba(0, 212, 255, 0.08);
+}
+
+.lc-theme .attack-technique-card {
+  border-bottom-color: rgba(0, 212, 255, 0.06);
+}
+
+.lc-theme .attack-breakdown-defend {
+  background: rgba(61, 255, 160, 0.05);
+  border-top-color: rgba(61, 255, 160, 0.2);
+}
+
+.lc-theme .attack-breakdown-defend-label {
+  color: #3dffa0;
+}
+
+.lc-theme .attack-breakdown-defend-text {
+  color: rgba(180, 230, 200, 0.85);
+}

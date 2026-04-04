@@ -1,5 +1,7 @@
 package com.guardsim.service
 
+import com.guardsim.dto.AttackBreakdownDto
+import com.guardsim.dto.AttackTechniqueDto
 import com.guardsim.dto.ChoicePublicDto
 import com.guardsim.dto.HotspotDto
 import com.guardsim.dto.InvestigationPanelDto
@@ -20,6 +22,7 @@ import com.guardsim.dto.VirusTotalGameDto
 import com.guardsim.scenario.ScenarioHubChannel
 import com.guardsim.scenario.ScenarioRegistry
 import com.guardsim.scenario.ScenarioType
+import com.guardsim.scenario.internal.AttackBreakdown
 import com.guardsim.scenario.internal.InternalChoice
 import com.guardsim.scenario.internal.InternalScenario
 import com.guardsim.scenario.internal.InternalStep
@@ -176,6 +179,20 @@ class ScenarioService(
                 callerSubtitle = g.callOverlay.callerSubtitle,
                 numberDisplay = g.callOverlay.numberDisplay,
             ),
+        )
+
+    fun toBreakdownDto(b: AttackBreakdown): AttackBreakdownDto =
+        AttackBreakdownDto(
+            summary = b.summary,
+            techniques = b.techniques.map { t ->
+                AttackTechniqueDto(
+                    techniqueId = t.techniqueId,
+                    techniqueName = t.techniqueName,
+                    tactic = t.tactic,
+                    description = t.description,
+                )
+            },
+            howToDefend = b.howToDefend,
         )
 
     fun findChoice(scenario: InternalScenario, stepId: String, choiceId: String): InternalChoice? {

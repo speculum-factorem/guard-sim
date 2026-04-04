@@ -1,0 +1,471 @@
+/* Симуляции на странице задания (.lc-theme): тот же аркадный тёмный язык, что у шапки и дашборда */
+
+.lc-theme.sim-page-lc .sim-panel--lc,
+.lc-theme .sim-panel--lc {
+  border: 1px solid var(--lc-border-strong);
+  border-radius: var(--bento-radius);
+  box-shadow: var(--shadow-bento-md);
+  background: rgba(13, 13, 31, 0.94);
+  backdrop-filter: blur(18px) saturate(1.06);
+  -webkit-backdrop-filter: blur(18px) saturate(1.06);
+  overflow: hidden;
+}
+
+.lc-theme .sim-panel--lc > .sim-header {
+  position: relative;
+  isolation: isolate;
+  padding-top: calc(16px + 3px);
+  border-bottom: 1px solid var(--lc-border);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 212, 255, 0.08) 0%,
+    rgba(13, 13, 31, 0.55) 45%,
+    rgba(10, 10, 22, 0.98) 100%
+  );
+}
+
+.lc-theme .sim-panel--lc > .sim-header::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    var(--arc-cyan) 0%,
+    var(--arc-green) 28%,
+    var(--arc-purple) 55%,
+    var(--arc-yellow) 78%,
+    var(--arc-cyan) 100%
+  );
+  background-size: 220% 100%;
+  animation: app-bar-track-marquee 10s linear infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lc-theme .sim-panel--lc > .sim-header::before {
+    animation: none;
+    background-size: 100% 100%;
+  }
+}
+
+.lc-theme .mission-lc,
+.lc-theme .mission-lc--phased {
+  background:
+    radial-gradient(ellipse 85% 55% at 10% 0%, rgba(0, 212, 255, 0.08), transparent 52%),
+    radial-gradient(ellipse 55% 40% at 92% 18%, rgba(157, 78, 255, 0.07), transparent 48%),
+    linear-gradient(180deg, #0c0e18 0%, #0a0b14 52%, #080910 100%);
+}
+
+.lc-theme .mission-sim-shell {
+  background: linear-gradient(180deg, rgba(8, 9, 18, 0.98) 0%, #06070e 50%, #05060c 100%);
+}
+
+/* ─── Обратная связь после ответа ─── */
+.lc-theme .sim-feedback-banner.feedback.ok {
+  background: rgba(61, 255, 160, 0.1);
+  border-color: rgba(61, 255, 160, 0.38);
+  color: #9cf0c2;
+}
+
+.lc-theme .sim-feedback-banner.feedback.bad {
+  background: rgba(255, 45, 120, 0.1);
+  border-color: rgba(255, 45, 120, 0.42);
+  color: #ffb3cc;
+}
+
+.lc-theme .sim-feedback-banner .sim-feedback-text {
+  color: inherit;
+}
+
+.lc-theme .sim-feedback-continue--long-desktop {
+  border-top-color: rgba(0, 212, 255, 0.18);
+}
+
+/* ─── Док расследования (был светлый блок из step-ui) ─── */
+.lc-theme .investigation-dock {
+  border: 1px solid var(--lc-border-strong);
+  background: rgba(10, 11, 22, 0.92);
+  box-shadow: var(--shadow-bento-xs);
+}
+
+.lc-theme .investigation-dock-head {
+  background: rgba(7, 8, 15, 0.96);
+  border-bottom-color: var(--lc-border);
+}
+
+.lc-theme .investigation-dock-title {
+  color: var(--lc-ink);
+}
+
+.lc-theme .investigation-dock-hint {
+  color: var(--arc-cyan);
+}
+
+.lc-theme .investigation-tab {
+  border: 1px solid var(--lc-border);
+  background: rgba(13, 14, 28, 0.9);
+  color: var(--lc-ink);
+}
+
+.lc-theme .investigation-tab:hover:not(:disabled) {
+  border-color: rgba(0, 212, 255, 0.45);
+  background: rgba(0, 212, 255, 0.06);
+}
+
+.lc-theme .investigation-tab-active {
+  background: rgba(0, 212, 255, 0.12);
+  border-color: rgba(0, 212, 255, 0.5);
+  color: var(--arc-cyan);
+}
+
+.lc-theme .investigation-panel-body {
+  background: rgba(8, 9, 16, 0.5);
+}
+
+.lc-theme .investigation-panel-text {
+  color: var(--lc-ink);
+}
+
+.lc-theme .investigation-panel-placeholder {
+  color: var(--lc-muted);
+}
+
+.lc-theme .pressure-bar-wrap {
+  border: 1px solid rgba(0, 212, 255, 0.22);
+  background: rgba(10, 11, 22, 0.92);
+  box-shadow: var(--shadow-bento-xs);
+}
+
+.lc-theme .red-flag-game {
+  border-color: rgba(255, 230, 0, 0.28);
+  background: rgba(255, 230, 0, 0.05);
+  box-shadow: 0 0 16px rgba(255, 230, 0, 0.1);
+}
+
+/* ─── Почта (Gmail-like) ─── */
+.lc-theme .ui-frame-email.sim-gmail-root {
+  background: rgba(8, 9, 18, 0.98);
+}
+
+.lc-theme .sim-gmail-search-wrap {
+  background: rgba(13, 14, 31, 0.95);
+  border-color: rgba(0, 212, 255, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.lc-theme .sim-gmail-search::placeholder {
+  color: rgba(221, 228, 240, 0.38);
+}
+
+.lc-theme .sim-gmail-body {
+  background: linear-gradient(180deg, rgba(10, 11, 22, 0.98) 0%, rgba(6, 7, 14, 1) 100%);
+}
+
+.lc-theme .sim-gmail-rail {
+  background: rgba(7, 8, 15, 0.92);
+  border-right-color: rgba(0, 212, 255, 0.14);
+}
+
+.lc-theme .sim-gmail-compose {
+  background: linear-gradient(180deg, #33eeff 0%, var(--arc-cyan) 100%);
+  color: #07080f;
+  border-color: rgba(0, 212, 255, 0.45);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.35);
+}
+
+.lc-theme .sim-gmail-folder:not(.sim-gmail-folder-active):hover {
+  background: rgba(0, 212, 255, 0.08);
+}
+
+.lc-theme .sim-gmail-folder-active {
+  background: rgba(0, 212, 255, 0.14);
+  border-color: rgba(0, 212, 255, 0.45);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.12);
+}
+
+.lc-theme .sim-gmail-split {
+  background: rgba(8, 9, 18, 0.98);
+}
+
+.lc-theme .sim-gmail-list-col {
+  background: rgba(10, 11, 22, 0.96);
+  border-right-color: rgba(0, 212, 255, 0.12);
+}
+
+.lc-theme .sim-gmail-list-row {
+  border-bottom-color: rgba(0, 212, 255, 0.1);
+}
+
+.lc-theme .sim-gmail-list-row-active {
+  background: rgba(0, 212, 255, 0.1);
+  border-left-color: var(--arc-cyan);
+}
+
+.lc-theme .sim-gmail-list-snippet {
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-gmail-star-btn {
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-gmail-star-btn:hover {
+  background: rgba(0, 212, 255, 0.08);
+}
+
+.lc-theme .email-toolbar {
+  background: rgba(7, 8, 15, 0.96);
+  border-bottom-color: rgba(0, 212, 255, 0.14);
+}
+
+.lc-theme .email-meta {
+  background: rgba(10, 11, 22, 0.92);
+  border-bottom-color: rgba(0, 212, 255, 0.12);
+}
+
+.lc-theme .narrative-frame.sim-email-body {
+  background: rgba(8, 9, 18, 0.6);
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-email-headers-more {
+  border-color: rgba(0, 212, 255, 0.2);
+  background: rgba(0, 212, 255, 0.04);
+}
+
+.lc-theme .sim-email-hdr-value--warn {
+  color: var(--arc-yellow);
+}
+
+/* ─── Соцсеть ─── */
+.lc-theme .sim-fb-root.ui-frame {
+  background: linear-gradient(180deg, rgba(10, 11, 22, 0.98) 0%, rgba(6, 7, 14, 1) 100%);
+  border-color: rgba(0, 212, 255, 0.2);
+}
+
+.lc-theme .sim-fb-logo {
+  border-color: rgba(0, 212, 255, 0.45);
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--arc-cyan);
+}
+
+.lc-theme .sim-fb-search-wrap {
+  background: rgba(13, 14, 31, 0.95);
+  border-color: rgba(0, 212, 255, 0.2);
+}
+
+.lc-theme .sim-fb-search::placeholder {
+  color: rgba(221, 228, 240, 0.38);
+}
+
+.lc-theme .sim-fb-card {
+  background: rgba(13, 14, 28, 0.96);
+  border-color: rgba(0, 212, 255, 0.16);
+  box-shadow: var(--shadow-bento-sm);
+}
+
+.lc-theme .sim-fb-post-actions,
+.lc-theme .sim-fb-light-actions {
+  border-top-color: rgba(0, 212, 255, 0.12);
+}
+
+.lc-theme .sim-fb-like-btn,
+.lc-theme .sim-fb-comment-btn {
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-fb-like-btn:hover,
+.lc-theme .sim-fb-comment-btn:hover {
+  background: rgba(0, 212, 255, 0.08);
+}
+
+.lc-theme .sim-fb-like-meta {
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-fb-context-strip {
+  background: rgba(0, 212, 255, 0.06);
+  border-color: rgba(0, 212, 255, 0.18);
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-fb-context-strip--sidebar {
+  background: rgba(13, 14, 31, 0.85);
+  border-color: rgba(0, 212, 255, 0.14);
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-fb-placeholder-block {
+  background: rgba(0, 212, 255, 0.06);
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-fb-search-miss {
+  background: rgba(255, 45, 120, 0.1);
+  border-color: rgba(255, 45, 120, 0.35);
+  color: #ffb3c9;
+}
+
+/* ─── Тикет ─── */
+.lc-theme .sim-ticket-aside {
+  background: linear-gradient(180deg, rgba(12, 13, 26, 0.98) 0%, rgba(8, 9, 18, 1) 100%);
+  border-right-color: rgba(0, 212, 255, 0.14);
+}
+
+.lc-theme .sim-ticket-thread {
+  background: rgba(0, 212, 255, 0.03);
+  border-bottom-color: rgba(0, 212, 255, 0.12);
+}
+
+.lc-theme .sim-ticket-thread-item {
+  background: rgba(13, 14, 28, 0.95);
+  border-color: rgba(0, 212, 255, 0.14);
+}
+
+.lc-theme .sim-ticket-activity {
+  background: rgba(7, 8, 15, 0.85);
+  border-bottom-color: rgba(0, 212, 255, 0.1);
+}
+
+.lc-theme .sim-ticket-actions {
+  background: rgba(7, 8, 15, 0.96);
+  border-top-color: rgba(0, 212, 255, 0.14);
+}
+
+.lc-theme .sim-ticket-assign-select,
+.lc-theme .sim-ticket-status-select {
+  background: rgba(13, 14, 31, 0.95);
+  border-color: rgba(0, 212, 255, 0.2);
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-ticket-secondary,
+.lc-theme .sim-ticket-attach-btn {
+  background: rgba(13, 14, 28, 0.9);
+  border-color: rgba(0, 212, 255, 0.2);
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-ticket-internal-textarea {
+  background: rgba(10, 11, 22, 0.95);
+  border-color: rgba(0, 212, 255, 0.18);
+  color: var(--lc-ink);
+}
+
+/* ─── Общий workspace ─── */
+.lc-theme .sim-generic-body {
+  background: linear-gradient(180deg, rgba(10, 11, 22, 0.98) 0%, rgba(7, 8, 15, 1) 100%);
+}
+
+.lc-theme .sim-generic-badge {
+  background: linear-gradient(180deg, #33eeff 0%, var(--arc-cyan) 100%);
+  color: #07080f;
+  border-color: rgba(0, 212, 255, 0.35);
+}
+
+.lc-theme .sim-generic-attach-chip {
+  background: rgba(13, 14, 28, 0.95);
+  border-color: rgba(0, 212, 255, 0.2);
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-generic-attach-chip:hover {
+  border-color: var(--arc-cyan);
+  background: rgba(0, 212, 255, 0.1);
+}
+
+/* ─── Браузер / сравнение URL ─── */
+.lc-theme .browser-tab-slot,
+.lc-theme .browser-tab-row {
+  background: rgba(18, 20, 36, 0.92);
+  color: var(--lc-ink);
+  border-color: rgba(0, 212, 255, 0.16);
+}
+
+.lc-theme .browser-tab-slot-active,
+.lc-theme .browser-tab-row-active {
+  background: rgba(13, 14, 31, 0.98);
+  box-shadow: 0 0 14px rgba(0, 212, 255, 0.12);
+}
+
+.lc-theme .browser-chrome-toolbar {
+  background: rgba(10, 11, 22, 0.96);
+  border-top-color: rgba(0, 212, 255, 0.14);
+}
+
+.lc-theme .browser-chrome-omnibox,
+.lc-theme .browser-chrome-omnibox:focus-within,
+.lc-theme .browser-chrome-omnibox--pulse {
+  background: rgba(13, 14, 31, 0.98);
+  border-color: rgba(0, 212, 255, 0.25);
+  color: var(--lc-ink);
+  box-shadow: var(--shadow-bento-xs);
+}
+
+.lc-theme .browser-chrome-omnibox:focus-within {
+  border-color: var(--arc-cyan);
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.28);
+}
+
+.lc-theme .browser-chrome-bookmarks {
+  background: rgba(0, 212, 255, 0.06);
+  border-top-color: rgba(0, 212, 255, 0.14);
+}
+
+.lc-theme .browser-chrome-bookmark {
+  background: rgba(13, 14, 28, 0.95);
+  color: var(--arc-cyan);
+  border-color: rgba(0, 212, 255, 0.22);
+}
+
+.lc-theme .browser-chrome-bookmark:hover {
+  background: rgba(0, 212, 255, 0.12);
+  border-color: var(--arc-cyan);
+}
+
+.lc-theme .browser-tab-close-btn:hover {
+  background: rgba(0, 212, 255, 0.12);
+}
+
+.lc-theme .sim-browser-tab-hint {
+  background: rgba(0, 212, 255, 0.1);
+  border-bottom-color: rgba(0, 212, 255, 0.16);
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-interactive-hint {
+  background: rgba(13, 14, 31, 0.92);
+  border-bottom-color: rgba(0, 212, 255, 0.14);
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-interactive-toast {
+  background: rgba(13, 14, 31, 0.98);
+  border: 1px solid rgba(0, 212, 255, 0.22);
+  box-shadow: var(--shadow-bento-md);
+  color: var(--lc-ink);
+}
+
+.lc-theme .url-compare-diff-hint {
+  color: var(--lc-muted);
+}
+
+.lc-theme .url-compare-card {
+  border-color: rgba(0, 212, 255, 0.18);
+  background: rgba(13, 14, 28, 0.92);
+}
+
+.lc-theme .url-compare-card:hover:not(:disabled) {
+  border-color: rgba(0, 212, 255, 0.45);
+  background: rgba(0, 212, 255, 0.08);
+  box-shadow: 0 0 18px rgba(0, 212, 255, 0.12);
+}
+
+.lc-theme .url-diff-char--diff {
+  background: rgba(255, 230, 0, 0.22);
+  box-shadow: 0 0 0 1px rgba(255, 230, 0, 0.35);
+}

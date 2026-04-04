@@ -64,3 +64,9 @@
   padding: 0;
   box-shadow: 0 1px 0 rgba(0, 212, 255, 0.1);
 }
+
+/* Тулбар «К условию» — как подпанель симуляции, с горизонтальными полями */
+.mission-sim-toolbar.sim-app-bar {
+  padding: 10px clamp(12px, 2.5vw, 22px);
+  box-shadow: 0 1px 0 rgba(0, 212, 255, 0.1);
+}

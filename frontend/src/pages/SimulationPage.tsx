@@ -690,7 +690,7 @@ export function SimulationPage() {
                 ) : (
                   <div className="mission-phase mission-phase--simulation" aria-label="Экран симуляции">
                     <div className="mission-sim-shell">
-                      <header className="mission-sim-toolbar sim-app-bar sim-app-bar--sub">
+                      <header className="mission-sim-toolbar sim-app-bar">
                         <button
                           type="button"
                           className="btn btn-secondary mission-back-to-condition"

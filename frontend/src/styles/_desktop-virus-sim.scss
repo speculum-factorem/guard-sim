@@ -174,6 +174,7 @@ $border: rgba(0, 212, 255, 0.22);
 /* ─── Game shell ────────────────────────────────────────────────────────── */
 
 .dvs-page--game {
+  position: relative;
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
@@ -433,6 +434,121 @@ $border: rgba(0, 212, 255, 0.22);
   font-weight: 700;
 }
 
+.dvs-tm-heading {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba($dc, 0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.dvs-tm-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.dvs-tm-tab {
+  padding: 6px 14px;
+  border-radius: 6px 6px 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--ui-gray, #6b7c9a);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    color: rgba(220, 230, 245, 0.9);
+  }
+}
+
+.dvs-tm-tab--on {
+  background: rgba($dc, 0.1);
+  border-color: rgba($dc, 0.25);
+  color: #fff;
+}
+
+.dvs-tm-muted {
+  color: var(--ui-gray, #6b7c9a);
+  font-size: 12px;
+}
+
+.dvs-explorer-bar {
+  margin-bottom: 10px;
+}
+
+.dvs-av-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dvs-av-report {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba($dr, 0.08);
+  border: 1px solid rgba($dr, 0.25);
+  font-size: 13px;
+  color: rgba(220, 230, 245, 0.92);
+}
+
+.dvs-console-out {
+  min-height: 120px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(200, 220, 245, 0.9);
+}
+
+.dvs-console-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.dvs-console-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dvs-console-prompt {
+  color: $dg;
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+}
+
+.dvs-console-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba($dc, 0.25);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+
+  &::placeholder {
+    color: var(--ui-gray, #6b7c9a);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: rgba($dc, 0.5);
+  }
+}
+
 .dvs-fw-timer {
   margin: 0 0 12px;
   font-size: 13px;
@@ -477,7 +593,7 @@ $border: rgba(0, 212, 255, 0.22);
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 6;
+  z-index: 500;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -485,6 +601,11 @@ $border: rgba(0, 212, 255, 0.22);
   background: rgba(6, 8, 18, 0.92);
   border-top: 1px solid rgba($dc, 0.2);
   backdrop-filter: blur(12px);
+}
+
+.dvs-taskbar-start-cluster {
+  position: relative;
+  z-index: 1;
 }
 
 .dvs-start-btn {
@@ -495,12 +616,81 @@ $border: rgba(0, 212, 255, 0.22);
   background: rgba($dc, 0.08);
   color: $dc;
   font-size: 16px;
-  cursor: default;
-  opacity: 0.5;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: rgba($dc, 0.16);
+    border-color: rgba($dc, 0.45);
+  }
+}
+
+.dvs-start-btn--open {
+  background: rgba($dc, 0.22);
+  border-color: rgba($dc, 0.55);
+}
+
+.dvs-start-menu {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 0;
+  min-width: 220px;
+  padding: 8px 0;
+  border-radius: 10px;
+  border: 1px solid $border;
+  background: linear-gradient(180deg, rgba(18, 22, 42, 0.98), rgba(10, 12, 24, 0.99));
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.55);
+}
+
+.dvs-start-menu-title {
+  padding: 6px 14px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ui-gray, #6b7c9a);
+}
+
+.dvs-start-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: rgba(230, 238, 250, 0.95);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba($dc, 0.12);
+    color: #fff;
+  }
+}
+
+.dvs-task-pill {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba($dc, 0.2);
+  background: rgba(0, 212, 255, 0.06);
+  color: rgba(220, 230, 245, 0.9);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    border-color: rgba($dc, 0.45);
+    background: rgba($dc, 0.12);
+  }
 }
 
 .dvs-taskbar-apps {
   flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
 }
 
 .dvs-taskbar-clock {
@@ -517,7 +707,7 @@ $border: rgba(0, 212, 255, 0.22);
   top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 5;
+  z-index: 120;
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -543,7 +733,7 @@ $border: rgba(0, 212, 255, 0.22);
 .dvs-overlay {
   position: absolute;
   inset: 0;
-  z-index: 20;
+  z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;

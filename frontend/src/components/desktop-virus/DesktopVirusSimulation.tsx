@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   DESKTOP_VIRUS_CATALOG,
@@ -8,6 +8,25 @@ import {
 
 type Phase = "playing" | "won" | "lost";
 
+const WIN_IDS = ["explorer", "antivirus", "firewall", "console", "taskmgr"] as const;
+type WinId = (typeof WIN_IDS)[number];
+
+const WIN_LABELS: Record<WinId, { title: string; menu: string; taskbar: string }> = {
+  explorer: { title: "Проводник", menu: "Проводник", taskbar: "Проводник" },
+  antivirus: { title: "Антивирус GuardSim", menu: "Антивирус", taskbar: "Антивирус" },
+  firewall: { title: "Брандмауэр", menu: "Брандмауэр", taskbar: "Брандмауэр" },
+  console: { title: "Консоль", menu: "Консоль", taskbar: "Консоль" },
+  taskmgr: { title: "Диспетчер задач", menu: "Диспетчер задач", taskbar: "Диспетчер" },
+};
+
+const WIN_LAYOUT: Record<WinId, { top: string; left: string; width: string }> = {
+  explorer: { top: "8%", left: "4%", width: "min(440px, 90vw)" },
+  antivirus: { top: "10%", left: "38%", width: "min(380px, 88vw)" },
+  firewall: { top: "12%", left: "52%", width: "min(460px, 92vw)" },
+  console: { top: "44%", left: "6%", width: "min(520px, 94vw)" },
+  taskmgr: { top: "6%", left: "18%", width: "min(560px, 95vw)" },
+};
+
 const BAD_POPUP_TITLES = [
   "Срочно: обновите антивирус",
   "Ваш ПК заблокирован (МВД)",
@@ -15,60 +34,57 @@ const BAD_POPUP_TITLES = [
   "Криптокошелёк — подтвердите вход",
   "WIN_PRIZE_2026.exe",
   "Отсканируйте QR для разблокировки",
+  "КРИТИЧНО: вирус обнаружен",
+  "Платёж отклонён — войдите снова",
 ];
 
-const PHISH_QUEUE: { id: string; legit: boolean; title: string; snippet: string }[] = [
-  {
-    id: "p1",
-    legit: false,
-    title: "Банк‑безопасность",
-    snippet: "Счёт заблокирован. Перейдите по ссылке за 5 минут.",
-  },
-  {
-    id: "p2",
-    legit: true,
-    title: "Центр обновлений",
-    snippet: "Установлено исправление KB-50412 (подпись Microsoft).",
-  },
-  {
-    id: "p3",
-    legit: false,
-    title: "DHL: посылка задержана",
-    snippet: "Оплатите пошлину через сторонний сервис.",
-  },
-  {
-    id: "p4",
-    legit: true,
-    title: "Windows Defender",
-    snippet: "Завершена быстрая проверка: угроз не найдено.",
-  },
-  {
-    id: "p5",
-    legit: false,
-    title: "Облако OneDrive",
-    snippet: "Ваши файлы удалятся через 24 ч — скачайте архив.",
-  },
-  {
-    id: "p6",
-    legit: true,
-    title: "SmartScreen",
-    snippet: "Заблокирован запуск неизвестного приложения из Интернета.",
-  },
-];
+/** Виртуальные пути → содержимое каталога */
+type FsEntry = { kind: "dir" } | { kind: "file"; malware?: boolean };
 
-const WORM_FILES: { id: string; name: string; malware: boolean }[] = [
-  { id: "f1", name: "Quarter_Report.xlsx", malware: false },
-  { id: "f2", name: "Family_Photos.zip", malware: false },
-  { id: "f3", name: "readme.txt", malware: false },
-  { id: "f4", name: "invoice.pdf.exe", malware: true },
-  { id: "f5", name: "setup.msi", malware: false },
-];
+const WORM_VFS: Record<string, Record<string, FsEntry>> = {
+  "C:": { Users: { kind: "dir" }, "Program Files": { kind: "dir" }, "Windows": { kind: "dir" } },
+  "C:/Users": { Public: { kind: "dir" }, Maxim: { kind: "dir" } },
+  "C:/Users/Public": { Downloads: { kind: "dir" }, Documents: { kind: "dir" } },
+  "C:/Users/Public/Downloads": {
+    "invoice.pdf.exe": { kind: "file", malware: true },
+    "Quarter_Report.xlsx": { kind: "file" },
+    "readme.txt": { kind: "file" },
+  },
+  "C:/Users/Public/Documents": { "notes.txt": { kind: "file" } },
+  "C:/Users/Maxim": { Documents: { kind: "dir" } },
+  "C:/Users/Maxim/Documents": { "draft.docx": { kind: "file" } },
+  "C:/Program Files": { "GuardSim": { kind: "dir" } },
+  "C:/Program Files/GuardSim": { "readme.txt": { kind: "file" } },
+  "C:/Windows": { System32: { kind: "dir" } },
+  "C:/Windows/System32": { "drivers": { kind: "dir" } },
+  "C:/Windows/System32/drivers": { "etc_host": { kind: "file" } },
+};
 
-const NET_ROWS: { ip: string; label: string; bad: boolean }[] = [
+const WORM_MALWARE_PATH = "C:/Users/Public/Downloads/invoice.pdf.exe";
+const WORM_REG_CMD = "reg delete WormBridge /f";
+
+const NET_ROWS_BOT: { ip: string; label: string; bad: boolean }[] = [
   { ip: "185.234.72.19", label: "tor-exit / сканирование", bad: true },
-  { ip: "1.1.1.1", label: "Cloudflare DNS", bad: false },
   { ip: "91.224.90.3", label: "известный C2", bad: true },
+  { ip: "203.0.113.44", label: "ботнет relay", bad: true },
+  { ip: "198.51.100.9", label: "скан портов", bad: true },
+  { ip: "1.1.1.1", label: "Cloudflare DNS", bad: false },
   { ip: "104.21.44.88", label: "CDN / доставка контента", bad: false },
+  { ip: "8.8.8.8", label: "Google Public DNS", bad: false },
+];
+
+const TM_PROC_MINER = [
+  { id: "sys", name: "System", cpu: 0.4, net: 0.01, malware: false },
+  { id: "exp", name: "explorer.exe", cpu: 2.1, net: 0.05, malware: false },
+  { id: "msedge", name: "msedge.exe", cpu: 8.4, net: 0.3, malware: false },
+  { id: "bad", name: "mshelper (копия)", cpu: 89.0, net: 0.02, malware: true },
+];
+
+const TM_PROC_BOT = [
+  { id: "sys", name: "System", cpu: 0.3, net: 0.0, malware: false },
+  { id: "exp", name: "explorer.exe", cpu: 1.8, net: 0.04, malware: false },
+  { id: "bot", name: "nt_botagent.exe", cpu: 12.0, net: 18.7, malware: true },
+  { id: "svc", name: "svchost.exe", cpu: 3.2, net: 0.08, malware: false },
 ];
 
 function formatClock(d: Date): string {
@@ -81,10 +97,87 @@ function diffClass(d: DesktopVirusCatalogEntry["difficulty"]): string {
   return "hard";
 }
 
-function VirusSelectCard(props: {
-  entry: DesktopVirusCatalogEntry;
-  onPick: () => void;
+function useWindowManager() {
+  const [open, setOpen] = useState<Record<WinId, boolean>>(() => ({
+    explorer: false,
+    antivirus: false,
+    firewall: false,
+    console: false,
+    taskmgr: false,
+  }));
+  const [zStack, setZStack] = useState<WinId[]>([]);
+
+  const openWindow = useCallback((id: WinId) => {
+    setOpen((o) => ({ ...o, [id]: true }));
+    setZStack((s) => [...s.filter((x) => x !== id), id]);
+  }, []);
+
+  const closeWindow = useCallback((id: WinId) => {
+    setOpen((o) => ({ ...o, [id]: false }));
+    setZStack((s) => s.filter((x) => x !== id));
+  }, []);
+
+  const bringToFront = useCallback((id: WinId) => {
+    setZStack((s) => [...s.filter((x) => x !== id), id]);
+  }, []);
+
+  const zIndexFor = useCallback(
+    (id: WinId) => {
+      const i = zStack.indexOf(id);
+      return i < 0 ? 12 : 20 + i;
+    },
+    [zStack],
+  );
+
+  const resetAllClosed = useCallback(() => {
+    setOpen({
+      explorer: false,
+      antivirus: false,
+      firewall: false,
+      console: false,
+      taskmgr: false,
+    });
+    setZStack([]);
+  }, []);
+
+  return {
+    open,
+    zStack,
+    openWindow,
+    closeWindow,
+    bringToFront,
+    zIndexFor,
+    resetAllClosed,
+  };
+}
+
+function DesktopWindowFrame(props: {
+  winId: WinId;
+  z: number;
+  onClose: () => void;
+  onPointerDown: () => void;
+  children: ReactNode;
 }) {
+  const { winId, z, onClose, onPointerDown, children } = props;
+  const L = WIN_LAYOUT[winId];
+  return (
+    <div
+      className="dvs-window"
+      style={{ top: L.top, left: L.left, width: L.width, zIndex: z }}
+      onPointerDown={onPointerDown}
+    >
+      <div className="dvs-win-titlebar">
+        <span className="dvs-win-title">{WIN_LABELS[winId].title}</span>
+        <button type="button" className="dvs-win-close" aria-label="Закрыть" onClick={onClose}>
+          ×
+        </button>
+      </div>
+      <div className="dvs-win-body">{children}</div>
+    </div>
+  );
+}
+
+function VirusSelectCard(props: { entry: DesktopVirusCatalogEntry; onPick: () => void }) {
   const { entry, onPick } = props;
   return (
     <button type="button" className="dvs-select-card" onClick={onPick}>
@@ -136,11 +229,246 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
   const { virusId } = props;
   const entry = useMemo(() => DESKTOP_VIRUS_CATALOG.find((e) => e.id === virusId)!, [virusId]);
   const [clock, setClock] = useState(() => new Date());
+  const [startOpen, setStartOpen] = useState(false);
+  const startRef = useRef<HTMLDivElement>(null);
+  const shell = useWindowManager();
+  const [phase, setPhase] = useState<Phase>("playing");
+
+  /* ── Уровень 1: паразит ── */
+  const [p1Popups, setP1Popups] = useState<{ id: string; title: string; top: number; left: number; z: number }[]>([]);
+  const p1IdRef = useRef(0);
+  const p1ZRef = useRef(100);
+
+  /* ── Уровень 2: червь ── */
+  const [wormPath, setWormPath] = useState<string>("C:");
+  const [wormSelected, setWormSelected] = useState<string | null>(null);
+  const [wormScanDone, setWormScanDone] = useState(false);
+  const [wormFileGone, setWormFileGone] = useState(false);
+  const [wormRegDone, setWormRegDone] = useState(false);
+  const [wormHiddenFile, setWormHiddenFile] = useState<string | null>(null);
+
+  /* ── Уровень 4: майнер ── */
+  const [rhKilled, setRhKilled] = useState(false);
+  const [rhAv, setRhAv] = useState(false);
+  const [rhConsole, setRhConsole] = useState(false);
+
+  /* ── Уровень 5: ботнет ── */
+  const [nbBlocked, setNbBlocked] = useState<Set<string>>(() => new Set());
+  const [nbLeft, setNbLeft] = useState(90);
+
+  const [tmTab, setTmTab] = useState<"proc" | "net">("proc");
+  const [consoleLines, setConsoleLines] = useState<string[]>(["GuardSim Console v1.0", "Введите команду и нажмите Enter."]);
+  const [consoleInput, setConsoleInput] = useState("");
+
+  useEffect(() => {
+    shell.resetAllClosed();
+    setPhase("playing");
+    setStartOpen(false);
+    setP1Popups([]);
+    setWormPath("C:");
+    setWormSelected(null);
+    setWormScanDone(false);
+    setWormFileGone(false);
+    setWormRegDone(false);
+    setRhKilled(false);
+    setRhAv(false);
+    setRhConsole(false);
+    setNbBlocked(new Set());
+    setNbLeft(90);
+    setTmTab("proc");
+    setWormHiddenFile(null);
+    setConsoleLines(["GuardSim Console v1.0", "Введите команду и нажмите Enter."]);
+    setConsoleInput("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- сброс при смене сценария
+  }, [virusId]);
 
   useEffect(() => {
     const t = window.setInterval(() => setClock(new Date()), 30_000);
     return () => window.clearInterval(t);
   }, []);
+
+  useEffect(() => {
+    if (!startOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      if (startRef.current?.contains(e.target as Node)) return;
+      setStartOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [startOpen]);
+
+  /* Победа / поражение: червь */
+  useEffect(() => {
+    if (virusId !== "file_worm" || phase !== "playing") return;
+    if (wormScanDone && wormFileGone && wormRegDone) setPhase("won");
+  }, [virusId, phase, wormScanDone, wormFileGone, wormRegDone]);
+
+  /* Победа / поражение: ресурсы */
+  useEffect(() => {
+    if (virusId !== "resource_hog" || phase !== "playing") return;
+    if (rhKilled && rhAv && rhConsole) setPhase("won");
+  }, [virusId, phase, rhKilled, rhAv, rhConsole]);
+
+  /* Победа / поражение: сеть */
+  const nbBadIps = useMemo(() => NET_ROWS_BOT.filter((r) => r.bad).map((r) => r.ip), []);
+  const nbAllBadBlocked = nbBadIps.every((ip) => nbBlocked.has(ip));
+  const nbGoodBlocked = NET_ROWS_BOT.some((r) => !r.bad && nbBlocked.has(r.ip));
+
+  useEffect(() => {
+    if (virusId !== "network_bot" || phase !== "playing") return;
+    const t = window.setInterval(() => setNbLeft((s) => (s <= 1 ? 0 : s - 1)), 1000);
+    return () => window.clearInterval(t);
+  }, [virusId, phase]);
+
+  useEffect(() => {
+    if (virusId !== "network_bot" || phase !== "playing") return;
+    if (nbGoodBlocked) setPhase("lost");
+  }, [virusId, phase, nbGoodBlocked]);
+
+  useEffect(() => {
+    if (virusId !== "network_bot" || phase !== "playing") return;
+    if (nbAllBadBlocked && !nbGoodBlocked) setPhase("won");
+  }, [virusId, phase, nbAllBadBlocked, nbGoodBlocked]);
+
+  useEffect(() => {
+    if (virusId !== "network_bot" || phase !== "playing") return;
+    if (nbLeft === 0 && !nbAllBadBlocked) setPhase("lost");
+  }, [virusId, phase, nbLeft, nbAllBadBlocked]);
+
+  /* Уровень 1: бесконечные окна */
+  useEffect(() => {
+    if (virusId !== "process_parasite" || phase !== "playing") return;
+    const tick = window.setInterval(() => {
+      setP1Popups((p) => {
+        if (p.length >= 22) {
+          window.setTimeout(() => setPhase("lost"), 0);
+          return p;
+        }
+        p1IdRef.current += 1;
+        p1ZRef.current += 1;
+        const title = BAD_POPUP_TITLES[Math.floor(Math.random() * BAD_POPUP_TITLES.length)]!;
+        return [
+          ...p,
+          {
+            id: `pop${p1IdRef.current}`,
+            title,
+            top: 5 + Math.random() * 55,
+            left: 4 + Math.random() * 58,
+            z: p1ZRef.current,
+          },
+        ];
+      });
+    }, 1600 + Math.random() * 1400);
+    return () => window.clearInterval(tick);
+  }, [virusId, phase]);
+
+  const closeP1Popup = useCallback((id: string) => {
+    setP1Popups((p) => p.filter((x) => x.id !== id));
+  }, []);
+
+  const runAntimalware = useCallback(() => {
+    if (virusId === "process_parasite" && phase === "playing") setPhase("won");
+  }, [virusId, phase]);
+
+  const appendConsole = useCallback((line: string) => {
+    setConsoleLines((l) => [...l.slice(-40), line]);
+  }, []);
+
+  const submitConsole = useCallback(() => {
+    const raw = consoleInput.trim();
+    if (!raw) return;
+    setConsoleInput("");
+    appendConsole(`> ${raw}`);
+
+    if (virusId === "file_worm" && phase === "playing") {
+      const norm = raw.replace(/\s+/g, " ").toLowerCase();
+      if (norm === WORM_REG_CMD.toLowerCase()) {
+        if (!wormFileGone) {
+          appendConsole("Ошибка: сначала удалите вредоносный файл из проводника.");
+          return;
+        }
+        setWormRegDone(true);
+        appendConsole("Ключ WormBridge удалён из реестра (симуляция).");
+        return;
+      }
+      appendConsole("Неизвестная команда. Подсказка: reg delete WormBridge /f");
+      return;
+    }
+
+    if (virusId === "resource_hog" && phase === "playing") {
+      if (raw.trim().toLowerCase() === "purge-miner-traces") {
+        if (!rhKilled) {
+          appendConsole("Сначала завершите процесс mshelper (копия) в диспетчере задач.");
+          return;
+        }
+        if (!rhAv) {
+          appendConsole("Сначала удалите остатки угрозы в антивирусе.");
+          return;
+        }
+        setRhConsole(true);
+        appendConsole("Хвосты майнера очищены (симуляция).");
+        return;
+      }
+      appendConsole("Неизвестная команда. Нужно: purge-miner-traces");
+      return;
+    }
+
+    appendConsole(`Команда не используется в этом сценарии: ${raw}`);
+  }, [appendConsole, consoleInput, phase, rhAv, rhKilled, virusId, wormFileGone]);
+
+  const openFromStart = (id: WinId) => {
+    shell.openWindow(id);
+    shell.bringToFront(id);
+    setStartOpen(false);
+  };
+
+  const wormEntries = WORM_VFS[wormPath];
+  const wormParent = wormPath.includes("/") ? wormPath.slice(0, wormPath.lastIndexOf("/")) : null;
+
+  const effectiveWormEntries = useMemo(() => {
+    if (!wormEntries) return null;
+    if (wormHiddenFile && wormPath === "C:/Users/Public/Downloads") {
+      const o = { ...wormEntries };
+      delete o[wormHiddenFile];
+      return o;
+    }
+    return wormEntries;
+  }, [wormEntries, wormHiddenFile, wormPath]);
+
+  const deleteWormFileFixed = () => {
+    if (virusId !== "file_worm" || phase !== "playing" || !wormSelected || !effectiveWormEntries) return;
+    const ent = effectiveWormEntries[wormSelected];
+    if (!ent || ent.kind !== "file") return;
+    if (ent.malware) {
+      if (!wormScanDone) {
+        appendConsole("Проводник: сначала выполните полное сканирование в антивирусе.");
+        return;
+      }
+      setWormFileGone(true);
+      setWormHiddenFile("invoice.pdf.exe");
+      setWormSelected(null);
+      return;
+    }
+    setPhase("lost");
+  };
+
+  const endRhTask = (id: string) => {
+    if (virusId !== "resource_hog" || phase !== "playing") return;
+    const row = TM_PROC_MINER.find((r) => r.id === id);
+    if (!row) return;
+    if (row.malware) setRhKilled(true);
+    else setPhase("lost");
+  };
+
+  const toggleNbBlock = (ip: string) => {
+    if (virusId !== "network_bot" || phase !== "playing") return;
+    setNbBlocked((prev) => {
+      const next = new Set(prev);
+      if (next.has(ip)) next.delete(ip);
+      else next.add(ip);
+      return next;
+    });
+  };
 
   return (
     <div className="dvs-page dvs-page--game">
@@ -155,351 +483,365 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
       </div>
       <div className="dvs-desktop" aria-label="Симуляция рабочего стола">
         <div className="dvs-wallpaper" />
-        {virusId === "process_parasite" ? <GameProcessParasite /> : null}
-        {virusId === "file_worm" ? <GameFileWorm /> : null}
-        {virusId === "phishing_wave" ? <GamePhishingWave /> : null}
-        {virusId === "resource_hog" ? <GameResourceHog /> : null}
-        {virusId === "network_bot" ? <GameNetworkBot /> : null}
+
+        {/* Окна из Пуск */}
+        {shell.open.explorer ? (
+          <DesktopWindowFrame
+            winId="explorer"
+            z={shell.zIndexFor("explorer")}
+            onClose={() => shell.closeWindow("explorer")}
+            onPointerDown={() => shell.bringToFront("explorer")}
+          >
+            {virusId === "file_worm" ? (
+              <>
+                <p className="dvs-win-hint">Путь: {wormPath.replace(/\//g, "\\")}</p>
+                <div className="dvs-explorer-bar">
+                  {wormParent ? (
+                    <button type="button" className="dvs-btn dvs-btn--small dvs-btn--ghost" onClick={() => { setWormPath(wormParent); setWormSelected(null); }}>
+                      ↑ Вверх
+                    </button>
+                  ) : null}
+                </div>
+                <ul className="dvs-file-list">
+                  {effectiveWormEntries &&
+                    Object.entries(effectiveWormEntries).map(([name, e]) => (
+                      <li key={name}>
+                        {e.kind === "dir" ? (
+                          <button
+                            type="button"
+                            className="dvs-file-row"
+                            onClick={() => {
+                              setWormPath(`${wormPath}/${name}`);
+                              setWormSelected(null);
+                            }}
+                          >
+                            <span className="dvs-file-ico" aria-hidden>
+                              📁
+                            </span>
+                            {name}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className={`dvs-file-row${wormSelected === name ? " dvs-file-row--selected" : ""}`}
+                            onClick={() => setWormSelected(name)}
+                          >
+                            <span className="dvs-file-ico" aria-hidden>
+                              📄
+                            </span>
+                            {name}
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                </ul>
+                <div className="dvs-toolbar">
+                  <button type="button" className="dvs-btn dvs-btn--danger" disabled={!wormSelected} onClick={deleteWormFileFixed}>
+                    Удалить
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p className="dvs-win-hint">В этом сценарии проводник не требуется. Откройте утилиты из меню «Пуск».</p>
+            )}
+          </DesktopWindowFrame>
+        ) : null}
+
+        {shell.open.antivirus ? (
+          <DesktopWindowFrame
+            winId="antivirus"
+            z={shell.zIndexFor("antivirus")}
+            onClose={() => shell.closeWindow("antivirus")}
+            onPointerDown={() => shell.bringToFront("antivirus")}
+          >
+            {virusId === "process_parasite" ? (
+              <div className="dvs-av-actions">
+                <p className="dvs-win-hint">Рекомендуется лечение всплывающих угроз.</p>
+                <button type="button" className="dvs-btn dvs-btn--primary" onClick={runAntimalware}>
+                  Антималварь — лечение
+                </button>
+              </div>
+            ) : null}
+            {virusId === "file_worm" ? (
+              <div className="dvs-av-actions">
+                <p className="dvs-win-hint">Полное сканирование покажет путь к вредоносному файлу.</p>
+                <button
+                  type="button"
+                  className="dvs-btn dvs-btn--primary"
+                  disabled={wormScanDone}
+                  onClick={() => {
+                    setWormScanDone(true);
+                    appendConsole(`[Антивирус] Обнаружено: ${WORM_MALWARE_PATH.replace(/\//g, "\\")}`);
+                  }}
+                >
+                  Полное сканирование системы
+                </button>
+                {wormScanDone ? (
+                  <p className="dvs-av-report">
+                    <strong>Результат:</strong> {WORM_MALWARE_PATH.replace(/\//g, "\\")}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+            {virusId === "resource_hog" ? (
+              <div className="dvs-av-actions">
+                <p className="dvs-win-hint">После завершения процесса удалите остатки.</p>
+                <button
+                  type="button"
+                  className="dvs-btn dvs-btn--primary"
+                  disabled={!rhKilled || rhAv}
+                  onClick={() => setRhAv(true)}
+                >
+                  Удалить остатки угрозы
+                </button>
+                {!rhKilled ? <p className="dvs-win-hint dvs-win-hint--small">Сначала завершите mshelper (копия) в диспетчере задач.</p> : null}
+              </div>
+            ) : null}
+            {virusId === "network_bot" ? (
+              <p className="dvs-win-hint">В этом сценарии используйте брандмауэр и диспетчер задач. Антивирус не обязателен.</p>
+            ) : null}
+          </DesktopWindowFrame>
+        ) : null}
+
+        {shell.open.firewall ? (
+          <DesktopWindowFrame
+            winId="firewall"
+            z={shell.zIndexFor("firewall")}
+            onClose={() => shell.closeWindow("firewall")}
+            onPointerDown={() => shell.bringToFront("firewall")}
+          >
+            {virusId === "network_bot" ? (
+              <>
+                <p className="dvs-win-hint">Исходящие правила. Заблокируйте только вредоносные узлы.</p>
+                <p className="dvs-fw-timer">
+                  Осталось: <strong>{nbLeft}</strong> с
+                </p>
+                <ul className="dvs-fw-list">
+                  {NET_ROWS_BOT.map((r) => (
+                    <li key={r.ip} className="dvs-fw-row">
+                      <div>
+                        <code>{r.ip}</code>
+                        <span className="dvs-fw-label">{r.label}</span>
+                      </div>
+                      <button
+                        type="button"
+                        className={`dvs-btn dvs-btn--small${nbBlocked.has(r.ip) ? " dvs-btn--blocked" : ""}`}
+                        onClick={() => toggleNbBlock(r.ip)}
+                      >
+                        {nbBlocked.has(r.ip) ? "Разблокировать" : "Заблокировать"}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <p className="dvs-win-hint">Правила брандмауэра не нужны в этом сценарии.</p>
+            )}
+          </DesktopWindowFrame>
+        ) : null}
+
+        {shell.open.console ? (
+          <DesktopWindowFrame
+            winId="console"
+            z={shell.zIndexFor("console")}
+            onClose={() => shell.closeWindow("console")}
+            onPointerDown={() => shell.bringToFront("console")}
+          >
+            <div className="dvs-console-out" role="log">
+              {consoleLines.map((ln, i) => (
+                <div key={`${i}-${ln.slice(0, 12)}`} className="dvs-console-line">
+                  {ln}
+                </div>
+              ))}
+            </div>
+            {virusId === "file_worm" ? (
+              <p className="dvs-win-hint dvs-win-hint--small">После удаления файла: {WORM_REG_CMD}</p>
+            ) : null}
+            {virusId === "resource_hog" ? (
+              <p className="dvs-win-hint dvs-win-hint--small">После удаления остатков в антивирусе введите: purge-miner-traces</p>
+            ) : null}
+            <form
+              className="dvs-console-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                submitConsole();
+              }}
+            >
+              <span className="dvs-console-prompt" aria-hidden>
+                {">"}
+              </span>
+              <input
+                className="dvs-console-input"
+                value={consoleInput}
+                onChange={(e) => setConsoleInput(e.target.value)}
+                placeholder="команда…"
+                autoComplete="off"
+                spellCheck={false}
+              />
+              <button type="submit" className="dvs-btn dvs-btn--small">
+                Enter
+              </button>
+            </form>
+          </DesktopWindowFrame>
+        ) : null}
+
+        {shell.open.taskmgr ? (
+          <DesktopWindowFrame
+            winId="taskmgr"
+            z={shell.zIndexFor("taskmgr")}
+            onClose={() => shell.closeWindow("taskmgr")}
+            onPointerDown={() => shell.bringToFront("taskmgr")}
+          >
+            {virusId === "network_bot" ? (
+              <div className="dvs-tm-tabs">
+                <button type="button" className={`dvs-tm-tab${tmTab === "proc" ? " dvs-tm-tab--on" : ""}`} onClick={() => setTmTab("proc")}>
+                  Процессы
+                </button>
+                <button type="button" className={`dvs-tm-tab${tmTab === "net" ? " dvs-tm-tab--on" : ""}`} onClick={() => setTmTab("net")}>
+                  Сеть
+                </button>
+              </div>
+            ) : (
+              <p className="dvs-tm-heading">Процессы</p>
+            )}
+            {virusId === "resource_hog" ? (
+              <table className="dvs-tm-table">
+                <thead>
+                  <tr>
+                    <th>Имя</th>
+                    <th>CPU %</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {TM_PROC_MINER.map((r) => (
+                    <tr key={r.id} className={r.cpu > 50 ? "dvs-tm-hot" : ""}>
+                      <td>{r.name}</td>
+                      <td>{r.cpu.toFixed(1)}</td>
+                      <td>
+                        <button type="button" className="dvs-btn dvs-btn--small" onClick={() => endRhTask(r.id)}>
+                          Снять задачу
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : null}
+            {virusId === "network_bot" && tmTab === "proc" ? (
+              <table className="dvs-tm-table">
+                <thead>
+                  <tr>
+                    <th>Имя</th>
+                    <th>CPU %</th>
+                    <th>Сеть Мбит/с</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {TM_PROC_BOT.map((r) => (
+                    <tr key={r.id} className={r.cpu > 50 || r.net > 10 ? "dvs-tm-hot" : ""}>
+                      <td>{r.name}</td>
+                      <td>{r.cpu.toFixed(1)}</td>
+                      <td>{r.net.toFixed(2)}</td>
+                      <td>
+                        <span className="dvs-tm-muted">—</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : null}
+            {virusId === "network_bot" && tmTab === "net" ? (
+              <>
+                <p className="dvs-win-hint dvs-win-hint--small">Сетевая активность процессов (исходящий трафик).</p>
+                <table className="dvs-tm-table">
+                  <thead>
+                    <tr>
+                      <th>Процесс</th>
+                      <th>Сеть ↑ Мбит/с</th>
+                      <th>Подсказка</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {TM_PROC_BOT.map((r) => (
+                      <tr key={`n-${r.id}`} className={r.net > 10 ? "dvs-tm-hot" : ""}>
+                        <td>{r.name}</td>
+                        <td>{r.net.toFixed(2)}</td>
+                        <td className="dvs-tm-muted">{r.net > 10 ? "Подозрительная нагрузка" : "норма"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            ) : null}
+          </DesktopWindowFrame>
+        ) : null}
+
+        {/* Паразит: всплывающие окна */}
+        {virusId === "process_parasite" && phase === "playing"
+          ? p1Popups.map((pop) => (
+              <div
+                key={pop.id}
+                className="dvs-window dvs-window--popup dvs-window--threat"
+                style={{ top: `${pop.top}%`, left: `${pop.left}%`, width: "min(280px, 82vw)", zIndex: pop.z }}
+              >
+                <div className="dvs-win-titlebar dvs-win-titlebar--alert">
+                  <span className="dvs-win-title">{pop.title}</span>
+                  <button type="button" className="dvs-win-close" aria-label="Закрыть" onClick={() => closeP1Popup(pop.id)}>
+                    ×
+                  </button>
+                </div>
+                <div className="dvs-win-body dvs-win-body--compact">
+                  <p>Подозрительное окно (симуляция).</p>
+                </div>
+              </div>
+            ))
+          : null}
+
+        {virusId === "process_parasite" && phase === "playing" ? (
+          <div className="dvs-hud">
+            <span>Всплывающих окон: {p1Popups.length} (лимит 22)</span>
+          </div>
+        ) : null}
+
         <footer className="dvs-taskbar" role="presentation">
-          <button type="button" className="dvs-start-btn" aria-label="Пуск" disabled>
-            ⧉
-          </button>
-          <div className="dvs-taskbar-apps" />
+          <div className="dvs-taskbar-start-cluster" ref={startRef}>
+            <button
+              type="button"
+              className={`dvs-start-btn${startOpen ? " dvs-start-btn--open" : ""}`}
+              aria-expanded={startOpen}
+              aria-haspopup="menu"
+              aria-label="Пуск"
+              onClick={() => setStartOpen((o) => !o)}
+            >
+              ⧉
+            </button>
+            {startOpen ? (
+              <div className="dvs-start-menu" role="menu">
+                <div className="dvs-start-menu-title">Утилиты</div>
+                {(WIN_IDS as readonly WinId[]).map((id) => (
+                  <button key={id} type="button" className="dvs-start-item" role="menuitem" onClick={() => openFromStart(id)}>
+                    {WIN_LABELS[id].menu}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+          <div className="dvs-taskbar-apps">
+            {(WIN_IDS as readonly WinId[]).filter((id) => shell.open[id]).map((id) => (
+              <button key={id} type="button" className="dvs-task-pill" onClick={() => shell.bringToFront(id)}>
+                {WIN_LABELS[id].taskbar}
+              </button>
+            ))}
+          </div>
           <time className="dvs-taskbar-clock" dateTime={clock.toISOString()}>
             {formatClock(clock)}
           </time>
         </footer>
       </div>
+      {phase !== "playing" ? <ResultOverlay phase={phase} /> : null}
     </div>
-  );
-}
-
-function GameProcessParasite() {
-  const [phase, setPhase] = useState<Phase>("playing");
-  const [killed, setKilled] = useState(0);
-  const [popups, setPopups] = useState<{ id: string; title: string }[]>([]);
-  const [explorerOpen, setExplorerOpen] = useState(true);
-  const idRef = useRef(0);
-
-  const closeBad = useCallback((id: string) => {
-    setPopups((p) => p.filter((x) => x.id !== id));
-    setKilled((k) => k + 1);
-  }, []);
-
-  useEffect(() => {
-    if (phase !== "playing") return;
-    if (killed >= 6) {
-      setPhase("won");
-      return;
-    }
-    const tick = window.setInterval(() => {
-      setPopups((p) => {
-        if (p.length >= 12) {
-          window.setTimeout(() => setPhase("lost"), 0);
-          return p;
-        }
-        idRef.current += 1;
-        const title = BAD_POPUP_TITLES[Math.floor(Math.random() * BAD_POPUP_TITLES.length)]!;
-        return [...p, { id: `b${idRef.current}`, title }];
-      });
-    }, 4500);
-    return () => window.clearInterval(tick);
-  }, [phase, killed]);
-
-  useEffect(() => {
-    if (phase === "playing" && popups.length >= 12) {
-      setPhase("lost");
-    }
-  }, [phase, popups.length]);
-
-  return (
-    <>
-      {explorerOpen ? (
-        <div className="dvs-window dvs-window--explorer" style={{ top: "12%", left: "8%", width: "min(420px, 88vw)" }}>
-          <div className="dvs-win-titlebar">
-            <span className="dvs-win-title">Системный проводник</span>
-            <button
-              type="button"
-              className="dvs-win-close"
-              aria-label="Закрыть"
-              onClick={() => {
-                setExplorerOpen(false);
-                setPhase("lost");
-              }}
-            >
-              ×
-            </button>
-          </div>
-          <div className="dvs-win-body">
-            <p className="dvs-win-hint">Не закрывайте это окно — это часть системы.</p>
-            <ul className="dvs-fake-tree">
-              <li>📁 Документы</li>
-              <li>📁 Загрузки</li>
-              <li>📁 Рабочий стол</li>
-            </ul>
-          </div>
-        </div>
-      ) : null}
-
-      {popups.map((pop) => (
-        <div key={pop.id} className="dvs-window dvs-window--popup dvs-window--threat" style={{ top: `${18 + (pop.id.length % 5) * 8}%`, left: `${20 + (pop.id.charCodeAt(2) % 6) * 10}%`, width: "min(300px, 85vw)" }}>
-          <div className="dvs-win-titlebar dvs-win-titlebar--alert">
-            <span className="dvs-win-title">{pop.title}</span>
-            <button type="button" className="dvs-win-close" aria-label="Закрыть угрозу" onClick={() => closeBad(pop.id)}>
-              ×
-            </button>
-          </div>
-          <div className="dvs-win-body dvs-win-body--compact">
-            <p>Подозрительное окно. Закройте его крестиком.</p>
-          </div>
-        </div>
-      ))}
-
-      <div className="dvs-hud">
-        <span>Устранено: {killed} / 6</span>
-        {phase === "won" ? <span className="dvs-hud-ok">Угроза нейтрализована</span> : null}
-        {phase === "lost" ? <span className="dvs-hud-bad">Симуляция провалена</span> : null}
-      </div>
-      {phase !== "playing" ? <ResultOverlay phase={phase} /> : null}
-    </>
-  );
-}
-
-function GameFileWorm() {
-  const [phase, setPhase] = useState<Phase>("playing");
-  const [selected, setSelected] = useState<string | null>(null);
-
-  const onDelete = () => {
-    if (!selected || phase !== "playing") return;
-    const f = WORM_FILES.find((x) => x.id === selected);
-    if (!f) return;
-    if (f.malware) setPhase("won");
-    else setPhase("lost");
-  };
-
-  return (
-    <>
-      <div className="dvs-window dvs-window--explorer" style={{ top: "10%", left: "6%", width: "min(480px, 92vw)" }}>
-        <div className="dvs-win-titlebar">
-          <span className="dvs-win-title">Загрузки</span>
-        </div>
-        <div className="dvs-win-body">
-          <p className="dvs-win-hint">Выделите подозрительный файл и удалите только его.</p>
-          <ul className="dvs-file-list">
-            {WORM_FILES.map((f) => (
-              <li key={f.id}>
-                <button
-                  type="button"
-                  className={`dvs-file-row${selected === f.id ? " dvs-file-row--selected" : ""}`}
-                  onClick={() => setSelected(f.id)}
-                >
-                  <span className="dvs-file-ico" aria-hidden>
-                    📄
-                  </span>
-                  {f.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <div className="dvs-toolbar">
-            <button type="button" className="dvs-btn dvs-btn--danger" disabled={!selected} onClick={onDelete}>
-              Удалить
-            </button>
-          </div>
-        </div>
-      </div>
-      {phase !== "playing" ? <ResultOverlay phase={phase} /> : null}
-    </>
-  );
-}
-
-function GamePhishingWave() {
-  const [phase, setPhase] = useState<Phase>("playing");
-  const [idx, setIdx] = useState(0);
-  const [mistakes, setMistakes] = useState(0);
-
-  const cur = PHISH_QUEUE[idx];
-
-  const answer = useCallback(
-    (trust: boolean) => {
-      if (phase !== "playing" || !cur) return;
-      const wrong = cur.legit ? !trust : trust;
-      const nextM = mistakes + (wrong ? 1 : 0);
-      if (nextM >= 3) {
-        setMistakes(nextM);
-        setPhase("lost");
-        return;
-      }
-      setMistakes(nextM);
-      if (idx + 1 >= PHISH_QUEUE.length) {
-        setPhase("won");
-      } else {
-        setIdx((i) => i + 1);
-      }
-    },
-    [cur, idx, mistakes, phase],
-  );
-
-  if (!cur) {
-    return phase === "won" ? <ResultOverlay phase="won" /> : null;
-  }
-
-  return (
-    <>
-      <div className="dvs-window dvs-window--toast-center" style={{ top: "14%", left: "50%", transform: "translateX(-50%)", width: "min(400px, 92vw)" }}>
-        <div className="dvs-win-titlebar">
-          <span className="dvs-win-title">Центр уведомлений</span>
-        </div>
-        <div className="dvs-win-body">
-          <div className="dvs-notif-card">
-            <strong>{cur.title}</strong>
-            <p>{cur.snippet}</p>
-          </div>
-          <div className="dvs-notif-actions">
-            <button type="button" className="dvs-btn dvs-btn--ghost" onClick={() => answer(false)}>
-              Пропустить
-            </button>
-            <button type="button" className="dvs-btn dvs-btn--primary" onClick={() => answer(true)}>
-              Доверять
-            </button>
-          </div>
-          <p className="dvs-win-hint dvs-win-hint--small">
-            Сообщение {idx + 1} из {PHISH_QUEUE.length} · ошибок: {mistakes}/3
-          </p>
-        </div>
-      </div>
-      {phase !== "playing" ? <ResultOverlay phase={phase} /> : null}
-    </>
-  );
-}
-
-const PROC_ROWS: { id: string; name: string; cpu: number; malware: boolean }[] = [
-  { id: "sys", name: "System", cpu: 0.4, malware: false },
-  { id: "exp", name: "explorer.exe", cpu: 2.1, malware: false },
-  { id: "msedge", name: "msedge.exe", cpu: 8.4, malware: false },
-  { id: "bad", name: "mshelper (копия)", cpu: 89.0, malware: true },
-];
-
-function GameResourceHog() {
-  const [phase, setPhase] = useState<Phase>("playing");
-
-  const endTask = (id: string) => {
-    if (phase !== "playing") return;
-    const row = PROC_ROWS.find((r) => r.id === id);
-    if (!row) return;
-    if (row.malware) setPhase("won");
-    else setPhase("lost");
-  };
-
-  return (
-    <>
-      <div className="dvs-window dvs-window--tm" style={{ top: "8%", left: "10%", width: "min(520px, 94vw)" }}>
-        <div className="dvs-win-titlebar">
-          <span className="dvs-win-title">Диспетчер задач</span>
-        </div>
-        <div className="dvs-win-body">
-          <p className="dvs-win-hint">Сортировка по CPU. Завершите подозрительный процесс.</p>
-          <table className="dvs-tm-table">
-            <thead>
-              <tr>
-                <th>Имя</th>
-                <th>CPU %</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {PROC_ROWS.map((r) => (
-                <tr key={r.id} className={r.cpu > 50 ? "dvs-tm-hot" : ""}>
-                  <td>{r.name}</td>
-                  <td>{r.cpu.toFixed(1)}</td>
-                  <td>
-                    <button type="button" className="dvs-btn dvs-btn--small" onClick={() => endTask(r.id)}>
-                      Снять задачу
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      {phase !== "playing" ? <ResultOverlay phase={phase} /> : null}
-    </>
-  );
-}
-
-function GameNetworkBot() {
-  const [phase, setPhase] = useState<Phase>("playing");
-  const [blocked, setBlocked] = useState<Set<string>>(() => new Set());
-  const [left, setLeft] = useState(75);
-
-  const badIps = useMemo(() => NET_ROWS.filter((r) => r.bad).map((r) => r.ip), []);
-  const allBadBlocked = badIps.every((ip) => blocked.has(ip));
-  const goodBlocked = NET_ROWS.some((r) => !r.bad && blocked.has(r.ip));
-
-  useEffect(() => {
-    if (phase !== "playing") return;
-    const t = window.setInterval(() => setLeft((s) => (s <= 1 ? 0 : s - 1)), 1000);
-    return () => window.clearInterval(t);
-  }, [phase]);
-
-  useEffect(() => {
-    if (phase !== "playing") return;
-    if (goodBlocked) setPhase("lost");
-  }, [phase, goodBlocked]);
-
-  useEffect(() => {
-    if (phase !== "playing") return;
-    if (allBadBlocked && !goodBlocked) setPhase("won");
-  }, [phase, allBadBlocked, goodBlocked]);
-
-  useEffect(() => {
-    if (phase !== "playing") return;
-    if (left === 0 && !allBadBlocked) setPhase("lost");
-  }, [phase, left, allBadBlocked]);
-
-  const toggleBlock = (ip: string) => {
-    if (phase !== "playing") return;
-    setBlocked((prev) => {
-      const next = new Set(prev);
-      if (next.has(ip)) next.delete(ip);
-      else next.add(ip);
-      return next;
-    });
-  };
-
-  return (
-    <>
-      <div className="dvs-window dvs-window--fw" style={{ top: "10%", left: "6%", width: "min(500px, 94vw)" }}>
-        <div className="dvs-win-titlebar">
-          <span className="dvs-win-title">Брандмауэр — исходящие</span>
-        </div>
-        <div className="dvs-win-body">
-          <p className="dvs-win-hint">Заблокируйте вредоносные IP. Не блокируйте доверенный DNS.</p>
-          <p className="dvs-fw-timer">
-            Осталось: <strong>{left}</strong> с
-          </p>
-          <ul className="dvs-fw-list">
-            {NET_ROWS.map((r) => (
-              <li key={r.ip} className="dvs-fw-row">
-                <div>
-                  <code>{r.ip}</code>
-                  <span className="dvs-fw-label">{r.label}</span>
-                </div>
-                <button
-                  type="button"
-                  className={`dvs-btn dvs-btn--small${blocked.has(r.ip) ? " dvs-btn--blocked" : ""}`}
-                  onClick={() => toggleBlock(r.ip)}
-                >
-                  {blocked.has(r.ip) ? "Разблокировать" : "Заблокировать"}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-      {phase !== "playing" ? <ResultOverlay phase={phase} /> : null}
-    </>
   );
 }
 

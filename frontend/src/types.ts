@@ -26,7 +26,9 @@ export type StepUiKind =
   | "MINI_URL_COMPARE"
   | "CHAT_MESSENGER"
   | "CALENDAR_INVITE"
-  | "EXTENSION_STORE";
+  | "EXTENSION_STORE"
+  | "TERMINAL_SESSION"
+  | "OAUTH_APPROVAL";
 
 export interface InvestigationPanel {
   id: string;

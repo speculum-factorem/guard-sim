@@ -6,7 +6,9 @@ import { ChatMessengerSimulation } from "./ChatMessengerSimulation";
 import { EmailClientSimulation } from "./EmailClientSimulation";
 import { ExtensionStoreSimulation } from "./ExtensionStoreSimulation";
 import { GenericWorkspaceSimulation } from "./GenericWorkspaceSimulation";
+import { OAuthApprovalSimulation } from "./OAuthApprovalSimulation";
 import { SocialFeedSimulation } from "./SocialFeedSimulation";
+import { TerminalSessionSimulation } from "./TerminalSessionSimulation";
 import { TicketSimulation } from "./TicketSimulation";
 
 export function StepSimulation(props: {
@@ -91,6 +93,26 @@ export function StepSimulation(props: {
     case "EXTENSION_STORE":
       return (
         <ExtensionStoreSimulation
+          step={step}
+          disabled={disabled}
+          onChoose={onChoose}
+          childrenFooter={childrenFooter}
+          splitLayout={splitLayout}
+        />
+      );
+    case "TERMINAL_SESSION":
+      return (
+        <TerminalSessionSimulation
+          step={step}
+          disabled={disabled}
+          onChoose={onChoose}
+          childrenFooter={childrenFooter}
+          splitLayout={splitLayout}
+        />
+      );
+    case "OAUTH_APPROVAL":
+      return (
+        <OAuthApprovalSimulation
           step={step}
           disabled={disabled}
           onChoose={onChoose}

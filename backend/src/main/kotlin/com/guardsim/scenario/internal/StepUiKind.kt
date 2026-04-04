@@ -24,4 +24,10 @@ enum class StepUiKind {
 
     /** Карточка расширения браузера / магазина приложений */
     EXTENSION_STORE,
+
+    /** Bash-терминал: просмотр и анализ скрипта */
+    TERMINAL_SESSION,
+
+    /** Экран согласия OAuth (Microsoft Azure AD-стиль) */
+    OAUTH_APPROVAL,
 }

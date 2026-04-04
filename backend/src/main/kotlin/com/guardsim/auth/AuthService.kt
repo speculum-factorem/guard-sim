@@ -1,10 +1,12 @@
 package com.guardsim.auth
 
+import com.guardsim.api.requirePlayerId
 import com.guardsim.dto.AuthResponseDto
 import com.guardsim.dto.UserMeDto
 import com.guardsim.config.JwtProperties
 import com.guardsim.player.PlayerEntity
 import com.guardsim.player.PlayerRepository
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -57,6 +59,28 @@ class AuthService(
             email = user?.email,
             guest = user == null,
         )
+    }
+
+    /**
+     * Профиль для UI: «зарегистрирован» только при валидном Bearer JWT.
+     * Без JWT — всегда guest, даже если X-GuardSim-Player совпадает с чужим профилем в БД
+     * (иначе после выхода шапка могла оставаться «в аккаунте» только по заголовку).
+     */
+    fun meFromRequest(request: HttpServletRequest): UserMeDto {
+        val bearer = request.getHeader("Authorization")
+            ?.removePrefix("Bearer ")
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+        val jwtPlayerId = bearer?.let { jwtService.parsePlayerId(it) }
+        if (jwtPlayerId == null) {
+            val playerId = request.requirePlayerId()
+            return UserMeDto(
+                playerId = playerId.toString(),
+                email = null,
+                guest = true,
+            )
+        }
+        return me(jwtPlayerId)
     }
 
     private fun buildAuthResponse(email: String, playerClientId: UUID): AuthResponseDto {

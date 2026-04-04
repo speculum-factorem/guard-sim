@@ -87,80 +87,89 @@ export function AppLayout({ children }: { children: ReactNode }) {
             type="button"
             className="app-nav-toggle"
             aria-expanded={navOpen}
-            aria-controls="app-primary-nav"
+            aria-controls="app-header-menu"
             aria-label={navOpen ? "Закрыть меню" : "Открыть меню"}
             onClick={() => setNavOpen((o) => !o)}
           >
             <span className="app-nav-toggle-bars" aria-hidden />
           </button>
 
-          <nav className="app-nav" id="app-primary-nav" aria-label="Основная навигация">
-            <Link
-              to={navTo("/dashboard")}
-              className={`app-nav-pill${isDashboard ? " app-nav-pill--active" : ""}`}
-              aria-current={isDashboard ? "page" : undefined}
-            >
-              Дашборд
-            </Link>
-            <Link
-              to={navTo("/challenges")}
-              className={`app-nav-pill${isChallenges ? " app-nav-pill--active" : ""}`}
-              aria-current={isChallenges ? "page" : undefined}
-            >
-              Челленджи
-            </Link>
-            <Link
-              to={navTo(DASHBOARD_TASKS_HREF)}
-              className={`app-nav-pill app-nav-pill--primary${isPlay ? " app-nav-pill--active" : ""}`}
-              aria-current={isPlay ? "page" : undefined}
-            >
-              {isHome ? "Играть" : "К задачам"}
-            </Link>
-            {!registered ? (
+          <div className="app-header-menu" id="app-header-menu">
+            <nav className="app-nav" aria-label="Основная навигация">
               <Link
-                to={navTo("/account")}
-                className={`app-nav-pill${isAccount ? " app-nav-pill--active" : ""}`}
-                aria-current={isAccount ? "page" : undefined}
+                to={navTo("/dashboard")}
+                className={`app-nav-pill${isDashboard ? " app-nav-pill--active" : ""}`}
+                aria-current={isDashboard ? "page" : undefined}
+                onClick={() => setNavOpen(false)}
               >
-                Профиль
+                Дашборд
               </Link>
-            ) : null}
-          </nav>
+              <Link
+                to={navTo("/challenges")}
+                className={`app-nav-pill${isChallenges ? " app-nav-pill--active" : ""}`}
+                aria-current={isChallenges ? "page" : undefined}
+                onClick={() => setNavOpen(false)}
+              >
+                Челленджи
+              </Link>
+              <Link
+                to={navTo(DASHBOARD_TASKS_HREF)}
+                className={`app-nav-pill app-nav-pill--primary${isPlay ? " app-nav-pill--active" : ""}`}
+                aria-current={isPlay ? "page" : undefined}
+                onClick={() => setNavOpen(false)}
+              >
+                {isHome ? "Играть" : "К задачам"}
+              </Link>
+              {!registered ? (
+                <Link
+                  to={navTo("/account")}
+                  className={`app-nav-pill${isAccount ? " app-nav-pill--active" : ""}`}
+                  aria-current={isAccount ? "page" : undefined}
+                  onClick={() => setNavOpen(false)}
+                >
+                  Профиль
+                </Link>
+              ) : null}
+            </nav>
 
-          <div className="app-bar-aside">
-            {registered && me ? (
-              <Link
-                to="/account"
-                className={`app-user-chip${isAccount ? " app-user-chip--active" : ""}`}
-                title={me.email ?? "Профиль"}
-                aria-current={isAccount ? "page" : undefined}
-              >
-                <span className="app-user-chip-avatar" aria-hidden>
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                </span>
-                <span className="app-user-chip-email">{me.email ?? "Аккаунт"}</span>
-              </Link>
-            ) : (
-              <>
+            <div className="app-bar-aside">
+              {registered && me ? (
                 <Link
-                  to="/login"
-                  className={`app-nav-pill${isLogin ? " app-nav-pill--active" : ""}`}
-                  aria-current={isLogin ? "page" : undefined}
+                  to="/account"
+                  className={`app-user-chip${isAccount ? " app-user-chip--active" : ""}`}
+                  title={me.email ?? "Профиль"}
+                  aria-current={isAccount ? "page" : undefined}
+                  onClick={() => setNavOpen(false)}
                 >
-                  Вход
+                  <span className="app-user-chip-avatar" aria-hidden>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </span>
+                  <span className="app-user-chip-email">{me.email ?? "Аккаунт"}</span>
                 </Link>
-                <Link
-                  to="/register"
-                  className={`app-nav-pill app-nav-pill--secondary${isRegister ? " app-nav-pill--active" : ""}`}
-                  aria-current={isRegister ? "page" : undefined}
-                >
-                  Регистрация
-                </Link>
-              </>
-            )}
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className={`app-nav-pill${isLogin ? " app-nav-pill--active" : ""}`}
+                    aria-current={isLogin ? "page" : undefined}
+                    onClick={() => setNavOpen(false)}
+                  >
+                    Вход
+                  </Link>
+                  <Link
+                    to="/register"
+                    className={`app-nav-pill app-nav-pill--secondary${isRegister ? " app-nav-pill--active" : ""}`}
+                    aria-current={isRegister ? "page" : undefined}
+                    onClick={() => setNavOpen(false)}
+                  >
+                    Регистрация
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>

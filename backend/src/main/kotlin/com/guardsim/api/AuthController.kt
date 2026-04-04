@@ -29,5 +29,5 @@ class AuthController(
 
     @GetMapping("/me")
     fun me(request: HttpServletRequest): UserMeDto =
-        authService.me(request.requirePlayerId())
+        authService.meFromRequest(request)
 }

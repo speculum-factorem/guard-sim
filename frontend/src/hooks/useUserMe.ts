@@ -10,24 +10,31 @@ export function useUserMe(): { me: UserMe | null; loading: boolean } {
 
   useEffect(() => {
     let cancelled = false;
+    let gen = 0;
 
     function load(showSpinner: boolean) {
+      const myGen = ++gen;
       if (showSpinner) {
         setLoading(true);
       }
       fetchMe()
         .then((m) => {
-          if (!cancelled) {
-            setMe(m);
+          if (cancelled || myGen !== gen) {
+            return;
           }
+          setMe(m);
         })
         .catch(() => {
-          if (!cancelled) {
-            setMe(null);
+          if (cancelled || myGen !== gen) {
+            return;
           }
+          setMe(null);
         })
         .finally(() => {
-          if (!cancelled && showSpinner) {
+          if (cancelled || myGen !== gen) {
+            return;
+          }
+          if (showSpinner) {
             setLoading(false);
           }
         });
@@ -37,6 +44,7 @@ export function useUserMe(): { me: UserMe | null; loading: boolean } {
     const unsub = subscribeAuthChanged(() => load(false));
     return () => {
       cancelled = true;
+      gen += 1;
       unsub();
     };
   }, []);

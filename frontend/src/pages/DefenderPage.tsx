@@ -82,6 +82,9 @@ const EDGES: [NodeId, NodeId][] = [
 
 const ALL_NODE_IDS: NodeId[] = ["inet", "fw", "web01", "app01", "db01", "dc01"];
 
+/** Внутренняя сеть (без INET) — по ней считается «здоровье» для победы */
+const INTERNAL_NODE_IDS: NodeId[] = ["fw", "web01", "app01", "db01", "dc01"];
+
 const ENERGY_MAX = 100;
 const ENERGY_START = 90;
 const ENERGY_REGEN_PER_TICK = 3;
@@ -162,11 +165,19 @@ function allAttackersBlocked(blocked: readonly string[], ips: readonly string[])
   return ips.length > 0 && ips.every((ip) => blocked.includes(ip));
 }
 
-function vaultAllHealthy(nodes: Record<NodeId, NodeState>): boolean {
-  return ALL_NODE_IDS.every((id) => {
+function internalNetworkHealthy(nodes: Record<NodeId, NodeState>): boolean {
+  return INTERNAL_NODE_IDS.every((id) => {
     const n = nodes[id];
     return !n.attacker && (n.status === "clean" || n.status === "defended");
   });
+}
+
+function defenderVictoryReady(
+  nodes: Record<NodeId, NodeState>,
+  blockedIps: readonly string[],
+  scenario: Scenario,
+): boolean {
+  return allAttackersBlocked(blockedIps, scenario.attackerIps) && internalNetworkHealthy(nodes);
 }
 
 interface DiscoveryState {
@@ -402,7 +413,7 @@ const SCENARIOS: Scenario[] = [
     diffColor: "#3dffa0",
     attackType: "SQL-инъекция",
     description: "Несколько внешних IP в NetFlow; PCAP на WEB-01 выделяет источник. Энергия и block для каждого вредоносного IP.",
-    briefing: "В логах и NetFlow видно несколько внешних IP; истинный источник подтверждается wireshark на WEB-01 и блокируется: block 203.45.178.92.\n\nЭнергия SOC ограничена — нельзя с первой секунды изолировать всю сеть: сначала logs (fw) + nmap или PCAP на узле разведки.\n\nВектор: INTERNET → … → DB-01. ПОБЕДА: все вредоносные IP заблокированы, путь закрыт (изоляция/патч на узлах вектора).",
+    briefing: "В логах и NetFlow видно несколько внешних IP; истинный источник подтверждается wireshark на WEB-01 и блокируется: block 203.45.178.92.\n\nЭнергия SOC ограничена — нельзя с первой секунды изолировать всю сеть: сначала logs (fw) + nmap или PCAP на узле разведки.\n\nВектор: INTERNET → … → DB-01. ПОБЕДА: все вредоносные IP в DROP; на FW, WEB, APP, DB, DC — ЧИСТО или ЗАЩИЩЁН, без ☠ (INET в критерий не входит).",
     attackPath: ["inet", "fw", "web01", "app01", "db01"],
     tickInterval: 12,
     arrivalLogs: {
@@ -428,7 +439,7 @@ const SCENARIOS: Scenario[] = [
     diffColor: "#ffe600",
     attackType: "APT / LoL",
     description: "Два вредоносных IP (C2 + вход). PCAP на APP-01, block по очереди. Энергия не даст изолировать всё с нуля.",
-    briefing: "Два вредоносных источника: начальный доступ и C2. NetFlow на FW, подтверждение — wireshark на APP-01. Затем block для каждого IP из intel.\n\nЭнергия и разведка: изоляция только после (logs fw + nmap) или PCAP на APP-01.",
+    briefing: "Два вредоносных источника: начальный доступ и C2. NetFlow на FW, подтверждение — wireshark на APP-01. Затем block для каждого IP из intel.\n\nЭнергия и разведка: изоляция только после (logs fw + nmap) или PCAP на APP-01.\n\nПОБЕДА: оба вредоносных IP в DROP; внутренняя сеть (FW…DC) — ЧИСТО или ЗАЩИЩЁН, без ☠; INET не оценивается.",
     attackPath: ["inet", "fw", "web01", "app01", "dc01"],
     tickInterval: 12,
     arrivalLogs: {
@@ -455,7 +466,7 @@ const SCENARIOS: Scenario[] = [
     attackType: "Ransomware",
     description: "SMB-атака и шум CDN в корреляции. Подтверждение на WEB-01, затем block. Длинный интервал хода.",
     briefing:
-      "SMB-эксплойт; в потоке появляются новые вредоносные IP по таймеру (до 5). NetFlow и PCAP — как обычно.\n\nПОБЕДА: все узлы в состоянии ЧИСТО или ЗАЩИЩЁН, нигде нет активной атаки (☠). Очистка узлов: heal <node>. Блокировка вредоносного IP обрывает текущую латеральную фазу.",
+      "SMB-эксплойт; в потоке появляются новые вредоносные IP по таймеру (до 5). NetFlow и PCAP — как обычно.\n\nПОБЕДА: все 5 вредоносных IP в DROP; на FW, WEB, APP, DB, DC — ЧИСТО или ЗАЩИЩЁН, без ☠. Узел INET в критерий не входит. heal <node>, block обрывает латеральную фазу.",
     attackPath: ["inet", "fw", "web01", "app01", "db01"],
     tickInterval: 12,
     vaultRevealIntervalSec: 36,
@@ -1394,17 +1405,10 @@ export function DefenderPage() {
 
   const triggerWin = useCallback(() => {
     if (!scenario) return;
-    addLog(
-      "info",
-      scenario.id === "vaultbreaker"
-        ? "VAULT: инфраструктура в норме — активной атаки нет"
-        : "ПРОТОКОЛ SOC ЗАКРЫТ — путь удержан, периметр закрыт",
-    );
+    addLog("info", "ПРОТОКОЛ SOC ЗАКРЫТ — LAN в норме, все вредоносные IP заблокированы");
     pushTerm("━━ МИССИЯ ВЫПОЛНЕНА ━━━━━━━━━━━━━━━━━━━━━━", "system");
     pushTerm(
-      scenario.id === "vaultbreaker"
-        ? "Инцидент закрыт: все узлы здоровы (ЧИСТО/ЗАЩИЩЁН), атака не ведётся."
-        : "Инцидент закрыт: все вредоносные источники заблокированы, вектор защищён.",
+      "Инцидент закрыт: внутренняя сеть (FW…DC) — ЧИСТО/ЗАЩИЩЁН без ☠; все вредоносные IP в DROP. INET в условии не участвует.",
       "system",
     );
     setScore((s) => {
@@ -1421,34 +1425,16 @@ export function DefenderPage() {
     setPhase("won");
   }, [addLog, pushTerm, elapsed, scenario, playMode]);
 
-  // VAULT: при полной блокировке всех IP — «очистить» интернет-узел на карте
+  // Подсказка: LAN в норме, но не все вредоносные IP в DROP
   useEffect(() => {
-    if (phase !== "playing" || !scenario || scenario.id !== "vaultbreaker") return;
-    if (!allAttackersBlocked(blockedIps, scenario.attackerIps)) return;
-    setNodes((prev) => {
-      if (prev.inet.status === "clean" && !prev.inet.attacker) return prev;
-      return {
-        ...prev,
-        inet: { ...prev.inet, status: "clean", attacker: false },
-      };
-    });
-  }, [phase, scenario, blockedIps]);
-
-  // Подсказка: путь удержан, но не все вредоносные IP в DROP (не VAULT — там другая победа)
-  useEffect(() => {
-    if (phase !== "playing" || !scenario || scenario.id === "vaultbreaker") return;
-    const loseN = nodes[scenario.loseNode];
-    const allPathOk = scenario.attackPath.every((id) => {
-      const n = nodes[id];
-      return n.status === "isolated" || n.status === "defended" || id === "inet";
-    });
-    if (!allPathOk || loseN.attacker) {
+    if (phase !== "playing" || !scenario) return;
+    if (!internalNetworkHealthy(nodes)) {
       ipBlockWarnedRef.current = false;
       return;
     }
     if (!allAttackersBlocked(blockedIps, scenario.attackerIps) && !ipBlockWarnedRef.current) {
       ipBlockWarnedRef.current = true;
-      addLog("warn", "Путь удерживается, но не все вредоносные IP заблокированы на периметре.");
+      addLog("warn", "Внутренняя сеть в норме, но не все вредоносные IP заблокированы на периметре.");
       pushTerm(
         `[SOC] Выполни block для: ${scenario.attackerIps.filter((ip) => !blockedIps.includes(ip)).join(", ")}.`,
         "error",
@@ -1456,29 +1442,14 @@ export function DefenderPage() {
     }
   }, [nodes, phase, scenario, blockedIps, addLog, pushTerm]);
 
-  // Победа (SQL / TIGER): путь закрыт + нет атакующего на цели + все attacker IP в DROP
+  // Победа: все вредоносные IP в DROP + FW…DC — ЧИСТО/ЗАЩИЩЁН без ☠ (INET не в условии)
   useEffect(() => {
-    if (phase !== "playing" || !scenario || scenario.id === "vaultbreaker") return;
-    const loseN = nodes[scenario.loseNode];
-    const allPathOk = scenario.attackPath.every((id) => {
-      const n = nodes[id];
-      return n.status === "isolated" || n.status === "defended" || id === "inet";
-    });
-    if (allPathOk && !loseN.attacker && allAttackersBlocked(blockedIps, scenario.attackerIps)) {
-      if (winTriggeredRef.current) return;
-      winTriggeredRef.current = true;
-      triggerWin();
-    }
-  }, [nodes, phase, scenario, blockedIps, triggerWin]);
-
-  // Победа VAULT: все узлы ЧИСТО или ЗАЩИЩЁН, нигде нет ☠
-  useEffect(() => {
-    if (phase !== "playing" || !scenario || scenario.id !== "vaultbreaker") return;
-    if (!vaultAllHealthy(nodes)) return;
+    if (phase !== "playing" || !scenario) return;
+    if (!defenderVictoryReady(nodes, blockedIps, scenario)) return;
     if (winTriggeredRef.current) return;
     winTriggeredRef.current = true;
     triggerWin();
-  }, [nodes, phase, scenario, triggerWin]);
+  }, [nodes, phase, scenario, blockedIps, triggerWin]);
 
   useEffect(() => {
     if (phase !== "lost" || !scenario) return;
@@ -1536,7 +1507,7 @@ export function DefenderPage() {
             <p className="defender-mode-hint">
               {playMode === "practice"
                 ? `Темп атакующего: ${Math.max(5, Math.min(180, practiceTickSec))} с на ход (5–180).`
-                : "Темп и КД по сценарию. VAULT BREAKER: до 5 IP по таймеру, победа — все узлы здоровы, без атаки."}
+                : "Темп и КД по сценарию. Победа везде: DROP всех вредн. IP + здоровый LAN (FW…DC), без ☠; INET не в критерии."}
             </p>
           </div>
 
@@ -1618,17 +1589,17 @@ export function DefenderPage() {
               .{" "}
               {scenario.id === "vaultbreaker" ? (
                 <>
-                  VAULT: до {scenario.attackerIps.length} IP, новый каждые {scenario.vaultRevealIntervalSec ?? 45}с. Победа —
-                  все узлы ЧИСТО или ЗАЩИЩЁН, без ☠. Матрица IP:{" "}
+                  VAULT: до {scenario.attackerIps.length} IP, новый каждые {scenario.vaultRevealIntervalSec ?? 45}с. Матрица:{" "}
                   <code className="defender-briefing-code">{scenario.attackerIps.join(", ")}</code>.
                 </>
               ) : (
                 <>
                   Вредоносные источники:{" "}
-                  <code className="defender-briefing-code">{scenario.attackerIps.join(", ")}</code>. Победа — блокировка
-                  всех и удержание пути.
+                  <code className="defender-briefing-code">{scenario.attackerIps.join(", ")}</code>.
                 </>
               )}{" "}
+              Победа (все сюжеты): все эти IP в DROP; на FW, WEB, APP, DB, DC — ЧИСТО или ЗАЩИЩЁН, без ☠; узел INET не
+              входит в критерий.{" "}
               Подтверждение: <strong>wireshark {scenario.wiresharkIntelNode}</strong> ИЛИ{" "}
               <strong>logs {scenario.netflowLogNode} + nmap</strong>.{" "}
               <code className="defender-briefing-code">block &lt;IP&gt;</code> обрывает латеральную фазу.
@@ -1685,9 +1656,7 @@ export function DefenderPage() {
           <h1 className="defender-result-title">{won ? "УГРОЗА НЕЙТРАЛИЗОВАНА" : "ИНЦИДЕНТ НЕ ЛОКАЛИЗОВАН"}</h1>
           <p className="defender-result-subtitle">
             {won
-              ? scenario.id === "vaultbreaker"
-                ? "Все узлы здоровы, активной атаки нет."
-                : "Все вредоносные IP заблокированы, путь атаки закрыт."
+              ? "LAN в норме (кроме INET), все вредоносные IP заблокированы."
               : scenario.loseMessage}
           </p>
 

@@ -87,6 +87,62 @@ const TM_PROC_BOT = [
   { id: "svc", name: "svchost.exe", cpu: 3.2, net: 0.08, malware: false },
 ];
 
+/** Процессы «обычного ПК» — снятие задачи убирает строку (симуляция) */
+const TM_DECORATIVE: { id: string; name: string; cpu: number; net: number }[] = [
+  { id: "dec-chrome", name: "chrome.exe", cpu: 4.8, net: 0.42 },
+  { id: "dec-spotify", name: "Spotify.exe", cpu: 1.4, net: 0.11 },
+  { id: "dec-steam", name: "steam.exe", cpu: 0.9, net: 0.15 },
+  { id: "dec-dwm", name: "dwm.exe", cpu: 0.7, net: 0.0 },
+  { id: "dec-teams", name: "ms-teams.exe", cpu: 2.2, net: 0.28 },
+];
+
+const WALLPAPER_VARIANTS = ["default", "aurora", "magma", "ocean", "neon-grid", "forest", "sunset"] as const;
+type WallpaperId = (typeof WALLPAPER_VARIANTS)[number];
+
+const CASUAL_VFS: Record<string, Record<string, FsEntry>> = {
+  "C:": { Users: { kind: "dir" } },
+  "C:/Users": { Maxim: { kind: "dir" } },
+  "C:/Users/Maxim": {
+    Desktop: { kind: "dir" },
+    Documents: { kind: "dir" },
+  },
+  "C:/Users/Maxim/Documents": {
+    "паспорт.pdf": { kind: "file" },
+    "квитанции.xlsx": { kind: "file" },
+  },
+  "C:/Users/Maxim/Desktop": {
+    Игры: { kind: "dir" },
+    Скриншоты: { kind: "dir" },
+    Работа: { kind: "dir" },
+    "Заметки.txt": { kind: "file" },
+  },
+  "C:/Users/Maxim/Desktop/Игры": {
+    Cyberpunk: { kind: "dir" },
+    "Stardew Valley": { kind: "dir" },
+  },
+  "C:/Users/Maxim/Desktop/Игры/Cyberpunk": {
+    "saves.zip": { kind: "file" },
+  },
+  "C:/Users/Maxim/Desktop/Игры/Stardew Valley": {
+    "SMAPI.txt": { kind: "file" },
+  },
+  "C:/Users/Maxim/Desktop/Скриншоты": {
+    "2026-04-01.png": { kind: "file" },
+  },
+  "C:/Users/Maxim/Desktop/Работа": {
+    "идеи.md": { kind: "file" },
+  },
+};
+
+const DESKTOP_ICONS: { id: string; label: string; emoji: string; open: WinId }[] = [
+  { id: "i1", label: "Мои документы", emoji: "📁", open: "explorer" },
+  { id: "i2", label: "Игры", emoji: "🎮", open: "explorer" },
+  { id: "i3", label: "Браузер", emoji: "🌐", open: "explorer" },
+  { id: "i4", label: "Музыка", emoji: "🎵", open: "explorer" },
+  { id: "i5", label: "Корзина", emoji: "🗑", open: "explorer" },
+  { id: "i6", label: "Защита", emoji: "🛡", open: "antivirus" },
+];
+
 function formatClock(d: Date): string {
   return d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 }
@@ -259,6 +315,12 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
   const [tmTab, setTmTab] = useState<"proc" | "net">("proc");
   const [consoleLines, setConsoleLines] = useState<string[]>(["GuardSim Console v1.0", "Введите команду и нажмите Enter."]);
   const [consoleInput, setConsoleInput] = useState("");
+  const [wallpaperId, setWallpaperId] = useState<WallpaperId>(
+    () => WALLPAPER_VARIANTS[Math.floor(Math.random() * WALLPAPER_VARIANTS.length)]!,
+  );
+  const [decorativeKilled, setDecorativeKilled] = useState<Set<string>>(() => new Set());
+  const [casualPath, setCasualPath] = useState("C:/Users/Maxim/Desktop");
+  const [casualSelected, setCasualSelected] = useState<string | null>(null);
 
   useEffect(() => {
     shell.resetAllClosed();
@@ -277,6 +339,10 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
     setNbLeft(90);
     setTmTab("proc");
     setWormHiddenFile(null);
+    setWallpaperId(WALLPAPER_VARIANTS[Math.floor(Math.random() * WALLPAPER_VARIANTS.length)]!);
+    setDecorativeKilled(new Set());
+    setCasualPath("C:/Users/Maxim/Desktop");
+    setCasualSelected(null);
     setConsoleLines(["GuardSim Console v1.0", "Введите команду и нажмите Enter."]);
     setConsoleInput("");
     // eslint-disable-next-line react-hooks/exhaustive-deps -- сброс при смене сценария
@@ -380,6 +446,17 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
     setConsoleInput("");
     appendConsole(`> ${raw}`);
 
+    const low = raw.replace(/\s+/g, " ").toLowerCase();
+    if (low === "help" || low === "?") {
+      const lines = ["Справка: help или ? — этот текст."];
+      if (virusId === "file_worm") lines.push("Червь: после удаления вредоноса — reg delete WormBridge /f");
+      if (virusId === "resource_hog") lines.push("Майнер: purge-miner-traces (сначала процесс, потом антивирус)");
+      if (virusId === "process_parasite") lines.push("Паразит: лечение только через «Антималварь» в окне антивируса.");
+      if (virusId === "network_bot") lines.push("Ботнет: блокируйте IP в брандмауэре, смотрите сеть в диспетчере.");
+      appendConsole(lines.join(" "));
+      return;
+    }
+
     if (virusId === "file_worm" && phase === "playing") {
       const norm = raw.replace(/\s+/g, " ").toLowerCase();
       if (norm === WORM_REG_CMD.toLowerCase()) {
@@ -424,6 +501,14 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
 
   const wormEntries = WORM_VFS[wormPath];
   const wormParent = wormPath.includes("/") ? wormPath.slice(0, wormPath.lastIndexOf("/")) : null;
+  const casualParent = casualPath.includes("/") ? casualPath.slice(0, casualPath.lastIndexOf("/")) : null;
+  const casualEntries = CASUAL_VFS[casualPath];
+
+  const endDecorativeTask = useCallback((id: string) => {
+    setDecorativeKilled((prev) => new Set(prev).add(id));
+  }, []);
+
+  const decorVisible = TM_DECORATIVE.filter((r) => !decorativeKilled.has(r.id));
 
   const effectiveWormEntries = useMemo(() => {
     if (!wormEntries) return null;
@@ -482,7 +567,31 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
         </Link>
       </div>
       <div className="dvs-desktop" aria-label="Симуляция рабочего стола">
-        <div className="dvs-wallpaper" />
+        <div className={`dvs-wallpaper dvs-wallpaper--${wallpaperId}`} aria-hidden />
+
+        <div className="dvs-desktop-icons">
+          <div className="dvs-desktop-icons-inner">
+            {DESKTOP_ICONS.map((ic) => (
+              <button
+                key={ic.id}
+                type="button"
+                className="dvs-desk-icon"
+                title={`Открыть: ${ic.label}`}
+                onClick={() => {
+                  shell.openWindow(ic.open);
+                  shell.bringToFront(ic.open);
+                  if (ic.id === "i2") setCasualPath("C:/Users/Maxim/Desktop/Игры");
+                  if (ic.id === "i1") setCasualPath("C:/Users/Maxim/Documents");
+                }}
+              >
+                <span className="dvs-desk-icon-ico" aria-hidden>
+                  {ic.emoji}
+                </span>
+                <span className="dvs-desk-icon-label">{ic.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Окна из Пуск */}
         {shell.open.explorer ? (
@@ -542,7 +651,57 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
                 </div>
               </>
             ) : (
-              <p className="dvs-win-hint">В этом сценарии проводник не требуется. Откройте утилиты из меню «Пуск».</p>
+              <>
+                <p className="dvs-win-hint">Путь: {casualPath.replace(/\//g, "\\")}</p>
+                <p className="dvs-explorer-deco-note">Файлы обычного пользователя (симуляция, не связаны с заданием).</p>
+                <div className="dvs-explorer-bar">
+                  {casualParent ? (
+                    <button
+                      type="button"
+                      className="dvs-btn dvs-btn--small dvs-btn--ghost"
+                      onClick={() => {
+                        setCasualPath(casualParent);
+                        setCasualSelected(null);
+                      }}
+                    >
+                      ↑ Вверх
+                    </button>
+                  ) : null}
+                </div>
+                <ul className="dvs-file-list">
+                  {casualEntries &&
+                    Object.entries(casualEntries).map(([name, e]) => (
+                      <li key={name}>
+                        {e.kind === "dir" ? (
+                          <button
+                            type="button"
+                            className="dvs-file-row"
+                            onClick={() => {
+                              setCasualPath(`${casualPath}/${name}`);
+                              setCasualSelected(null);
+                            }}
+                          >
+                            <span className="dvs-file-ico" aria-hidden>
+                              📁
+                            </span>
+                            {name}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className={`dvs-file-row${casualSelected === name ? " dvs-file-row--selected" : ""}`}
+                            onClick={() => setCasualSelected(name)}
+                          >
+                            <span className="dvs-file-ico" aria-hidden>
+                              📄
+                            </span>
+                            {name}
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                </ul>
+              </>
             )}
           </DesktopWindowFrame>
         ) : null}
@@ -554,6 +713,16 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
             onClose={() => shell.closeWindow("antivirus")}
             onPointerDown={() => shell.bringToFront("antivirus")}
           >
+            <div className="dvs-av-deco">
+              <p className="dvs-av-deco-status">● Мониторинг в реальном времени: включён</p>
+              <button
+                type="button"
+                className="dvs-btn dvs-btn--ghost dvs-btn--small"
+                onClick={() => appendConsole("[Антивирус] Быстрая проверка завершена. Угроз не найдено.")}
+              >
+                Быстрая проверка
+              </button>
+            </div>
             {virusId === "process_parasite" ? (
               <div className="dvs-av-actions">
                 <p className="dvs-win-hint">Рекомендуется лечение всплывающих угроз.</p>
@@ -598,7 +767,7 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
               </div>
             ) : null}
             {virusId === "network_bot" ? (
-              <p className="dvs-win-hint">В этом сценарии используйте брандмауэр и диспетчер задач. Антивирус не обязателен.</p>
+              <p className="dvs-win-hint">В этом сценарии главное — брандмауэр и диспетчер (вкладка «Сеть»). Сканирование не обязательно.</p>
             ) : null}
           </DesktopWindowFrame>
         ) : null}
@@ -610,33 +779,50 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
             onClose={() => shell.closeWindow("firewall")}
             onPointerDown={() => shell.bringToFront("firewall")}
           >
-            {virusId === "network_bot" ? (
-              <>
-                <p className="dvs-win-hint">Исходящие правила. Заблокируйте только вредоносные узлы.</p>
-                <p className="dvs-fw-timer">
-                  Осталось: <strong>{nbLeft}</strong> с
-                </p>
-                <ul className="dvs-fw-list">
-                  {NET_ROWS_BOT.map((r) => (
-                    <li key={r.ip} className="dvs-fw-row">
-                      <div>
-                        <code>{r.ip}</code>
-                        <span className="dvs-fw-label">{r.label}</span>
-                      </div>
-                      <button
-                        type="button"
-                        className={`dvs-btn dvs-btn--small${nbBlocked.has(r.ip) ? " dvs-btn--blocked" : ""}`}
-                        onClick={() => toggleNbBlock(r.ip)}
-                      >
-                        {nbBlocked.has(r.ip) ? "Разблокировать" : "Заблокировать"}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            ) : (
-              <p className="dvs-win-hint">Правила брандмауэра не нужны в этом сценарии.</p>
-            )}
+            <>
+              <p className="dvs-win-hint">Профиль: частная сеть</p>
+              <ul className="dvs-fw-deco-list">
+                <li className="dvs-fw-deco-row">
+                  <span>mDNS (UDP 5353)</span>
+                  <span className="dvs-fw-deco-pill">разрешено</span>
+                </li>
+                <li className="dvs-fw-deco-row">
+                  <span>Локальная подсеть 192.168.x.x</span>
+                  <span className="dvs-fw-deco-pill">разрешено</span>
+                </li>
+                <li className="dvs-fw-deco-row">
+                  <span>SMB входящий (445)</span>
+                  <span className="dvs-fw-deco-pill">заблокировано</span>
+                </li>
+              </ul>
+              {virusId === "network_bot" ? (
+                <>
+                  <p className="dvs-win-hint">Исходящие — задание. Заблокируйте только вредоносные узлы.</p>
+                  <p className="dvs-fw-timer">
+                    Осталось: <strong>{nbLeft}</strong> с
+                  </p>
+                  <ul className="dvs-fw-list">
+                    {NET_ROWS_BOT.map((r) => (
+                      <li key={r.ip} className="dvs-fw-row">
+                        <div>
+                          <code>{r.ip}</code>
+                          <span className="dvs-fw-label">{r.label}</span>
+                        </div>
+                        <button
+                          type="button"
+                          className={`dvs-btn dvs-btn--small${nbBlocked.has(r.ip) ? " dvs-btn--blocked" : ""}`}
+                          onClick={() => toggleNbBlock(r.ip)}
+                        >
+                          {nbBlocked.has(r.ip) ? "Разблокировать" : "Заблокировать"}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <p className="dvs-win-hint dvs-win-hint--small">Список внешних IP для блокировки доступен в сценарии «Сетевой бот».</p>
+              )}
+            </>
           </DesktopWindowFrame>
         ) : null}
 
@@ -654,6 +840,7 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
                 </div>
               ))}
             </div>
+            <p className="dvs-win-hint dvs-win-hint--small">Введите help для подсказок по сценарию.</p>
             {virusId === "file_worm" ? (
               <p className="dvs-win-hint dvs-win-hint--small">После удаления файла: {WORM_REG_CMD}</p>
             ) : null}
@@ -692,19 +879,15 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
             onClose={() => shell.closeWindow("taskmgr")}
             onPointerDown={() => shell.bringToFront("taskmgr")}
           >
-            {virusId === "network_bot" ? (
-              <div className="dvs-tm-tabs">
-                <button type="button" className={`dvs-tm-tab${tmTab === "proc" ? " dvs-tm-tab--on" : ""}`} onClick={() => setTmTab("proc")}>
-                  Процессы
-                </button>
-                <button type="button" className={`dvs-tm-tab${tmTab === "net" ? " dvs-tm-tab--on" : ""}`} onClick={() => setTmTab("net")}>
-                  Сеть
-                </button>
-              </div>
-            ) : (
-              <p className="dvs-tm-heading">Процессы</p>
-            )}
-            {virusId === "resource_hog" ? (
+            <div className="dvs-tm-tabs">
+              <button type="button" className={`dvs-tm-tab${tmTab === "proc" ? " dvs-tm-tab--on" : ""}`} onClick={() => setTmTab("proc")}>
+                Процессы
+              </button>
+              <button type="button" className={`dvs-tm-tab${tmTab === "net" ? " dvs-tm-tab--on" : ""}`} onClick={() => setTmTab("net")}>
+                Сеть
+              </button>
+            </div>
+            {tmTab === "proc" && virusId === "resource_hog" ? (
               <table className="dvs-tm-table">
                 <thead>
                   <tr>
@@ -728,7 +911,7 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
                 </tbody>
               </table>
             ) : null}
-            {virusId === "network_bot" && tmTab === "proc" ? (
+            {tmTab === "proc" && virusId === "network_bot" ? (
               <table className="dvs-tm-table">
                 <thead>
                   <tr>
@@ -752,7 +935,39 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
                 </tbody>
               </table>
             ) : null}
-            {virusId === "network_bot" && tmTab === "net" ? (
+            {tmTab === "proc" && virusId !== "resource_hog" && virusId !== "network_bot" ? (
+              <table className="dvs-tm-table">
+                <thead>
+                  <tr>
+                    <th>Имя</th>
+                    <th>CPU %</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {decorVisible.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="dvs-tm-muted">
+                        Нет активных пользовательских процессов в списке.
+                      </td>
+                    </tr>
+                  ) : (
+                    decorVisible.map((r) => (
+                      <tr key={r.id}>
+                        <td>{r.name}</td>
+                        <td>{r.cpu.toFixed(1)}</td>
+                        <td>
+                          <button type="button" className="dvs-btn dvs-btn--small" onClick={() => endDecorativeTask(r.id)}>
+                            Снять задачу
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            ) : null}
+            {tmTab === "net" && virusId === "network_bot" ? (
               <>
                 <p className="dvs-win-hint dvs-win-hint--small">Сетевая активность процессов (исходящий трафик).</p>
                 <table className="dvs-tm-table">
@@ -771,6 +986,58 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
                         <td className="dvs-tm-muted">{r.net > 10 ? "Подозрительная нагрузка" : "норма"}</td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              </>
+            ) : null}
+            {tmTab === "net" && virusId === "resource_hog" ? (
+              <>
+                <p className="dvs-win-hint dvs-win-hint--small">Сеть по процессам (симуляция).</p>
+                <table className="dvs-tm-table">
+                  <thead>
+                    <tr>
+                      <th>Процесс</th>
+                      <th>Сеть Мбит/с</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {TM_PROC_MINER.map((r) => (
+                      <tr key={`rn-${r.id}`}>
+                        <td>{r.name}</td>
+                        <td>{r.net.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            ) : null}
+            {tmTab === "net" && virusId !== "network_bot" && virusId !== "resource_hog" ? (
+              <>
+                <p className="dvs-win-hint dvs-win-hint--small">Исходящий трафик по процессам.</p>
+                <table className="dvs-tm-table">
+                  <thead>
+                    <tr>
+                      <th>Процесс</th>
+                      <th>Сеть Мбит/с</th>
+                      <th>Примечание</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {decorVisible.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="dvs-tm-muted">
+                          Нет процессов в списке.
+                        </td>
+                      </tr>
+                    ) : (
+                      decorVisible.map((r) => (
+                        <tr key={`nd-${r.id}`} className={r.net > 0.25 ? "dvs-tm-hot" : ""}>
+                          <td>{r.name}</td>
+                          <td>{r.net.toFixed(2)}</td>
+                          <td className="dvs-tm-muted">{r.net > 0.25 ? "активность" : "тишина"}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </>

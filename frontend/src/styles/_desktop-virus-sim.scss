@@ -241,10 +241,167 @@ $border: rgba(0, 212, 255, 0.22);
 .dvs-wallpaper {
   position: absolute;
   inset: 0;
+  transition: opacity 0.4s ease;
+}
+
+.dvs-wallpaper--default {
   background:
     radial-gradient(ellipse 80% 60% at 20% 20%, rgba(0, 212, 255, 0.09), transparent 55%),
     radial-gradient(ellipse 70% 50% at 85% 70%, rgba(157, 78, 255, 0.08), transparent 50%),
     linear-gradient(168deg, #0c1022 0%, #070a14 48%, #0a1528 100%);
+}
+
+.dvs-wallpaper--aurora {
+  background:
+    radial-gradient(ellipse 100% 80% at 10% 0%, rgba(0, 255, 200, 0.15), transparent 50%),
+    radial-gradient(ellipse 80% 60% at 90% 30%, rgba(120, 80, 255, 0.18), transparent 55%),
+    radial-gradient(ellipse 60% 50% at 40% 100%, rgba(255, 0, 180, 0.08), transparent 45%),
+    linear-gradient(165deg, #061018 0%, #0a1430 40%, #12082a 100%);
+}
+
+.dvs-wallpaper--magma {
+  background:
+    radial-gradient(circle at 75% 85%, rgba(255, 90, 40, 0.22), transparent 42%),
+    radial-gradient(circle at 20% 60%, rgba(255, 200, 60, 0.1), transparent 40%),
+    linear-gradient(180deg, #1a0808 0%, #2d1018 45%, #0d0508 100%);
+}
+
+.dvs-wallpaper--ocean {
+  background:
+    radial-gradient(ellipse 120% 70% at 50% 120%, rgba(0, 180, 220, 0.2), transparent 50%),
+    radial-gradient(ellipse 50% 40% at 15% 20%, rgba(0, 100, 180, 0.12), transparent 50%),
+    linear-gradient(175deg, #031a28 0%, #062238 50%, #041018 100%);
+}
+
+.dvs-wallpaper--neon-grid {
+  background:
+    linear-gradient(rgba(0, 212, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.04) 1px, transparent 1px),
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(157, 78, 255, 0.2), transparent 55%),
+    linear-gradient(145deg, #0a0618 0%, #120a28 100%);
+  background-size: 24px 24px, 24px 24px, 100% 100%, 100% 100%;
+}
+
+.dvs-wallpaper--forest {
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 100%, rgba(40, 120, 60, 0.25), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 10% 30%, rgba(20, 80, 50, 0.15), transparent 50%),
+    linear-gradient(168deg, #050f0a 0%, #0a1810 50%, #030806 100%);
+}
+
+.dvs-wallpaper--sunset {
+  background:
+    radial-gradient(ellipse 100% 55% at 50% 110%, rgba(255, 120, 40, 0.35), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(255, 60, 120, 0.12), transparent 50%),
+    linear-gradient(185deg, #180828 0%, #301020 40%, #080818 100%);
+}
+
+/* ─── Иконки рабочего стола ─────────────────────────────────────────────── */
+
+.dvs-desktop-icons {
+  position: absolute;
+  top: 10px;
+  left: 8px;
+  right: 8px;
+  bottom: 52px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.dvs-desktop-icons-inner {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 6px 14px;
+  max-height: 100%;
+}
+
+.dvs-desk-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 76px;
+  padding: 8px 4px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(0, 212, 255, 0.25);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.dvs-desk-icon-ico {
+  font-size: 36px;
+  line-height: 1;
+  margin-bottom: 4px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.dvs-desk-icon-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.dvs-av-deco {
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dvs-av-deco-status {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: $dg;
+  font-weight: 700;
+}
+
+.dvs-fw-deco-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.dvs-fw-deco-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  color: rgba(220, 230, 245, 0.88);
+}
+
+.dvs-fw-deco-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba($dg, 0.12);
+  color: $dg;
+}
+
+.dvs-explorer-deco-note {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--ui-gray, #6b7c9a);
 }
 
 /* ─── Windows ───────────────────────────────────────────────────────────── */

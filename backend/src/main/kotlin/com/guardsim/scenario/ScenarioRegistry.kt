@@ -22,8 +22,8 @@ class ScenarioRegistry {
     fun findById(id: String): InternalScenario? = byId[id]
 
     private companion object {
-        fun buildAll(): List<InternalScenario> =
-            listOf(
+        fun buildAll(): List<InternalScenario> {
+            val legacy = listOf(
                 phishingEmail(),
                 socialPrizeScam(),
                 maliciousAttachment(),
@@ -44,7 +44,9 @@ class ScenarioRegistry {
                 consumerBankVishing(),
                 credentialStuffingPhishEmail(),
                 personalRequisitesScamMessenger(),
-            )
+            ).map { it.copy(visible = false) }
+            return legacy + listOf(aptSilentAgent())
+        }
 
         /** Фишинговое письмо «срочная смена пароля». */
         fun phishingEmail(): InternalScenario = InternalScenario(
@@ -2274,6 +2276,267 @@ class ScenarioRegistry {
                         ),
                     ),
                     pressureSeconds = 55,
+                ),
+            ),
+        )
+
+        /** APT-цепочка: поддельное письмо от «IT-безопасности» → вредоносное расширение → давление через мессенджер. */
+        fun aptSilentAgent(): InternalScenario = InternalScenario(
+            id = "apt-silent-agent",
+            title = "Операция «Тихий Агент»",
+            type = ScenarioType.EMAIL,
+            description = "Реалистичная трёхшаговая APT-атака: поддельное письмо от «IT-безопасности», вредоносное расширение браузера с избыточными разрешениями и финальное давление через мессенджер от «коллеги».",
+            attackTypeLabel = "APT-цепочка (фишинг → вредоносное расширение → социнженерия)",
+            hubChannel = ScenarioHubChannel.SECURITY,
+            steps = listOf(
+                // ── Шаг 1: фишинговое письмо «от IT-безопасности» ──────────────────────────
+                InternalStep(
+                    id = "apt-sa-1",
+                    situationBrief = """
+                        Рабочее утро. В корпоративной почте — официально выглядящее письмо
+                        от «Отдела ИТ-Безопасности» с требованием срочно установить новое
+                        VPN-расширение до 18:00. Тема помечена «ОБЯЗАТЕЛЬНО».
+                    """.trimIndent(),
+                    narrative = """
+                        Уважаемые сотрудники,
+
+                        В рамках обновления политики ИБ (регламент №2024-07) все рабочие
+                        станции обязаны установить расширение «VPN Security Bridge» до 18:00
+                        сегодняшнего дня. Без него с завтрашнего утра будет закрыт доступ
+                        к корпоративным системам и VPN.
+
+                        Установить расширение из официального каталога:
+                        [Установить VPN Security Bridge]
+
+                        По вопросам: itsec@corp-vpn-guard.ru
+                        С уважением, Отдел ИТ-Безопасности
+                    """.trimIndent(),
+                    narrativeNoise = "P.S. Если расширение уже установлено — проигнорируйте это сообщение.",
+                    uiKind = StepUiKind.EMAIL_CLIENT,
+                    emailSubject = "ОБЯЗАТЕЛЬНО: установите VPN Security Bridge до 18:00 (политика ИБ №2024-07)",
+                    emailFrom = "Отдел ИТ-Безопасности <itsec-notifications@corp-vpn-guard.ru>",
+                    pressureSeconds = 60,
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "apt-sa-1-domain",
+                            title = "Домен отправителя",
+                            body = "corp-vpn-guard.ru — не корпоративный домен вашей организации. По данным WHOIS зарегистрирован 6 дней назад. Настоящие письма IT приходят с внутреннего домена или через тикет-систему.",
+                        ),
+                        InternalInvestigationPanel(
+                            id = "apt-sa-1-channel",
+                            title = "Канал распространения ПО",
+                            body = "Легитимные IT-отделы не рассылают требования об установке ПО по email с внешнего домена. Корпоративные расширения распространяются через MDM, GPO или внутренний каталог — не по ссылке в письме.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 2,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "apt-sa-1-install",
+                            label = "Ссылка «Установить VPN Security Bridge»",
+                            choiceId = "apt-sa-1-a",
+                            variant = "LINK",
+                        ),
+                        InternalHotspot(
+                            id = "apt-sa-1-verify",
+                            label = "Проверить через официальный helpdesk",
+                            choiceId = "apt-sa-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "apt-sa-1-reply",
+                            label = "Ответить на письмо с вопросом",
+                            choiceId = "apt-sa-1-c",
+                            variant = "REPLY",
+                        ),
+                    ),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "apt-sa-1-a",
+                            label = "Перейду по ссылке и установлю расширение — это официальное требование ИБ",
+                            correct = false,
+                            explanationWhenChosen = "Домен отправителя corp-vpn-guard.ru не принадлежит вашей организации. Срочность и «официальный» тон — классические инструменты социальной инженерии для подавления критического мышления.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Ссылка вела на поддельную страницу Chrome Web Store под контролем злоумышленника. Расширение установлено — атакующий получил точку опоры в вашем браузере.",
+                        ),
+                        InternalChoice(
+                            id = "apt-sa-1-b",
+                            label = "Остановлюсь: домен отправителя подозрительный — проверю через официальный тикет-портал или позвоню в IT напрямую",
+                            correct = true,
+                            explanationWhenChosen = "Верно. Проверка через независимый канал — единственный надёжный способ убедиться в легитимности требования. Ни одно настоящее IT-уведомление не должно требовать немедленных действий без возможности проверки.",
+                            scoreDelta = 5,
+                        ),
+                        InternalChoice(
+                            id = "apt-sa-1-c",
+                            label = "Отвечу на письмо и спрошу, настоящее ли это требование",
+                            correct = false,
+                            explanationWhenChosen = "Ответ на фишинговое письмо подтверждает активность ящика и может дать злоумышленнику повод для дальнейшей переписки. Проверяйте через независимый канал — не через это письмо.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                ),
+                // ── Шаг 2: страница расширения в «магазине» ────────────────────────────────
+                InternalStep(
+                    id = "apt-sa-2",
+                    situationBrief = """
+                        Ссылка из письма открыла страницу расширения, внешне похожую на
+                        Chrome Web Store. Перед установкой изучите детали: разрешения,
+                        издателя, дату и рейтинг.
+                    """.trimIndent(),
+                    narrative = """
+                        Запрашиваемые разрешения:
+                        • Читать и изменять все ваши данные на всех сайтах
+                        • Управлять загрузками файлов
+                        • Читать и изменять содержимое буфера обмена
+                        • Получить доступ к данным браузера (история, вкладки)
+
+                        Опубликовано: 3 дня назад · 47 оценок · ★★★★★ (5.0)
+                        Пользователей: 312
+                    """.trimIndent(),
+                    uiKind = StepUiKind.EXTENSION_STORE,
+                    simExtensionName = "VPN Security Bridge — Corporate",
+                    simExtensionPublisher = "Corp IT Solutions Ltd.",
+                    simExtensionBlurb = "Официальное VPN-расширение для корпоративных пользователей. Защита соединения, туннелирование трафика и мониторинг угроз в реальном времени.",
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "apt-sa-2-perms",
+                            title = "Разрешения расширения",
+                            body = "«Читать и изменять все данные на всех сайтах» — максимально опасное разрешение: позволяет перехватывать сессии, куки и пароли на любом сайте. Легитимный VPN-клиент не нуждается в доступе к содержимому веб-страниц.",
+                        ),
+                        InternalInvestigationPanel(
+                            id = "apt-sa-2-rating",
+                            title = "Дата публикации и рейтинг",
+                            body = "3 дня + идеальные 5.0 из 47 отзывов = явная накрутка. Корпоративные расширения с реальной аудиторией имеют неидеальный рейтинг и историю обновлений — не появляются в один день с сотнями пользователей.",
+                        ),
+                        InternalInvestigationPanel(
+                            id = "apt-sa-2-publisher",
+                            title = "Издатель",
+                            body = "'Corp IT Solutions Ltd.' — нет значка верификации разработчика, нет ссылки на домен организации, нет страницы политики конфиденциальности. Корпоративные расширения публикуются под верифицированным аккаунтом компании.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 2,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "apt-sa-2-install",
+                            label = "Установить расширение",
+                            choiceId = "apt-sa-2-a",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "apt-sa-2-block",
+                            label = "Не устанавливать — сообщить в ИБ",
+                            choiceId = "apt-sa-2-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "apt-sa-2-temp",
+                            label = "Установить и сразу удалить для проверки",
+                            choiceId = "apt-sa-2-c",
+                            variant = "ACTION",
+                        ),
+                    ),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "apt-sa-2-a",
+                            label = "Установлю — описание официальное, издатель указан",
+                            correct = false,
+                            explanationWhenChosen = "Описание легко подделать. Три дня жизни, идеальный рейтинг и разрешение «читать все данные» — совокупность красных флагов, которые перевешивают любой «официальный» текст.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Расширение перехватило корпоративный сессионный токен из cookies браузера. Злоумышленник теперь может входить в корп-системы под вашим именем без пароля. Срочно: завершить все сессии, сменить пароль, уведомить ИБ.",
+                        ),
+                        InternalChoice(
+                            id = "apt-sa-2-b",
+                            label = "Не устанавливаю: новый издатель без верификации, избыточные разрешения, подозрительный рейтинг — сообщу в ИБ",
+                            correct = true,
+                            explanationWhenChosen = "Правильно. Минимальные права, проверенный издатель и история публикаций — обязательные критерии для любого корпоративного расширения. Сообщение в ИБ позволит заблокировать атаку для всей организации.",
+                            scoreDelta = 5,
+                        ),
+                        InternalChoice(
+                            id = "apt-sa-2-c",
+                            label = "Установлю ненадолго — посмотрю, что делает, потом удалю",
+                            correct = false,
+                            explanationWhenChosen = "Вредоносное расширение действует мгновенно: перехват сессий и кража токенов происходят при первом же открытии корпоративного сайта. Удаление не отменяет утечку данных, которая уже произошла.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                ),
+                // ── Шаг 3: «коллега» в мессенджере создаёт социальное давление ────────────
+                InternalStep(
+                    id = "apt-sa-3",
+                    situationBrief = """
+                        Пока вы изучали страницу расширения, в рабочем Telegram пришло
+                        сообщение от «Антона из IT». Он подтверждает, что уже установил
+                        расширение, и торопит вас.
+                    """.trimIndent(),
+                    narrative = """
+                        Антон Смирнов:
+                        Привет! Видел письмо от ИБ про VPN-расширение? Я уже поставил —
+                        всё работает нормально 👍 Директор лично сказал, что сегодня
+                        обязательно, иначе доступ к корп-системам закроют до завтра.
+
+                        Вот ссылка ещё раз, если потерял:
+                        [Установить VPN Security Bridge]
+
+                        Долго не тяни, уже половина отдела поставила.
+                    """.trimIndent(),
+                    uiKind = StepUiKind.CHAT_MESSENGER,
+                    simChatTitle = "Антон · IT-отдел",
+                    simChatSenderLabel = "Антон Смирнов · IT-отдел",
+                    pressureSeconds = 45,
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "apt-sa-3-pressure",
+                            title = "Двухканальное давление",
+                            body = "Скоординированная атака через email + мессенджер — признак APT-группы. Второй «источник» создаёт иллюзию социального подтверждения. Настоящий IT-отдел не рассылает требования через личный Telegram и не ссылается на «слова директора».",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "apt-sa-3-install",
+                            label = "Установить — коллега подтвердил, что всё ок",
+                            choiceId = "apt-sa-3-a",
+                            variant = "LINK",
+                        ),
+                        InternalHotspot(
+                            id = "apt-sa-3-report",
+                            label = "Сообщить в ИБ о скоординированной атаке",
+                            choiceId = "apt-sa-3-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "apt-sa-3-call",
+                            label = "Позвонить Антону и тогда решить",
+                            choiceId = "apt-sa-3-c",
+                            variant = "ACTION",
+                        ),
+                    ),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "apt-sa-3-a",
+                            label = "Раз коллега из IT говорит, что всё ок — установлю расширение",
+                            correct = false,
+                            explanationWhenChosen = "Социальная инженерия работает именно так: второй «авторитетный» голос преодолевает оставшиеся сомнения. Аккаунт «Антона» мог быть скомпрометирован или создан злоумышленником заранее.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Атака завершена успешно. Злоумышленник использовал два канала давления (email + мессенджер), чтобы обойти вашу осторожность. Это классическая схема APT-групп против корпоративных сетей.",
+                        ),
+                        InternalChoice(
+                            id = "apt-sa-3-b",
+                            label = "Это двухканальная атака: письмо + мессенджер — немедленно сообщаю в ИБ со скриншотами обоих сообщений",
+                            correct = true,
+                            explanationWhenChosen = "Отлично. Скоординированная атака через два канала — признак целенаправленной APT-операции. Своевременный отчёт в ИБ позволит заблокировать угрозу для всей компании и, возможно, спасти коллег, которых ещё не успели атаковать.",
+                            scoreDelta = 6,
+                        ),
+                        InternalChoice(
+                            id = "apt-sa-3-c",
+                            label = "Позвоню Антону по телефону — если это он, то установлю",
+                            correct = false,
+                            explanationWhenChosen = "Голосовая проверка — лучше, чем молчаливое согласие, но недостаточно: злоумышленники могут готовиться к звонку или использовать дипфейк-голос. Правильный ответ — вообще не устанавливать и сообщить в ИБ, а не искать «разрешения» установки по другому каналу.",
+                            scoreDelta = 0,
+                        ),
+                    ),
                 ),
             ),
         )

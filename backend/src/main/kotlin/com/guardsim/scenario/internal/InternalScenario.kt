@@ -13,4 +13,6 @@ data class InternalScenario(
     /** Если null — выводится из [type]: EMAIL→MAIL, SOCIAL→SOCIAL */
     val hubChannel: ScenarioHubChannel? = null,
     val steps: List<InternalStep>,
+    /** false — сценарий скрыт из каталога (не удалён). */
+    val visible: Boolean = true,
 )

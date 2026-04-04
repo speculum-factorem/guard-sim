@@ -25,7 +25,7 @@ class ScenarioService(
 ) {
 
     fun listSummaries(): List<ScenarioSummaryDto> =
-        registry.all().sortedBy { it.id }.map { s ->
+        registry.all().filter { it.visible }.sortedBy { it.id }.map { s ->
             ScenarioSummaryDto(
                 id = s.id,
                 title = s.title,

@@ -752,7 +752,6 @@ export function SimulationPage() {
                               disabled={stepActionsLocked}
                               onChoose={onChoose}
                               genericChoices={step.choices}
-                              splitLayout
                               childrenFooter={
                                 fallbacks.length > 0 ? (
                                   <div

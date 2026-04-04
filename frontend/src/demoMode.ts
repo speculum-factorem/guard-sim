@@ -1,6 +1,13 @@
+import { getAuthToken } from "./authToken";
+import { isJwtExpired } from "./jwtPayload";
 import type { UserMe } from "./types";
 
 const STORAGE_KEY = "guardsim-demo-unlocked";
+
+function hasValidAuthToken(): boolean {
+  const t = getAuthToken();
+  return Boolean(t && !isJwtExpired(t));
+}
 
 export function isDemoModeActive(): boolean {
   try {
@@ -22,10 +29,23 @@ export function setDemoModeActive(active: boolean): void {
   }
 }
 
-/** Доступ к основным экранам без страницы входа: аккаунт или явное демо с главной / входа / регистрации. */
+/**
+ * В шапке «в аккаунте» только при живом JWT; иначе после выхода устаревший `me` давал ложный «залогинен».
+ */
+export function isRegisteredInUi(me: UserMe | null): boolean {
+  return Boolean(hasValidAuthToken() && me && !me.guest);
+}
+
+/**
+ * Доступ к основным экранам: валидный JWT + профиль не гость, либо явное демо.
+ * Без токена `me` с guest:false из кэша не открывает приложение (нужен флаг демо).
+ */
 export function canUseAppRoutes(me: UserMe | null): boolean {
-  if (me && !me.guest) {
-    return true;
+  if (hasValidAuthToken()) {
+    if (me == null) {
+      return true;
+    }
+    return !me.guest;
   }
   return isDemoModeActive();
 }

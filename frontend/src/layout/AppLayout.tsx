@@ -6,7 +6,7 @@ import { notifyAuthChanged, subscribeAuthChanged } from "../authEvents";
 import { clearAuthToken, getAuthToken } from "../authToken";
 import { AppFooter } from "../components/AppFooter";
 import { LogoMark } from "../components/LogoMark";
-import { canUseAppRoutes } from "../demoMode";
+import { canUseAppRoutes, isRegisteredInUi } from "../demoMode";
 import { DASHBOARD_TASKS_HREF, loginHref } from "../navigationConstants";
 import { getPlayerId } from "../playerId";
 import { SITE_NAME } from "../siteMeta";
@@ -77,7 +77,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [navOpen]);
 
-  const registered = Boolean(me && !me.guest);
+  const registered = isRegisteredInUi(me);
   const appUnlocked = canUseAppRoutes(me);
 
   const navTo = (path: string) => (appUnlocked ? path : loginHref(path));

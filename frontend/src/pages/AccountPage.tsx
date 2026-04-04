@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { fetchMe, fetchPlayerState, fetchScenarios } from "../api";
 import { notifyAuthChanged } from "../authEvents";
-import { setDemoModeActive } from "../demoMode";
+import { isRegisteredInUi, setDemoModeActive } from "../demoMode";
 import { clearAuthToken } from "../authToken";
 import { resetGuestPlayerId } from "../playerId";
 import { experienceSummary, levelLabel, xpIntoCurrentLevel } from "../progressLabels";
@@ -124,13 +124,14 @@ export function AccountPage() {
     navigate("/", { replace: true });
   }
 
-  const displayName = me?.guest || !me?.email ? "Гость" : me.email.split("@")[0] ?? "Игрок";
+  const displayName =
+    isRegisteredInUi(me) && me?.email ? me.email.split("@")[0] ?? "Игрок" : "Гость";
   const subtitle =
     me == null
       ? "Локальный профиль в браузере. Войдите, чтобы сохранить прогресс на аккаунте."
-      : me.guest
-        ? "Локальный прогресс в браузере. Войдите, чтобы привязать аккаунт."
-        : me.email ?? "Профиль игрока";
+      : isRegisteredInUi(me)
+        ? me.email ?? "Профиль игрока"
+        : "Локальный прогресс в браузере. Войдите, чтобы привязать аккаунт.";
 
   return (
     <div className="account-page lc-theme">
@@ -158,7 +159,7 @@ export function AccountPage() {
                   <span className="account-id-label">ID игрока</span>
                   <code className="account-id-value">{player.clientId}</code>
                 </p>
-                {me && !me.guest ? (
+                {isRegisteredInUi(me) ? (
                   <div className="account-hero-actions">
                     <button type="button" className="btn btn-secondary account-logout-btn" onClick={logout}>
                       Выйти

@@ -22,6 +22,9 @@ class SecurityConfig {
         http
             .csrf { it.disable() }
             .cors(Customizer.withDefaults())
+            .httpBasic { it.disable() }
+            .formLogin { it.disable() }
+            .logout { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
                 it.anyRequest().permitAll()

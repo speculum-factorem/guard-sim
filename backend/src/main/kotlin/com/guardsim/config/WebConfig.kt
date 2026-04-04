@@ -9,9 +9,10 @@ class WebConfig : WebMvcConfigurer {
 
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/api/**")
-            .allowedOriginPatterns("http://localhost:*", "http://127.0.0.1:*")
-            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            // Любой origin (удалённый сервер, нестандартный порт). JWT в заголовке Authorization, не cookie.
+            .allowedOriginPatterns("*")
+            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
             .allowedHeaders("*")
-            .allowCredentials(true)
+            .allowCredentials(false)
     }
 }

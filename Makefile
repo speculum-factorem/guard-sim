@@ -22,7 +22,7 @@ install:
 	cd $(BACKEND) && mvn -q -DskipTests compile 
 	cd $(FRONTEND) && npm install
 
-build:
+build: 
 	cd $(BACKEND) && mvn -q -DskipTests package
 	cd $(FRONTEND) && npm ci
 	cd $(FRONTEND) && npm run build

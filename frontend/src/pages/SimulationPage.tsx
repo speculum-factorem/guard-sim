@@ -272,13 +272,17 @@ export function SimulationPage() {
   const consequenceAckRef = useRef<HTMLButtonElement>(null);
 
   const [splitHintOpen, setSplitHintOpen] = useState(() => !isMissionSplitHintDismissed());
+  /** Сначала экран «Условие», затем симуляция; сбрасывается на новом шаге. */
+  const [missionPhase, setMissionPhase] = useState<"condition" | "simulation">("condition");
   const [sessionSyncBusy, setSessionSyncBusy] = useState(false);
   const [resumedNote, setResumedNote] = useState(false);
+  const missionPhaseAnchorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setViewedInvestigationIds([]);
     setLastInvestigationRepDelta(null);
     setRedFlagSelectionIds([]);
+    setMissionPhase("condition");
   }, [step?.id]);
 
   useEffect(() => {
@@ -630,10 +634,12 @@ export function SimulationPage() {
               </Link>
             </div>
           ) : step ? (
-            <div className="sim-body">
+            <div className="sim-body" ref={missionPhaseAnchorRef}>
               <MissionWindow bodyClassName="mission-window-body--lc">
-                <div className="mission-lc">
-                    <aside className="mission-lc-desc" aria-label="Условие задания">
+                <div className="mission-lc mission-lc--phased">
+                {missionPhase === "condition" ? (
+                  <div className="mission-phase mission-phase--condition" aria-label="Экран условия">
+                    <div className="mission-condition-shell">
                       <div className="mission-lc-head sim-app-bar" aria-label="Заголовок задания">
                         <span className="mission-lc-head-title">Условие</span>
                         <span className="mission-lc-step-badge">
@@ -648,13 +654,13 @@ export function SimulationPage() {
                           }}
                         />
                       ) : null}
-                      <p className="mission-lc-scroll-hint">
+                      <p className="mission-lc-scroll-hint mission-lc-scroll-hint--condition">
                         <span className="mission-lc-scroll-hint-ico" aria-hidden>
                           ↕
                         </span>
-                        Прокрутите блок, чтобы увидеть весь текст условия
+                        Прокрутите, чтобы прочитать весь текст
                       </p>
-                      <div className="mission-lc-scroll">
+                      <div className="mission-lc-scroll mission-condition-scroll">
                         <section className="mission-lc-block">
                           <h2 className="mission-lc-h2">Ситуация</h2>
                           <p className="mission-lc-text">{missionBriefText(step)}</p>
@@ -663,69 +669,115 @@ export function SimulationPage() {
                           <h3 className="mission-lc-h3">Материал для анализа</h3>
                           <div className="mission-lc-narrative">{stepAnalysisText(step)}</div>
                         </section>
-
-                        {step.pressureSeconds != null && step.pressureSeconds > 0 ? (
-                          <PressureTimer
-                            totalSeconds={step.pressureSeconds}
-                            stepId={step.id}
-                            frozen={choiceBlockBusy}
-                          />
-                        ) : null}
-
-                        <InvestigationDock
-                          step={step}
-                          disabled={choiceBlockBusy}
-                          viewedIds={viewedInvestigationIds}
-                          onViewPanel={markPanelViewed}
-                        />
-
-                        {step.redFlagGame ? (
-                          <RedFlagPicker
-                            game={step.redFlagGame}
-                            selectedIds={redFlagSelectionIds}
-                            onChange={setRedFlagSelectionIds}
-                            disabled={choiceBlockBusy}
-                          />
-                        ) : null}
                       </div>
-                    </aside>
-
-                    <div
-                      className="mission-lc-workspace mission-lc-workspace--fullbleed"
-                      aria-label={`Симуляция: ${missionWindowLabel(step)}`}
-                    >
-                      <div className="mission-app-viewport mission-app-viewport--lc">
-                        <StepSimulation
-                          step={step}
-                          disabled={stepActionsLocked}
-                          onChoose={onChoose}
-                          genericChoices={step.choices}
-                          splitLayout
-                          childrenFooter={
-                            fallbacks.length > 0 ? (
-                              <div
-                                className="choice-list choice-list-fallback"
-                                role="group"
-                                aria-label="Дополнительные действия"
-                              >
-                                {fallbacks.map((c) => (
-                                  <button
-                                    key={c.id}
-                                    type="button"
-                                    className="choice-btn"
-                                    disabled={stepActionsLocked}
-                                    onClick={() => onChoose(c.id)}
-                                  >
-                                    {c.label}
-                                  </button>
-                                ))}
-                              </div>
-                            ) : null
-                          }
-                        />
+                      <div className="mission-condition-cta">
+                        <button
+                          type="button"
+                          className="btn btn-primary mission-go-sim-btn"
+                          onClick={() => {
+                            setMissionPhase("simulation");
+                            window.requestAnimationFrame(() => {
+                              missionPhaseAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                            });
+                          }}
+                        >
+                          Перейти к симуляции
+                        </button>
+                        <p className="mission-condition-cta-hint">После перехода откроется интерфейс задания</p>
                       </div>
                     </div>
                   </div>
+                ) : (
+                  <div className="mission-phase mission-phase--simulation" aria-label="Экран симуляции">
+                    <div className="mission-sim-shell">
+                      <header className="mission-sim-toolbar sim-app-bar sim-app-bar--sub">
+                        <button
+                          type="button"
+                          className="btn btn-secondary mission-back-to-condition"
+                          onClick={() => {
+                            setMissionPhase("condition");
+                            window.requestAnimationFrame(() => {
+                              missionPhaseAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                            });
+                          }}
+                        >
+                          ← К условию
+                        </button>
+                        <div className="mission-sim-toolbar-meta">
+                          <span className="mission-sim-toolbar-step">
+                            Шаг {stepIndex + 1} / {totalSteps}
+                          </span>
+                          <span className="mission-sim-toolbar-kind">{missionWindowLabel(step)}</span>
+                        </div>
+                      </header>
+                      <div className="mission-sim-stack">
+                        {step.pressureSeconds != null && step.pressureSeconds > 0 ? (
+                          <div className="mission-sim-block mission-sim-block--pad">
+                            <PressureTimer
+                              totalSeconds={step.pressureSeconds}
+                              stepId={step.id}
+                              frozen={choiceBlockBusy}
+                            />
+                          </div>
+                        ) : null}
+                        <div className="mission-sim-block mission-sim-block--pad">
+                          <InvestigationDock
+                            step={step}
+                            disabled={choiceBlockBusy}
+                            viewedIds={viewedInvestigationIds}
+                            onViewPanel={markPanelViewed}
+                          />
+                        </div>
+                        {step.redFlagGame ? (
+                          <div className="mission-sim-block mission-sim-block--pad">
+                            <RedFlagPicker
+                              game={step.redFlagGame}
+                              selectedIds={redFlagSelectionIds}
+                              onChange={setRedFlagSelectionIds}
+                              disabled={choiceBlockBusy}
+                            />
+                          </div>
+                        ) : null}
+                        <div
+                          className="mission-lc-workspace mission-lc-workspace--fullbleed mission-sim-workspace"
+                          aria-label={`Симуляция: ${missionWindowLabel(step)}`}
+                        >
+                          <div className="mission-app-viewport mission-app-viewport--lc">
+                            <StepSimulation
+                              step={step}
+                              disabled={stepActionsLocked}
+                              onChoose={onChoose}
+                              genericChoices={step.choices}
+                              splitLayout
+                              childrenFooter={
+                                fallbacks.length > 0 ? (
+                                  <div
+                                    className="choice-list choice-list-fallback"
+                                    role="group"
+                                    aria-label="Дополнительные действия"
+                                  >
+                                    {fallbacks.map((c) => (
+                                      <button
+                                        key={c.id}
+                                        type="button"
+                                        className="choice-btn"
+                                        disabled={stepActionsLocked}
+                                        onClick={() => onChoose(c.id)}
+                                      >
+                                        {c.label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                ) : null
+                              }
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                </div>
               </MissionWindow>
 
               {feedback ? (

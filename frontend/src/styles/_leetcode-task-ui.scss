@@ -760,10 +760,31 @@
   color: var(--lc-ink);
 }
 
-/* Панель условия слева — согласована с sim-app-bar и правой колонкой */
+/* Панель условия в старом двухколоночном макете + общие тона */
 .lc-theme .mission-lc-desc {
   background: rgba(10, 10, 22, 0.98);
   border-right: 1px solid rgba(0, 212, 255, 0.15);
+}
+
+.lc-theme .mission-condition-shell {
+  background: rgba(10, 10, 22, 0.98);
+}
+
+.lc-theme .mission-sim-toolbar-step {
+  color: var(--lc-ink);
+  border-color: rgba(0, 212, 255, 0.28);
+  background: rgba(0, 212, 255, 0.06);
+}
+
+.lc-theme .mission-sim-toolbar-kind {
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-split-hint {
+  color: var(--lc-muted);
+  opacity: 1;
+  background: rgba(0, 212, 255, 0.05);
+  border-color: rgba(0, 212, 255, 0.2);
 }
 
 .lc-theme .mission-lc-tabs.sim-app-bar,
@@ -851,6 +872,10 @@
   border-radius: 0 var(--bento-radius) var(--bento-radius) 0 !important;
 }
 
+.lc-theme .mission-lc--phased .mission-app-viewport--lc > .ui-frame {
+  border-radius: var(--bento-radius) !important;
+}
+
 @media (max-width: 960px) {
   .lc-theme .mission-app-viewport--lc > .ui-frame {
     border-radius: 0 0 var(--bento-radius) var(--bento-radius) !important;
@@ -858,6 +883,10 @@
 
   .lc-theme .mission-lc-workspace--fullbleed .mission-app-viewport--lc > .ui-frame {
     border-radius: 0 !important;
+  }
+
+  .lc-theme .mission-lc--phased .mission-app-viewport--lc > .ui-frame {
+    border-radius: var(--bento-radius) !important;
   }
 }
 

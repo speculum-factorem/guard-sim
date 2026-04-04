@@ -94,7 +94,9 @@ export function GenericWorkspaceSimulation(props: {
           ))}
         </div>
         {splitLayout ? (
-          <p className="sim-split-hint sim-generic-split-hint">Формулировка — в панели «Условие» слева.</p>
+          <p className="sim-split-hint sim-generic-split-hint">
+            Формулировка — в разделе «Условие» (кнопка «К условию» вверху).
+          </p>
         ) : (
           <div className="narrative sim-generic-narrative">{analysisText}</div>
         )}

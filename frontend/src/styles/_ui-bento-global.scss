@@ -1165,6 +1165,18 @@ button.app-nav-pill.app-nav-pill--icon:disabled {
   box-shadow: none;
 }
 
+/* Режим «сначала условие»: симуляция на всю ширину, но с карточной рамкой */
+.mission-lc--phased .mission-lc-workspace--fullbleed .mission-app-viewport.mission-app-viewport--lc {
+  padding: 10px 12px 14px;
+}
+
+.mission-lc--phased .mission-lc-workspace--fullbleed .mission-app-viewport--lc > .ui-frame {
+  border-radius: var(--bento-radius) !important;
+  border-left: 1px solid rgba(0, 212, 255, 0.15) !important;
+  border-right: 1px solid rgba(0, 212, 255, 0.15) !important;
+  box-shadow: var(--shadow-bento-md) !important;
+}
+
 /* Навигация: аккаунт (legacy — см. .app-bar-aside / .app-user-email) */
 .app-nav-auth {
   display: inline-flex;

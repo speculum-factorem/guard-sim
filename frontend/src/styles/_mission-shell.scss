@@ -353,7 +353,7 @@
   }
 }
 
-/* Двухколоночный режим: слева условие (как описание задачи на LeetCode), справа интерфейс */
+/* Окно миссии в стиле LeetCode: карточка с градиентом и рамкой */
 .mission-window-body--lc {
   padding: 0;
   min-height: min(72vh, 760px);
@@ -369,6 +369,160 @@
   border-radius: var(--bento-radius);
   box-shadow: var(--shadow-bento-md);
   overflow: hidden;
+}
+
+/* Сначала экран «Условие», затем симуляция (одна колонка) */
+.mission-lc--phased {
+  display: flex;
+  flex-direction: column;
+  grid-template-columns: unset;
+  min-height: min(68vh, 720px);
+}
+
+.mission-phase {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.mission-condition-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: min(52vh, 520px);
+  max-height: min(78vh, 820px);
+  background: rgba(10, 10, 22, 0.98);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.12);
+}
+
+.mission-lc-scroll-hint--condition {
+  display: flex;
+}
+
+.mission-condition-scroll {
+  flex: 1;
+  min-height: 120px;
+}
+
+.mission-condition-cta {
+  flex-shrink: 0;
+  padding: 16px 18px 20px;
+  border-top: 1px solid rgba(0, 212, 255, 0.14);
+  background: linear-gradient(180deg, rgba(7, 8, 15, 0.72) 0%, rgba(5, 6, 12, 0.95) 100%);
+}
+
+.mission-condition-cta-hint {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--bento-ink);
+  opacity: 0.72;
+}
+
+.mission-go-sim-btn {
+  width: 100%;
+  max-width: 300px;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.18);
+}
+
+.mission-sim-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: min(60vh, 640px);
+  min-width: 0;
+  background: linear-gradient(180deg, rgba(8, 9, 16, 0.98) 0%, #06070e 45%, #05060c 100%);
+}
+
+.mission-sim-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.mission-back-to-condition {
+  flex-shrink: 0;
+}
+
+.mission-sim-toolbar-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-left: auto;
+}
+
+.mission-sim-toolbar-step {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--bento-ink);
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.22);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.06);
+}
+
+.mission-sim-toolbar-kind {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gm-text-secondary);
+  max-width: min(100%, 36ch);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mission-sim-stack {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+}
+
+.mission-sim-block--pad {
+  padding: 12px 16px 0;
+  flex-shrink: 0;
+}
+
+.mission-sim-block--pad:first-of-type {
+  padding-top: 14px;
+}
+
+.mission-sim-block .pressure-bar-wrap,
+.mission-sim-block .investigation-dock,
+.mission-sim-block .red-flag-game {
+  margin: 0;
+}
+
+.mission-sim-workspace {
+  flex: 1;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-top: 10px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(0, 212, 255, 0.16);
+  background: radial-gradient(ellipse 100% 70% at 50% 0%, rgba(0, 212, 255, 0.07), transparent 52%);
+}
+
+.mission-lc--phased .mission-lc-workspace {
+  border-radius: 0;
+}
+
+.mission-lc--phased .mission-app-viewport--lc > .ui-frame {
+  border-radius: var(--bento-radius) !important;
 }
 
 .mission-lc-desc {
@@ -664,10 +818,12 @@
   padding: 8px 11px;
   font-size: 12px;
   line-height: 1.4;
-  color: var(--ui-dark-gray);
-  background: rgba(13, 14, 31, 0.65);
-  border: 1px solid rgba(0, 212, 255, 0.14);
-  border-radius: 8px;
+  color: var(--bento-ink);
+  opacity: 0.9;
+  background: rgba(0, 212, 255, 0.06);
+  border: 1px solid rgba(0, 212, 255, 0.18);
+  border-radius: var(--bento-radius);
+  box-shadow: 0 0 14px rgba(0, 212, 255, 0.05);
 }
 
 @media (max-width: 960px) {
@@ -675,6 +831,24 @@
     grid-template-columns: 1fr;
     min-height: unset;
     border-radius: var(--bento-radius);
+  }
+
+  .mission-lc--phased {
+    min-height: unset;
+  }
+
+  .mission-condition-shell {
+    max-height: none;
+    min-height: unset;
+  }
+
+  .mission-sim-shell {
+    min-height: unset;
+  }
+
+  .mission-sim-toolbar-kind {
+    white-space: normal;
+    max-width: none;
   }
 
   .mission-lc-desc {

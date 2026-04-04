@@ -366,7 +366,9 @@ export function SocialFeedSimulation(props: {
               </div>
             </div>
             {splitLayout ? (
-              <p className="sim-split-hint sim-social-split-hint">Текст поста — в панели «Условие» слева.</p>
+              <p className="sim-split-hint sim-social-split-hint">
+                Текст поста — в разделе «Условие» (кнопка «К условию» вверху).
+              </p>
             ) : (
               <div className="narrative-frame sim-social-body">
                 {searchQ && narrativeHit

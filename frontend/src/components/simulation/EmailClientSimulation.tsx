@@ -637,7 +637,7 @@ export function EmailClientSimulation(props: {
                     </div>
                     {splitLayout ? (
                       <p className="sim-split-hint sim-email-split-hint">
-                        Текст письма — в панели «Условие» слева. Ниже — элементы интерфейса.
+                        Текст письма — в разделе «Условие» (кнопка «К условию» вверху). Ниже — элементы интерфейса.
                       </p>
                     ) : (
                       <div className="narrative-frame sim-email-body">{analysisText}</div>

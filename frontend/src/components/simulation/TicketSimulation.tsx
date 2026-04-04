@@ -226,7 +226,9 @@ export function TicketSimulation(props: {
           </div>
           <div className="ticket-body sim-ticket-body">
             {splitLayout ? (
-              <p className="sim-split-hint sim-ticket-split-hint">Описание тикета — в панели «Условие» слева.</p>
+              <p className="sim-split-hint sim-ticket-split-hint">
+                Описание тикета — в разделе «Условие» (кнопка «К условию» вверху).
+              </p>
             ) : (
               <div className="narrative-frame">{analysisText}</div>
             )}

@@ -22,9 +22,6 @@ class PlayerIdResolutionFilter(
 
     override fun shouldNotFilter(request: HttpServletRequest): Boolean {
         val uri = request.requestURI
-        if (request.method == "GET" && uri.matches(Regex("^/api/scenarios/[^/]+$"))) {
-            return true
-        }
         if (uri == "/api/auth/register" && request.method == "POST") {
             return true
         }

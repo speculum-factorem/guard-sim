@@ -1,4 +1,5 @@
 import { getAuthToken } from "./authToken";
+import { isDemoModeActive } from "./demoMode";
 import { getPlayerId } from "./playerId";
 import type {
   AnswerResponse,
@@ -11,6 +12,7 @@ import type {
 } from "./types";
 
 const PLAYER_HEADER = "X-GuardSim-Player";
+const DEMO_HEADER = "X-GuardSim-Demo";
 
 function withPlayerHeaders(base?: HeadersInit): HeadersInit {
   const token = getAuthToken();
@@ -21,7 +23,21 @@ function withPlayerHeaders(base?: HeadersInit): HeadersInit {
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
+  if (isDemoModeActive()) {
+    headers[DEMO_HEADER] = "1";
+  }
   return headers;
+}
+
+/** Ошибка HTTP с кодом статуса (для UI: сессия, доступ). */
+export class ApiHttpError extends Error {
+  readonly status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "ApiHttpError";
+    this.status = status;
+  }
 }
 
 async function handleJson<T>(res: Response): Promise<T> {
@@ -42,7 +58,7 @@ async function handleJson<T>(res: Response): Promise<T> {
       message =
         "API не найден (404). Запустите бэкенд на порту 8080 — например, make dev или make backend.";
     }
-    throw new Error(message);
+    throw new ApiHttpError(res.status, message);
   }
   return JSON.parse(text) as T;
 }

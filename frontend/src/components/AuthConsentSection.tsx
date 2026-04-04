@@ -4,6 +4,8 @@ type Props = {
   onOpenAgreement: () => void;
   disabled?: boolean;
   error?: string | null;
+  /** Если false — скрыта отдельная кнопка «Показать полный текст соглашения» (на экране регистрации). */
+  showFullAgreementButton?: boolean;
 };
 
 export function AuthConsentSection({
@@ -12,6 +14,7 @@ export function AuthConsentSection({
   onOpenAgreement,
   disabled,
   error,
+  showFullAgreementButton = true,
 }: Props) {
   return (
     <div className="auth-consent">
@@ -39,9 +42,11 @@ export function AuthConsentSection({
         </span>
       </label>
       {error ? <p className="auth-field-error">{error}</p> : null}
-      <button type="button" className="auth-agreement-open-btn" onClick={onOpenAgreement} disabled={disabled}>
-        Показать полный текст соглашения
-      </button>
+      {showFullAgreementButton ? (
+        <button type="button" className="auth-agreement-open-btn" onClick={onOpenAgreement} disabled={disabled}>
+          Показать полный текст соглашения
+        </button>
+      ) : null}
     </div>
   );
 }

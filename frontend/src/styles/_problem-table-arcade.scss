@@ -1,0 +1,428 @@
+/* Список задач на дашборде — современная карточка + лёгкий аркадный акцент */
+
+.dashboard-page--arcade.lc-theme {
+  --task-surface: #ffffff;
+  --task-surface-muted: #f8f7f4;
+  --task-border: rgba(15, 23, 42, 0.09);
+  --task-border-strong: rgba(15, 23, 42, 0.14);
+  --task-text: #0f172a;
+  --task-muted: #64748b;
+  --task-accent: var(--bento-orange);
+  --task-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --task-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 12px 28px -8px rgba(15, 23, 42, 0.1);
+  --task-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  --task-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* Заголовок секции */
+.dashboard-page--arcade.lc-theme .lc-problems-eyebrow {
+  margin: 0 0 10px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--task-muted);
+}
+
+.dashboard-page--arcade.lc-theme .lc-problems {
+  margin-top: 8px;
+}
+
+.dashboard-page--arcade.lc-theme .lc-problems-head {
+  margin-bottom: 22px;
+  padding: 0 2px 18px;
+  border-bottom: 1px solid var(--task-border);
+  background: none;
+  border-radius: 0;
+}
+
+.dashboard-page--arcade.lc-theme .lc-problems-head-row {
+  align-items: center;
+  gap: 16px 24px;
+}
+
+.dashboard-page--arcade.lc-theme .lc-problems .lc-problems-title.section-heading {
+  font-family: var(--font-body);
+  font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-transform: none;
+  color: var(--task-text);
+  text-shadow: none;
+  line-height: 1.2;
+}
+
+.dashboard-page--arcade.lc-theme .lc-problems-count-pill {
+  padding: 8px 14px;
+  border: 1px solid var(--task-border-strong);
+  border-radius: 100px;
+  background: linear-gradient(145deg, #ecfdf5 0%, #d1fae5 100%);
+  box-shadow: var(--task-shadow-sm), 3px 3px 0 rgba(16, 185, 129, 0.18);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #065f46;
+  transition: transform 0.2s var(--task-ease), box-shadow 0.2s var(--task-ease);
+}
+
+.dashboard-page--arcade.lc-theme .lc-problems-count-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--task-shadow-sm), 4px 4px 0 rgba(16, 185, 129, 0.22);
+}
+
+.dashboard-page--arcade.lc-theme .lc-problems-lead {
+  margin-top: 4px;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--task-muted);
+  max-width: 52ch;
+}
+
+/* Карточка */
+.dashboard-page--arcade.lc-theme .lc-problems-surface {
+  position: relative;
+  border: 1px solid var(--task-border);
+  border-radius: 20px;
+  box-shadow: var(--task-shadow-md), var(--task-shadow-inset);
+  background: var(--task-surface);
+  overflow: hidden;
+  transition: box-shadow 0.35s var(--task-ease);
+}
+
+.dashboard-page--arcade.lc-theme .lc-problems-surface:hover {
+  box-shadow:
+    0 4px 6px -1px rgba(15, 23, 42, 0.05),
+    0 18px 36px -12px rgba(15, 23, 42, 0.12),
+    var(--task-shadow-inset);
+}
+
+.dashboard-page--arcade.lc-theme .lc-problems-surface::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 2;
+  background: linear-gradient(90deg, #fb923c, #fbbf24, #34d399, #a78bfa);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.dashboard-page--arcade.lc-theme .lc-problems-surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  z-index: 1;
+}
+
+/* Панель фильтров */
+.dashboard-page--arcade.lc-theme .lc-toolbar {
+  padding: 20px 22px 18px;
+  gap: 16px;
+  background: linear-gradient(180deg, #fafaf8 0%, #ffffff 100%);
+  border-bottom: 1px solid var(--task-border);
+}
+
+.dashboard-page--arcade.lc-theme .lc-input,
+.dashboard-page--arcade.lc-theme .lc-select {
+  border-width: 1px;
+  border-color: var(--task-border-strong);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: var(--task-shadow-sm), var(--task-shadow-inset);
+  transition:
+    border-color 0.2s var(--task-ease),
+    box-shadow 0.2s var(--task-ease),
+    transform 0.2s var(--task-ease);
+}
+
+.dashboard-page--arcade.lc-theme .lc-input:focus,
+.dashboard-page--arcade.lc-theme .lc-select:focus {
+  border-color: rgba(249, 115, 22, 0.55);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12), var(--task-shadow-sm), var(--task-shadow-inset);
+}
+
+.dashboard-page--arcade.lc-theme .lc-search-icon {
+  opacity: 0.45;
+  color: var(--task-muted);
+}
+
+.dashboard-page--arcade.lc-theme .lc-chip {
+  border-width: 1px;
+  border-color: var(--task-border-strong);
+  border-radius: 999px;
+  background: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  box-shadow: var(--task-shadow-sm);
+  transition:
+    transform 0.18s var(--task-ease),
+    border-color 0.18s var(--task-ease),
+    background 0.18s var(--task-ease),
+    box-shadow 0.18s var(--task-ease);
+}
+
+.dashboard-page--arcade.lc-theme .lc-chip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(15, 23, 42, 0.2);
+  background: #fffef7;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+.dashboard-page--arcade.lc-theme .lc-chip--on {
+  background: linear-gradient(180deg, #ff7a45 0%, var(--bento-orange) 100%);
+  color: #fff;
+  border-color: rgba(15, 23, 42, 0.15);
+  box-shadow: 2px 2px 0 rgba(15, 23, 42, 0.12);
+  transform: translateY(-0.5px);
+}
+
+.dashboard-page--arcade.lc-theme .lc-chip--on:hover {
+  filter: brightness(1.03);
+  color: #fff;
+  background: linear-gradient(180deg, #ff7a45 0%, var(--bento-orange) 100%);
+}
+
+/* Таблица */
+.dashboard-page--arcade.lc-theme .lc-table-wrap {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(15, 23, 42, 0.2) transparent;
+  background: var(--task-surface-muted);
+}
+
+.dashboard-page--arcade.lc-theme .lc-table-wrap::-webkit-scrollbar {
+  height: 8px;
+}
+
+.dashboard-page--arcade.lc-theme .lc-table-wrap::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.15);
+  border-radius: 8px;
+}
+
+.dashboard-page--arcade.lc-theme .lc-table {
+  font-size: 14px;
+}
+
+.dashboard-page--arcade.lc-theme .lc-table thead {
+  background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+  border-bottom: 1px solid var(--task-border-strong);
+  box-shadow: none;
+}
+
+.dashboard-page--arcade.lc-theme .lc-table th {
+  color: var(--task-muted);
+}
+
+.dashboard-page--arcade.lc-theme .lc-th-btn {
+  padding-top: 14px;
+  padding-bottom: 14px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--task-muted);
+  border-radius: 0;
+}
+
+.dashboard-page--arcade.lc-theme .lc-th-btn:hover {
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--task-text);
+}
+
+.dashboard-page--arcade.lc-theme .lc-th-sort--active {
+  font-size: 11px;
+  color: var(--task-accent);
+}
+
+.dashboard-page--arcade.lc-theme .lc-table td {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--task-border);
+  transition: background 0.15s ease;
+}
+
+.dashboard-page--arcade.lc-theme .lc-table tbody tr:nth-child(odd) td {
+  background: #ffffff;
+}
+
+.dashboard-page--arcade.lc-theme .lc-table tbody tr:nth-child(even) td {
+  background: #fcfcfb;
+}
+
+.dashboard-page--arcade.lc-theme .lc-tr:hover td {
+  background: #fffbeb !important;
+}
+
+.dashboard-page--arcade.lc-theme .lc-tr:hover .lc-td-title {
+  box-shadow: inset 3px 0 0 #f97316;
+}
+
+.dashboard-page--arcade.lc-theme .lc-status {
+  border-width: 1px;
+  border-radius: 999px;
+  box-shadow: none;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 6px 12px;
+}
+
+.dashboard-page--arcade.lc-theme .lc-status--todo {
+  background: #eff6ff;
+  border-color: rgba(59, 130, 246, 0.25);
+  color: #1d4ed8;
+}
+
+.dashboard-page--arcade.lc-theme .lc-status--done {
+  background: #ecfdf5;
+  border-color: rgba(16, 185, 129, 0.28);
+  color: #047857;
+}
+
+.dashboard-page--arcade.lc-theme .lc-channel {
+  border-width: 1px;
+  border-radius: 8px;
+  box-shadow: none;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 5px 10px;
+}
+
+.dashboard-page--arcade.lc-theme .lc-channel--mail {
+  background: #eff6ff;
+  border-color: rgba(59, 130, 246, 0.2);
+  color: #1e40af;
+}
+
+.dashboard-page--arcade.lc-theme .lc-channel--social {
+  background: #fdf4ff;
+  border-color: rgba(217, 70, 239, 0.2);
+  color: #86198f;
+}
+
+.dashboard-page--arcade.lc-theme .lc-channel--security {
+  background: #f5f3ff;
+  border-color: rgba(139, 92, 246, 0.22);
+  color: #5b21b6;
+}
+
+.dashboard-page--arcade.lc-theme .lc-title-link {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--task-text);
+  border-bottom: none;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.dashboard-page--arcade.lc-theme .lc-title-link:hover {
+  color: var(--task-accent);
+}
+
+.dashboard-page--arcade.lc-theme .lc-title-desc {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--task-muted);
+}
+
+.dashboard-page--arcade.lc-theme .lc-btn-solve {
+  padding: 9px 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  border-width: 1px;
+  border-color: rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ff7a45 0%, #ea580c 100%);
+  box-shadow: 0 1px 2px rgba(234, 88, 12, 0.25), 3px 3px 0 rgba(15, 23, 42, 0.1);
+  transition:
+    transform 0.18s var(--task-ease),
+    box-shadow 0.18s var(--task-ease),
+    filter 0.18s ease;
+}
+
+.dashboard-page--arcade.lc-theme .lc-btn-solve:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35), 4px 4px 0 rgba(15, 23, 42, 0.12);
+  color: #fff;
+}
+
+.dashboard-page--arcade.lc-theme .lc-empty {
+  margin: 0;
+  padding: 48px 24px;
+  border-top: 1px dashed var(--task-border);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--task-muted);
+  background: linear-gradient(180deg, transparent, rgba(251, 191, 36, 0.04));
+}
+
+/* Пагинация */
+.dashboard-page--arcade.lc-theme .lc-pager {
+  padding: 16px 22px 20px;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border-top: 1px solid var(--task-border);
+}
+
+.dashboard-page--arcade.lc-theme .lc-pager-meta {
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: var(--task-muted);
+}
+
+.dashboard-page--arcade.lc-theme .lc-pager-btn,
+.dashboard-page--arcade.lc-theme .lc-pager-page {
+  border-width: 1px;
+  border-color: var(--task-border-strong);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: var(--task-shadow-sm);
+  font-weight: 600;
+  transition: transform 0.18s var(--task-ease), box-shadow 0.18s var(--task-ease), background 0.18s ease;
+}
+
+.dashboard-page--arcade.lc-theme .lc-pager-btn:hover:not(:disabled),
+.dashboard-page--arcade.lc-theme .lc-pager-page:hover {
+  transform: translateY(-1px);
+  background: #fffef8;
+  border-color: rgba(15, 23, 42, 0.18);
+}
+
+.dashboard-page--arcade.lc-theme .lc-pager-page--current {
+  background: var(--task-text);
+  color: #fff;
+  border-color: var(--task-text);
+  box-shadow: var(--task-shadow-sm);
+}
+
+@media (max-width: 720px) {
+  .dashboard-page--arcade.lc-theme .lc-problems-surface {
+    border-radius: 16px;
+  }
+
+  .dashboard-page--arcade.lc-theme .lc-table tbody tr {
+    border: 1px solid var(--task-border);
+    border-radius: 16px;
+    margin-bottom: 12px;
+    padding: 16px 14px;
+    background: #fff;
+    box-shadow: var(--task-shadow-sm);
+  }
+
+  .dashboard-page--arcade.lc-theme .lc-table tbody tr:last-child {
+    margin-bottom: 0;
+  }
+}

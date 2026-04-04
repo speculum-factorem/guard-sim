@@ -1,14 +1,10 @@
 export type ScenarioType = "EMAIL" | "SOCIAL";
 
-export type CareerRole = "INTERN" | "EMPLOYEE" | "SECURITY_ADMIN";
-
 export interface ScenarioSummary {
   id: string;
   title: string;
   type: ScenarioType;
   description: string;
-  locked: boolean;
-  requiredRole: CareerRole;
 }
 
 export interface ChoicePublic {
@@ -101,8 +97,10 @@ export interface AchievementDto {
 export interface CareerSnapshot {
   reputation: number;
   reputationDelta: number;
-  role: CareerRole;
-  roleChanged: boolean;
+  experience: number;
+  experienceDelta: number;
+  level: number;
+  levelChanged: boolean;
   perfectScenarioStreak: number;
   newAchievements: AchievementDto[];
 }
@@ -130,7 +128,8 @@ export interface PlayerAchievementState {
 export interface PlayerState {
   clientId: string;
   reputation: number;
-  role: CareerRole;
+  experience: number;
+  level: number;
   perfectScenarioStreak: number;
   completedScenarioIds: string[];
   achievements: PlayerAchievementState[];

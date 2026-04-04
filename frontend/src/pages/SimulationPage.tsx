@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 import { DASHBOARD_TASKS_HREF } from "../navigationConstants";
-import { careerTitle } from "../careerLabels";
+import { levelLabel } from "../progressLabels";
 import { StepSimulation } from "../components/simulation/StepSimulation";
+import { MissionSplitLayoutHint } from "../components/MissionSplitLayoutHint";
 import { fetchScenario, startSession, submitAnswer } from "../api";
+import { dismissMissionSplitHint, isMissionSplitHintDismissed } from "../missionLayoutHintStorage";
+import { simulationHttpErrorMessage } from "../simulationErrorMessage";
 import { missionBriefText, stepAnalysisText } from "../missionText";
 import type {
   AnswerResponse,
@@ -254,8 +257,11 @@ export function SimulationPage() {
 
   const pendingAfterConsequenceRef = useRef<AnswerResponse | null>(null);
   const feedbackBannerRef = useRef<HTMLDivElement>(null);
-  const continueStepRef = useRef<HTMLButtonElement>(null);
+  const continueTopRef = useRef<HTMLButtonElement>(null);
+  const continueStickyRef = useRef<HTMLButtonElement>(null);
   const consequenceAckRef = useRef<HTMLButtonElement>(null);
+
+  const [splitHintOpen, setSplitHintOpen] = useState(() => !isMissionSplitHintDismissed());
 
   useEffect(() => {
     setViewedInvestigationIds([]);
@@ -277,7 +283,12 @@ export function SimulationPage() {
     }
     const id = window.requestAnimationFrame(() => {
       feedbackBannerRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      continueStepRef.current?.focus();
+      const mq = window.matchMedia("(max-width: 960px)");
+      if (mq.matches) {
+        continueStickyRef.current?.focus();
+      } else {
+        continueTopRef.current?.focus();
+      }
     });
     return () => cancelAnimationFrame(id);
   }, [feedback, pendingNext]);
@@ -323,7 +334,8 @@ export function SimulationPage() {
         pendingAfterConsequenceRef.current = null;
       } catch (e) {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Ошибка загрузки");
+          const sessionMsg = simulationHttpErrorMessage(e);
+          setError(sessionMsg ?? (e instanceof Error ? e.message : "Ошибка загрузки"));
         }
       }
     })();
@@ -403,7 +415,8 @@ export function SimulationPage() {
           finishAnswerFlow(res);
         }
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Ошибка отправки ответа");
+        const sessionMsg = simulationHttpErrorMessage(e);
+        setError(sessionMsg ?? (e instanceof Error ? e.message : "Ошибка отправки ответа"));
       } finally {
         setBusy(false);
       }
@@ -485,7 +498,17 @@ export function SimulationPage() {
       {careerHud ? (
         <div className="sim-career-hud" aria-live="polite">
           <span>
-            <strong>{careerTitle(careerHud.role)}</strong>
+            <strong>{levelLabel(careerHud.level)}</strong>
+          </span>
+          <span className="sim-career-rep">
+            Опыт: <strong>{careerHud.experience} XP</strong>
+            {careerHud.experienceDelta !== 0 ? (
+              <span className={careerHud.experienceDelta > 0 ? "delta-up" : "delta-down"}>
+                {" "}
+                ({careerHud.experienceDelta > 0 ? "+" : ""}
+                {careerHud.experienceDelta})
+              </span>
+            ) : null}
           </span>
           <span className="sim-career-rep">
             Доверие: <strong>{careerHud.reputation}%</strong>
@@ -506,7 +529,7 @@ export function SimulationPage() {
           <span>
             Идеально подряд: <strong>{careerHud.perfectScenarioStreak}</strong>
           </span>
-          {careerHud.roleChanged ? <span className="role-up-badge">Новая роль!</span> : null}
+          {careerHud.levelChanged ? <span className="role-up-badge">Новый уровень!</span> : null}
         </div>
       ) : null}
 
@@ -583,6 +606,14 @@ export function SimulationPage() {
                           Шаг {stepIndex + 1} / {totalSteps}
                         </span>
                       </div>
+                      {splitHintOpen && stepIndex === 0 && !feedback && !consequenceModal ? (
+                        <MissionSplitLayoutHint
+                          onDismiss={() => {
+                            dismissMissionSplitHint();
+                            setSplitHintOpen(false);
+                          }}
+                        />
+                      ) : null}
                       <p className="mission-lc-scroll-hint">
                         <span className="mission-lc-scroll-hint-ico" aria-hidden>
                           ↕
@@ -670,14 +701,40 @@ export function SimulationPage() {
                   className={`feedback sim-feedback-banner ${feedback.ok ? "ok" : "bad"}`}
                   role="status"
                 >
-                  <strong>Разбор: </strong>
-                  {feedback.text}
+                  <p className="sim-feedback-text">
+                    <strong>Разбор: </strong>
+                    {feedback.text}
+                  </p>
                   {pendingNext ? (
-                    <div className="sim-feedback-continue">
-                      <button ref={continueStepRef} type="button" className="btn btn-primary" onClick={onContinue}>
-                        Далее
-                      </button>
-                    </div>
+                    <>
+                      <div className="sim-feedback-continue sim-feedback-continue--desktop">
+                        <button
+                          ref={continueTopRef}
+                          type="button"
+                          className="btn btn-primary"
+                          onClick={onContinue}
+                        >
+                          Далее
+                        </button>
+                      </div>
+                      {feedback.text.length > 180 ? (
+                        <div className="sim-feedback-continue sim-feedback-continue--long-desktop">
+                          <button type="button" className="btn btn-primary" onClick={onContinue}>
+                            Далее
+                          </button>
+                        </div>
+                      ) : null}
+                      <div className="sim-feedback-continue sim-feedback-continue--mobile-bar">
+                        <button
+                          ref={continueStickyRef}
+                          type="button"
+                          className="btn btn-primary sim-feedback-mobile-cta"
+                          onClick={onContinue}
+                        >
+                          Далее
+                        </button>
+                      </div>
+                    </>
                   ) : null}
                 </div>
               ) : null}

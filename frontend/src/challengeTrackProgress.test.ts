@@ -8,14 +8,12 @@ import {
 } from "./challengeTrackProgress";
 import type { ScenarioSummary } from "./types";
 
-function sc(id: string, locked = false): ScenarioSummary {
+function sc(id: string): ScenarioSummary {
   return {
     id,
     title: `Title ${id}`,
     type: "EMAIL",
     description: "",
-    locked,
-    requiredRole: "INTERN",
   };
 }
 
@@ -61,7 +59,7 @@ describe("getNextIncompleteTrackStep", () => {
   const byId = new Map<string, ScenarioSummary>([
     ["s1", sc("s1")],
     ["s2", sc("s2")],
-    ["s3", sc("s3", true)],
+    ["s3", sc("s3")],
   ]);
 
   it("returns first incomplete in first track", () => {

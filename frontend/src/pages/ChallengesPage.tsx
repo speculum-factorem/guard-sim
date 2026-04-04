@@ -91,8 +91,7 @@ function RoadmapTrack({
       <ol className="quest-roadmap-stops" style={{ minHeight: mapHeightPx }}>
         {steps.map(({ id: sid, scenario: s }, index) => {
           const completed = completedIds.has(sid);
-          const locked = s.locked;
-          const state = locked ? "locked" : completed ? "done" : "open";
+          const state = completed ? "done" : "open";
           const isFirst = index === 0;
           const isLast = index === steps.length - 1;
           const isLeft = index % 2 === 0;
@@ -136,17 +135,11 @@ function RoadmapTrack({
                   <div className="quest-node-main">
                     <span className="quest-node-kicker">Этап {index + 1}</span>
                     <h3 className="quest-node-title">{s.title}</h3>
-                    <span className="quest-node-hint">
-                      {locked ? "Нужна роль" : completed ? "Пройдено" : "Доступно"}
-                    </span>
+                    <span className="quest-node-hint">{completed ? "Пройдено" : "Доступно"}</span>
                   </div>
-                  {locked ? (
-                    <span className="quest-node-action quest-node-action--muted">Заблокировано</span>
-                  ) : (
-                    <Link to={`/play/${encodeURIComponent(sid)}`} className="quest-node-action btn btn-secondary">
-                      Играть
-                    </Link>
-                  )}
+                  <Link to={`/play/${encodeURIComponent(sid)}`} className="quest-node-action btn btn-secondary">
+                    Играть
+                  </Link>
                 </article>
               </div>
             </li>

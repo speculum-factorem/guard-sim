@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { SITE_NAME } from "../../siteMeta";
 import { stepAnalysisText } from "../../missionText";
 import type { ChoicePublic, StepPublic } from "../../types";
 import { NarrativeNoiseBlock } from "./NarrativeNoiseBlock";
@@ -49,7 +50,7 @@ export function GenericWorkspaceSimulation(props: {
       <div className="sim-generic-chrome">
         <div className="sim-generic-chrome-left">
           <span className="sim-generic-title">Задание</span>
-          <span className="sim-generic-badge">GuardSim</span>
+          <span className="sim-generic-badge">{SITE_NAME}</span>
         </div>
         <div className="sim-generic-chrome-actions">
           <button type="button" className="sim-generic-chrome-btn" title="Краткая справка" onClick={() => setHelpOpen(true)}>

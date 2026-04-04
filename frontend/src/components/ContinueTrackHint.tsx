@@ -15,7 +15,6 @@ export function ContinueTrackHint(props: { items: ScenarioSummary[]; player: Pla
   }
 
   const { track, scenario, stepNumber } = next;
-  const locked = scenario.locked;
 
   return (
     <section className="continue-track-hint" aria-labelledby="continue-track-heading">
@@ -26,21 +25,12 @@ export function ContinueTrackHint(props: { items: ScenarioSummary[]; player: Pla
           </h2>
           <p className="continue-track-hint-meta">
             Следующий этап ({stepNumber}/{track.scenarioIds.length}): <strong>{scenario.title}</strong>
-            {locked ? (
-              <span className="continue-track-hint-lock"> — нужна другая роль</span>
-            ) : null}
           </p>
         </div>
         <div className="continue-track-hint-actions">
-          {locked ? (
-            <Link to="/challenges" className="btn btn-secondary continue-track-hint-btn">
-              К челленджам
-            </Link>
-          ) : (
-            <Link to={`/play/${encodeURIComponent(scenario.id)}`} className="btn btn-primary continue-track-hint-btn">
-              Играть
-            </Link>
-          )}
+          <Link to={`/play/${encodeURIComponent(scenario.id)}`} className="btn btn-primary continue-track-hint-btn">
+            Играть
+          </Link>
           <Link to="/challenges" className="continue-track-hint-link">
             Все дорожки
           </Link>

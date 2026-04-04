@@ -3,7 +3,7 @@ package com.guardsim.api
 import com.guardsim.dto.ScenarioDetailDto
 import com.guardsim.dto.ScenarioSummaryDto
 import com.guardsim.dto.StartSessionResponse
-import com.guardsim.player.PlayerService
+import com.guardsim.auth.UserRepository
 import com.guardsim.service.ScenarioService
 import com.guardsim.service.SessionService
 import org.springframework.http.HttpStatus
@@ -21,20 +21,21 @@ import org.springframework.web.server.ResponseStatusException
 class ScenarioController(
     private val scenarioService: ScenarioService,
     private val sessionService: SessionService,
-    private val playerService: PlayerService,
+    private val users: UserRepository,
 ) {
 
     @GetMapping
     fun list(request: HttpServletRequest): List<ScenarioSummaryDto> {
-        val id = request.requirePlayerId()
-        val player = playerService.getOrCreate(id)
-        return scenarioService.listSummariesForPlayer(player)
+        request.requireRegisteredUserOrDemo(users)
+        return scenarioService.listSummaries()
     }
 
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: String): ScenarioDetailDto =
-        scenarioService.findPublicDetail(id)
+    fun getById(@PathVariable id: String, request: HttpServletRequest): ScenarioDetailDto {
+        request.requireRegisteredUserOrDemo(users)
+        return scenarioService.findPublicDetail(id)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Сценарий не найден")
+    }
 
     @PostMapping("/{id}/sessions")
     @ResponseStatus(HttpStatus.CREATED)
@@ -42,6 +43,7 @@ class ScenarioController(
         @PathVariable id: String,
         request: HttpServletRequest,
     ): StartSessionResponse {
+        request.requireRegisteredUserOrDemo(users)
         val clientId = request.requirePlayerId()
         return sessionService.startSession(id, clientId)
     }

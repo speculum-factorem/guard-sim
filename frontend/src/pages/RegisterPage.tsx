@@ -1,16 +1,22 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { setDemoModeActive } from "../demoMode";
+import { navigateToGuestDashboard } from "../guestDemoNav";
 import { registerRequest } from "../api";
 import { notifyAuthChanged } from "../authEvents";
 import { setAuthToken } from "../authToken";
 import { emailValidationMessage, passwordValidationMessage } from "../authValidation";
 import { AuthConsentSection } from "../components/AuthConsentSection";
 import { PersonalDataAgreementDialog } from "../components/PersonalDataAgreementDialog";
-import { navigateToGuestDashboard } from "../guestDemoNav";
 import { setPlayerId } from "../playerId";
+import { safeNextPath } from "../navigationConstants";
 
 export function RegisterPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const nextAfterAuth = safeNextPath(searchParams.get("next"));
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -20,6 +26,8 @@ export function RegisterPage() {
   const [consentError, setConsentError] = useState<string | null>(null);
   const [consent, setConsent] = useState(false);
   const [agreementOpen, setAgreementOpen] = useState(false);
+
+  const authSwitchSearch = location.search;
 
   function validateFields(): boolean {
     const e = emailValidationMessage(email);
@@ -45,8 +53,9 @@ export function RegisterPage() {
       const r = await registerRequest(email.trim(), password);
       setAuthToken(r.accessToken);
       setPlayerId(r.playerId);
+      setDemoModeActive(false);
       notifyAuthChanged();
-      navigate("/dashboard", { replace: true });
+      navigate(nextAfterAuth, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка регистрации");
     } finally {
@@ -73,91 +82,93 @@ export function RegisterPage() {
               {error}
             </div>
           ) : null}
-        <label className="auth-field">
-          <span className="auth-label">Email</span>
-          <div className="auth-input-wrap">
-            <input
-              className={`lc-input auth-input${emailError ? " auth-input--invalid" : ""}`}
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              value={email}
-              onChange={(ev) => {
-                setEmail(ev.target.value);
-                if (emailError) {
-                  setEmailError(emailValidationMessage(ev.target.value));
-                }
-              }}
-              onBlur={() => setEmailError(email.trim() ? emailValidationMessage(email) : null)}
-              aria-invalid={!!emailError}
-              aria-describedby={emailError ? "reg-email-err" : undefined}
-            />
-          </div>
-          {emailError ? (
-            <p id="reg-email-err" className="auth-field-error" role="alert">
-              {emailError}
+          <label className="auth-field">
+            <span className="auth-label">Email</span>
+            <div className="auth-input-wrap">
+              <input
+                className={`lc-input auth-input${emailError ? " auth-input--invalid" : ""}`}
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={email}
+                onChange={(ev) => {
+                  setEmail(ev.target.value);
+                  if (emailError) {
+                    setEmailError(emailValidationMessage(ev.target.value));
+                  }
+                }}
+                onBlur={() => setEmailError(email.trim() ? emailValidationMessage(email) : null)}
+                aria-invalid={!!emailError}
+                aria-describedby={emailError ? "reg-email-err" : undefined}
+              />
+            </div>
+            {emailError ? (
+              <p id="reg-email-err" className="auth-field-error" role="alert">
+                {emailError}
+              </p>
+            ) : null}
+          </label>
+          <label className="auth-field">
+            <span className="auth-label">Пароль (от 8 символов)</span>
+            <div className="auth-input-wrap">
+              <input
+                className={`lc-input auth-input${passwordError ? " auth-input--invalid" : ""}`}
+                type="password"
+                autoComplete="new-password"
+                value={password}
+                onChange={(ev) => {
+                  setPassword(ev.target.value);
+                  if (passwordError) {
+                    setPasswordError(passwordValidationMessage(ev.target.value, "register"));
+                  }
+                }}
+                onBlur={() => setPasswordError(password ? passwordValidationMessage(password, "register") : null)}
+                aria-invalid={!!passwordError}
+                aria-describedby={passwordError ? "reg-pw-err" : undefined}
+              />
+            </div>
+            {passwordError ? (
+              <p id="reg-pw-err" className="auth-field-error" role="alert">
+                {passwordError}
+              </p>
+            ) : null}
+          </label>
+
+          <AuthConsentSection
+            checked={consent}
+            onCheckedChange={(v) => {
+              setConsent(v);
+              if (v) {
+                setConsentError(null);
+              }
+            }}
+            onOpenAgreement={() => setAgreementOpen(true)}
+            disabled={busy}
+            error={consentError}
+            showFullAgreementButton={false}
+          />
+
+          <button type="submit" className="btn btn-primary auth-submit" disabled={busy}>
+            {busy ? "Создание…" : "Зарегистрироваться"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary auth-submit auth-demo"
+            disabled={busy}
+            onClick={() => navigateToGuestDashboard(navigate)}
+          >
+            Демо
+          </button>
+
+          <div className="auth-card-footer">
+            <p className="auth-switch">
+              Уже есть аккаунт?{" "}
+              <Link to={`/login${authSwitchSearch}`} className="auth-switch-link">
+                Войти
+              </Link>
             </p>
-          ) : null}
-        </label>
-        <label className="auth-field">
-          <span className="auth-label">Пароль (от 8 символов)</span>
-          <div className="auth-input-wrap">
-            <input
-              className={`lc-input auth-input${passwordError ? " auth-input--invalid" : ""}`}
-              type="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(ev) => {
-                setPassword(ev.target.value);
-                if (passwordError) {
-                  setPasswordError(passwordValidationMessage(ev.target.value, "register"));
-                }
-              }}
-              onBlur={() => setPasswordError(password ? passwordValidationMessage(password, "register") : null)}
-              aria-invalid={!!passwordError}
-              aria-describedby={passwordError ? "reg-pw-err" : undefined}
-            />
           </div>
-          {passwordError ? (
-            <p id="reg-pw-err" className="auth-field-error" role="alert">
-              {passwordError}
-            </p>
-          ) : null}
-        </label>
-
-        <AuthConsentSection
-          checked={consent}
-          onCheckedChange={(v) => {
-            setConsent(v);
-            if (v) {
-              setConsentError(null);
-            }
-          }}
-          onOpenAgreement={() => setAgreementOpen(true)}
-          disabled={busy}
-          error={consentError}
-        />
-
-        <button type="submit" className="btn btn-primary auth-submit" disabled={busy}>
-          {busy ? "Создание…" : "Зарегистрироваться"}
-        </button>
-        <button
-          type="button"
-          className="btn btn-secondary auth-submit auth-demo"
-          onClick={() => navigateToGuestDashboard(navigate)}
-        >
-          Демо
-        </button>
-
-        <div className="auth-card-footer">
-          <p className="auth-switch">
-            Уже есть аккаунт?{" "}
-            <Link to="/login" className="auth-switch-link">
-              Войти
-            </Link>
-          </p>
-        </div>
-      </form>
+        </form>
       </div>
 
       <PersonalDataAgreementDialog open={agreementOpen} onClose={() => setAgreementOpen(false)} />

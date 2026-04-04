@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import { RequireAppAccess } from "./components/RequireAppAccess";
 import { AccountPage } from "./pages/AccountPage";
 import { ChallengesPage } from "./pages/ChallengesPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -15,10 +16,38 @@ export default function App() {
         <Route path="/" element={<LandingGate />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/account" element={<AccountPage />} />
-        <Route path="/challenges" element={<ChallengesPage />} />
-        <Route path="/play/:scenarioId" element={<SimulationPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <RequireAppAccess>
+              <DashboardPage />
+            </RequireAppAccess>
+          }
+        />
+        <Route
+          path="/account"
+          element={
+            <RequireAppAccess>
+              <AccountPage />
+            </RequireAppAccess>
+          }
+        />
+        <Route
+          path="/challenges"
+          element={
+            <RequireAppAccess>
+              <ChallengesPage />
+            </RequireAppAccess>
+          }
+        />
+        <Route
+          path="/play/:scenarioId"
+          element={
+            <RequireAppAccess>
+              <SimulationPage />
+            </RequireAppAccess>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppLayout>

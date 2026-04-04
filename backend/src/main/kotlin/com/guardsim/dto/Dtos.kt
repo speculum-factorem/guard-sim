@@ -1,6 +1,5 @@
 package com.guardsim.dto
 
-import com.guardsim.career.CareerRole
 import com.guardsim.scenario.ScenarioType
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
@@ -65,8 +64,6 @@ data class ScenarioSummaryDto(
     val title: String,
     val type: ScenarioType,
     val description: String,
-    val locked: Boolean,
-    val requiredRole: CareerRole,
 )
 
 data class ScenarioDetailDto(
@@ -101,8 +98,10 @@ data class AchievementDto(
 data class CareerSnapshotDto(
     val reputation: Int,
     val reputationDelta: Int,
-    val role: CareerRole,
-    val roleChanged: Boolean,
+    val experience: Int,
+    val experienceDelta: Int,
+    val level: Int,
+    val levelChanged: Boolean,
     val perfectScenarioStreak: Int,
     val newAchievements: List<AchievementDto>,
 )
@@ -130,7 +129,8 @@ data class PlayerAchievementStateDto(
 data class PlayerStateDto(
     val clientId: String,
     val reputation: Int,
-    val role: CareerRole,
+    val experience: Int,
+    val level: Int,
     val perfectScenarioStreak: Int,
     val completedScenarioIds: List<String>,
     val achievements: List<PlayerAchievementStateDto>,

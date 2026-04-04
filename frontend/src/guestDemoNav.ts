@@ -1,10 +1,12 @@
 import type { NavigateFunction } from "react-router-dom";
+import { setDemoModeActive } from "./demoMode";
 import { notifyAuthChanged } from "./authEvents";
 import { clearAuthToken } from "./authToken";
 import { resetGuestPlayerId } from "./playerId";
 
-/** Режим гостя: без JWT, новый локальный игрок, основной экран приложения. */
+/** Режим демо: без JWT, новый локальный игрок, доступ к дашборду с гостевым прогрессом. */
 export function navigateToGuestDashboard(navigate: NavigateFunction): void {
+  setDemoModeActive(true);
   clearAuthToken();
   resetGuestPlayerId();
   notifyAuthChanged();

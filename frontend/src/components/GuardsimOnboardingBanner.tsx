@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { DASHBOARD_TASKS_HREF } from "../navigationConstants";
+import { SITE_NAME } from "../siteMeta";
 import { dismissOnboarding, isOnboardingDismissed } from "../onboardingStorage";
 
 export function GuardsimOnboardingBanner() {
@@ -19,7 +20,7 @@ export function GuardsimOnboardingBanner() {
     <div className="gs-onboarding-banner" role="region" aria-label="Как устроены челленджи и цель недели">
       <div className="gs-onboarding-inner">
         <div className="gs-onboarding-copy">
-          <h2 className="gs-onboarding-title">Как пользоваться GuardSim</h2>
+          <h2 className="gs-onboarding-title">Как пользоваться {SITE_NAME}</h2>
           <ul className="gs-onboarding-list">
             <li>
               <strong>Челленджи</strong> — тематические дорожки сценариев; удобно идти по шагам. Откройте раздел{" "}

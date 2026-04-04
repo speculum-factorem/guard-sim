@@ -1,10 +1,26 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { fetchMe, fetchPlayerState, fetchScenarios } from "../api";
-import { careerDescription, careerTitle } from "../careerLabels";
+import { notifyAuthChanged } from "../authEvents";
+import { setDemoModeActive } from "../demoMode";
+import { clearAuthToken } from "../authToken";
+import { resetGuestPlayerId } from "../playerId";
+import { experienceSummary, levelLabel, xpIntoCurrentLevel } from "../progressLabels";
+import { useAccountScrollSpy } from "../hooks/useAccountScrollSpy";
 import { DASHBOARD_TASKS_HREF } from "../navigationConstants";
 import { syncWeeklyGoal } from "../weeklyGoalStorage";
 import type { PlayerState, ScenarioSummary, UserMe } from "../types";
+
+const ACCOUNT_SECTION_IDS = ["account-stats", "account-profile", "account-history", "account-rewards"] as const;
+
+const ACCOUNT_NAV: { id: (typeof ACCOUNT_SECTION_IDS)[number]; label: string }[] = [
+  { id: "account-stats", label: "Статистика" },
+  { id: "account-profile", label: "Прогресс" },
+  { id: "account-history", label: "История задач" },
+  { id: "account-rewards", label: "Награды" },
+];
+
+const HISTORY_PAGE_SIZE = 8;
 
 function scenarioTypeRu(t: ScenarioSummary["type"]): string {
   return t === "EMAIL" ? "Почта" : "Лента";
@@ -22,6 +38,7 @@ function initialsFromEmail(email: string | null | undefined): string {
 }
 
 export function AccountPage() {
+  const navigate = useNavigate();
   const [me, setMe] = useState<UserMe | null>(null);
   const [player, setPlayer] = useState<PlayerState | null>(null);
   const [scenarios, setScenarios] = useState<ScenarioSummary[] | null>(null);
@@ -77,6 +94,29 @@ export function AccountPage() {
       .sort((a, b) => a.title.localeCompare(b.title, "ru"));
   }, [player, scenarios]);
 
+  const [historyVisible, setHistoryVisible] = useState(HISTORY_PAGE_SIZE);
+
+  useEffect(() => {
+    setHistoryVisible(HISTORY_PAGE_SIZE);
+  }, [historyRows.length, player?.clientId]);
+
+  const historyPage = useMemo(
+    () => historyRows.slice(0, historyVisible),
+    [historyRows, historyVisible],
+  );
+  const historyHasMore = historyVisible < historyRows.length;
+
+  const activeSection = useAccountScrollSpy(ACCOUNT_SECTION_IDS, Boolean(player && scenarios));
+
+  function logout() {
+    clearAuthToken();
+    setDemoModeActive(false);
+    /* Новый локальный игрок: иначе /api/auth/me по старому X-GuardSim-Player всё ещё находит аккаунт без JWT */
+    resetGuestPlayerId();
+    notifyAuthChanged();
+    navigate("/", { replace: true });
+  }
+
   const displayName = me?.guest || !me?.email ? "Гость" : me.email.split("@")[0] ?? "Игрок";
   const subtitle =
     me == null
@@ -111,8 +151,19 @@ export function AccountPage() {
                   <span className="account-id-label">ID игрока</span>
                   <code className="account-id-value">{player.clientId}</code>
                 </p>
+                {me && !me.guest ? (
+                  <div className="account-hero-actions">
+                    <button type="button" className="btn btn-secondary account-logout-btn" onClick={logout}>
+                      Выйти
+                    </button>
+                  </div>
+                ) : null}
               </div>
               <div className="account-hero-badges">
+                <div className="account-badge-card account-badge-card--accent">
+                  <span className="account-badge-value">{levelLabel(player.level)}</span>
+                  <span className="account-badge-label">{player.experience} XP</span>
+                </div>
                 <div className="account-badge-card">
                   <span className="account-badge-value">{player.reputation}%</span>
                   <span className="account-badge-label">Доверие</span>
@@ -135,18 +186,15 @@ export function AccountPage() {
             <div className="account-layout">
               <aside className="account-sidebar" aria-label="Разделы профиля">
                 <nav className="account-side-nav">
-                  <a className="account-side-link" href="#account-stats">
-                    Статистика
-                  </a>
-                  <a className="account-side-link" href="#account-profile">
-                    Характеристика
-                  </a>
-                  <a className="account-side-link" href="#account-history">
-                    История задач
-                  </a>
-                  <a className="account-side-link" href="#account-rewards">
-                    Награды
-                  </a>
+                  {ACCOUNT_NAV.map((item) => (
+                    <a
+                      key={item.id}
+                      className={`account-side-link${activeSection === item.id ? " account-side-link--active" : ""}`}
+                      href={`#${item.id}`}
+                    >
+                      {item.label}
+                    </a>
+                  ))}
                 </nav>
               </aside>
 
@@ -189,15 +237,29 @@ export function AccountPage() {
 
                 <section className="account-panel" id="account-profile" aria-labelledby="account-profile-h">
                   <h2 id="account-profile-h" className="account-panel-title">
-                    Характеристика
+                    Прогресс
                   </h2>
                   <div className="account-profile-card">
-                    <div className="account-profile-row">
-                      <span className="account-profile-label">Роль</span>
-                      <strong className="account-profile-strong">{careerTitle(player.role)}</strong>
+                    <p className="account-profile-body">{experienceSummary(player.experience)}</p>
+                    <div
+                      className="account-xp-bar"
+                      aria-hidden
+                      title={`Внутри уровня: ${xpIntoCurrentLevel(player.experience)}/100 XP`}
+                    >
+                      <div
+                        className="account-xp-bar-fill"
+                        style={{ width: `${xpIntoCurrentLevel(player.experience)}%` }}
+                      />
                     </div>
-                    <p className="account-profile-body">{careerDescription(player.role)}</p>
                     <dl className="account-dl">
+                      <div className="account-dl-row">
+                        <dt>Уровень</dt>
+                        <dd>{levelLabel(player.level)}</dd>
+                      </div>
+                      <div className="account-dl-row">
+                        <dt>Опыт</dt>
+                        <dd>{player.experience} XP</dd>
+                      </div>
                       <div className="account-dl-row">
                         <dt>Репутация (доверие)</dt>
                         <dd>{player.reputation}%</dd>
@@ -220,36 +282,61 @@ export function AccountPage() {
                     </Link>
                   </div>
                   {historyRows.length === 0 ? (
-                    <p className="account-empty">Пока нет завершённых сценариев — откройте каталог и начните задачу.</p>
-                  ) : (
-                    <div className="account-table-wrap">
-                      <table className="account-table">
-                        <thead>
-                          <tr>
-                            <th scope="col">Сценарий</th>
-                            <th scope="col">Канал</th>
-                            <th scope="col">Статус</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {historyRows.map((row) => (
-                            <tr key={row.id}>
-                              <td>
-                                <span className="account-table-title">{row.title}</span>
-                              </td>
-                              <td>
-                                <span className={`account-channel account-channel--${row.type.toLowerCase()}`}>
-                                  {scenarioTypeRu(row.type)}
-                                </span>
-                              </td>
-                              <td>
-                                <span className="account-status">Пройдено</span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <div className="account-empty-row">
+                      <p className="account-empty">
+                        Пока нет завершённых сценариев — откройте каталог и начните задачу.
+                      </p>
+                      <Link to={DASHBOARD_TASKS_HREF} className="btn btn-primary account-empty-cta">
+                        Перейти к задачам
+                      </Link>
                     </div>
+                  ) : (
+                    <>
+                      <div className="account-table-wrap">
+                        <table className="account-table">
+                          <thead>
+                            <tr>
+                              <th scope="col">Сценарий</th>
+                              <th scope="col">Канал</th>
+                              <th scope="col">Статус</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {historyPage.map((row) => (
+                              <tr key={row.id}>
+                                <td>
+                                  <span className="account-table-title">{row.title}</span>
+                                </td>
+                                <td>
+                                  <span className={`account-channel account-channel--${row.type.toLowerCase()}`}>
+                                    {scenarioTypeRu(row.type)}
+                                  </span>
+                                </td>
+                                <td>
+                                  <span className="account-status">Пройдено</span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      {historyHasMore ? (
+                        <div className="account-history-more">
+                          <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={() => setHistoryVisible((n) => n + HISTORY_PAGE_SIZE)}
+                          >
+                            Показать ещё
+                          </button>
+                          <span className="account-history-more-meta">
+                            Показано {historyPage.length} из {historyRows.length}
+                          </span>
+                        </div>
+                      ) : historyRows.length > HISTORY_PAGE_SIZE ? (
+                        <p className="account-history-end">Показаны все {historyRows.length} записей</p>
+                      ) : null}
+                    </>
                   )}
                 </section>
 

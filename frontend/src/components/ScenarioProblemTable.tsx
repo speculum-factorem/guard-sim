@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { careerTitle } from "../careerLabels";
 import {
   loadTaskListFilters,
   saveTaskListFilters,
@@ -8,7 +7,7 @@ import {
   type TaskSortColumn,
   type TaskSortDir,
 } from "../taskListFiltersStorage";
-import type { CareerRole, ScenarioSummary } from "../types";
+import type { ScenarioSummary } from "../types";
 import { channelLabel, hubColumnForScenario } from "../scenarioHub";
 
 type ChannelFilter = TaskChannelFilter;
@@ -32,20 +31,7 @@ function tasksLabel(n: number): string {
   return `${n} задач`;
 }
 
-function roleOrder(role: CareerRole): number {
-  if (role === "INTERN") {
-    return 0;
-  }
-  if (role === "EMPLOYEE") {
-    return 1;
-  }
-  return 2;
-}
-
 function statusRank(s: ScenarioSummary, completed: Set<string>): number {
-  if (s.locked) {
-    return 2;
-  }
   if (completed.has(s.id)) {
     return 1;
   }
@@ -70,9 +56,6 @@ function compareRows(
       cmp = order(hubColumnForScenario(a)) - order(hubColumnForScenario(b));
       break;
     }
-    case "role":
-      cmp = roleOrder(a.requiredRole) - roleOrder(b.requiredRole);
-      break;
     case "status":
       cmp = statusRank(a, completed) - statusRank(b, completed);
       break;
@@ -86,9 +69,6 @@ function compareRows(
 }
 
 function StatusPill({ s, completed }: { s: ScenarioSummary; completed: Set<string> }) {
-  if (s.locked) {
-    return <span className="lc-status lc-status--locked">Заблокировано</span>;
-  }
   if (completed.has(s.id)) {
     return <span className="lc-status lc-status--done">Пройдено</span>;
   }
@@ -183,6 +163,7 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
   return (
     <section className="lc-problems" id="tasks" aria-labelledby="tasks-heading">
       <header className="lc-problems-head">
+        <p className="lc-problems-eyebrow">Каталог миссий</p>
         <div className="lc-problems-head-row">
           <h2 className="section-heading lc-problems-title" id="tasks-heading">
             Все задачи
@@ -192,7 +173,7 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
           </span>
         </div>
         <p className="page-subtitle lc-problems-lead">
-          Фильтры и сортировка сохраняются локально. Отметьте «Только непройденные», чтобы скрыть решённые.
+          Поиск и фильтры сохраняются в браузере. Скрывайте пройденные, чтобы видеть только то, что осталось пройти.
         </p>
       </header>
 
@@ -305,12 +286,6 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
                   {sortIndicator("channel")}
                 </button>
               </th>
-              <th scope="col" className="lc-col-role">
-                <button type="button" className="lc-th-btn" onClick={() => toggleSort("role")}>
-                  Роль
-                  {sortIndicator("role")}
-                </button>
-              </th>
               <th scope="col" className="lc-col-action">
                 <span className="lc-th-static">
                   <span className="lc-visually-hidden">Действие</span>
@@ -322,16 +297,12 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
             {pageRows.map((s) => {
               const col = hubColumnForScenario(s);
               return (
-                <tr key={s.id} className={s.locked ? "lc-tr lc-tr--locked" : "lc-tr"}>
+                <tr key={s.id} className="lc-tr">
                   <td className="lc-td-title">
                     <div className="lc-title-cell">
-                      {s.locked ? (
-                        <span className="lc-title-locked">{s.title}</span>
-                      ) : (
-                        <Link to={`/play/${encodeURIComponent(s.id)}`} className="lc-title-link">
-                          {s.title}
-                        </Link>
-                      )}
+                      <Link to={`/play/${encodeURIComponent(s.id)}`} className="lc-title-link">
+                        {s.title}
+                      </Link>
                       <p className="lc-title-desc">{s.description}</p>
                     </div>
                   </td>
@@ -341,17 +312,10 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
                   <td>
                     <span className={`lc-channel lc-channel--${col}`}>{channelLabel(col)}</span>
                   </td>
-                  <td>
-                    <span className="lc-role">{careerTitle(s.requiredRole)}</span>
-                  </td>
                   <td className="lc-td-action">
-                    {s.locked ? (
-                      <span className="lc-action-muted">—</span>
-                    ) : (
-                      <Link to={`/play/${encodeURIComponent(s.id)}`} className="lc-btn-solve">
-                        Начать
-                      </Link>
-                    )}
+                    <Link to={`/play/${encodeURIComponent(s.id)}`} className="lc-btn-solve">
+                      Начать
+                    </Link>
                   </td>
                 </tr>
               );

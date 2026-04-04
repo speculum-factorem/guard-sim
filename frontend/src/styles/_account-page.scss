@@ -136,6 +136,14 @@
   font-size: 12px;
 }
 
+.account-hero-actions {
+  margin-top: 14px;
+}
+
+.account-logout-btn {
+  font-weight: 700;
+}
+
 .account-hero-badges {
   display: flex;
   flex-wrap: wrap;
@@ -227,6 +235,43 @@
 .account-side-link:hover {
   background: rgba(255, 106, 50, 0.08);
   color: var(--bento-ink);
+}
+
+.account-side-link--active {
+  background: var(--bento-yellow);
+  border: 1px solid var(--bento-ink);
+  color: var(--bento-ink);
+  box-shadow: var(--shadow-bento-xs);
+}
+
+.account-empty-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.account-empty-cta {
+  align-self: flex-start;
+}
+
+.account-history-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-top: 14px;
+}
+
+.account-history-more-meta {
+  font-size: 13px;
+  color: var(--gm-text-secondary);
+}
+
+.account-history-end {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--gm-text-secondary);
 }
 
 .account-main {
@@ -337,6 +382,21 @@
   font-size: 14px;
   line-height: 1.55;
   color: var(--gm-text);
+}
+
+.account-xp-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(18, 18, 18, 0.08);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.account-xp-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--bento-mint, #5fd4a8) 0%, var(--bento-yellow, #f5d547) 100%);
+  transition: width 0.35s ease;
 }
 
 .account-dl {

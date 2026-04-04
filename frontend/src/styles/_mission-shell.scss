@@ -378,6 +378,41 @@
   background: transparent;
 }
 
+/* Подсказка к split-макету (первый визит / до закрытия) */
+.mission-split-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(90deg, rgba(37, 99, 255, 0.08) 0%, rgba(255, 253, 248, 0.95) 100%);
+  flex-shrink: 0;
+}
+
+.mission-split-hint-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #334155;
+  max-width: min(100%, 52ch);
+}
+
+.mission-split-hint-btn {
+  flex-shrink: 0;
+  font-size: 12px;
+  padding: 8px 14px;
+}
+
+@media (max-width: 960px) {
+  .mission-split-hint {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
 .mission-lc-scroll-hint {
   display: none;
   align-items: center;

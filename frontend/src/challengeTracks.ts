@@ -43,7 +43,7 @@ export const CHALLENGE_TRACKS: ChallengeTrackDef[] = [
   {
     id: "soc-response",
     title: "ИБ: инциденты",
-    description: "Для роли администратора безопасности: цепочки атак и vishing.",
+    description: "Сложные цепочки атак и vishing — как в работе ИБ.",
     scenarioIds: ["combined-ceo-phish", "exec-wire-vishing"],
     accent: "orange",
   },

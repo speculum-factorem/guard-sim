@@ -1,43 +1,44 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
 import { fetchMe } from "../api";
 import { clearAuthToken, getAuthToken } from "../authToken";
 import { notifyAuthChanged } from "../authEvents";
 import { isJwtExpired } from "../jwtPayload";
 import { HomePage } from "./HomePage";
 
-type Phase = "loading" | "home" | "dashboard";
+type Phase = "loading" | "ready";
 
 /**
- * Лендинг для гостей; при валидном сессионном JWT — редирект на дашборд
- * (проверка срока + /api/auth/me, без мигания на просроченном токене).
+ * Главная страница — лендинг для всех. Проверяем JWT (срок + /api/auth/me),
+ * чтобы не мигать и сбросить просроченную сессию; дашборд и игра — только через навигацию или после входа.
  */
 export function LandingGate() {
-  const [phase, setPhase] = useState<Phase>(() => (getAuthToken() ? "loading" : "home"));
+  const [phase, setPhase] = useState<Phase>(() => (getAuthToken() ? "loading" : "ready"));
 
   useEffect(() => {
     const token = getAuthToken();
     if (!token) {
-      setPhase("home");
+      setPhase("ready");
       return;
     }
     if (isJwtExpired(token)) {
       clearAuthToken();
       notifyAuthChanged();
-      setPhase("home");
+      setPhase("ready");
       return;
     }
 
     let cancelled = false;
     fetchMe()
       .then(() => {
-        if (!cancelled) setPhase("dashboard");
+        if (!cancelled) {
+          setPhase("ready");
+        }
       })
       .catch(() => {
         if (!cancelled) {
           clearAuthToken();
           notifyAuthChanged();
-          setPhase("home");
+          setPhase("ready");
         }
       });
     return () => {
@@ -51,10 +52,6 @@ export function LandingGate() {
         <p className="landing-gate-text">Загрузка…</p>
       </div>
     );
-  }
-
-  if (phase === "dashboard") {
-    return <Navigate to="/dashboard" replace />;
   }
 
   return <HomePage />;

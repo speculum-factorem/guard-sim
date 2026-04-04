@@ -17,11 +17,156 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(255, 253, 248, 0.82);
-  backdrop-filter: blur(18px) saturate(1.12);
-  -webkit-backdrop-filter: blur(18px) saturate(1.12);
-  border-bottom: 1px solid rgba(18, 18, 18, 0.08);
-  box-shadow: 0 4px 28px rgba(0, 0, 0, 0.045);
+  background: rgba(255, 253, 248, 0.88);
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  border-bottom: 2px solid var(--bento-ink);
+  box-shadow: 0 6px 0 rgba(10, 10, 10, 0.06), 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+
+.app-bar-track {
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--bento-orange) 0%,
+    var(--bento-yellow) 28%,
+    #5fd4a8 55%,
+    #c4b5fd 78%,
+    var(--bento-orange) 100%
+  );
+  background-size: 220% 100%;
+  animation: app-bar-track-marquee 10s linear infinite;
+}
+
+@keyframes app-bar-track-marquee {
+  0% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 220% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-bar-track {
+    animation: none;
+    background-size: 100% 100%;
+  }
+}
+
+.app-bar-inner {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 12px clamp(14px, 3vw, 36px) 14px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  justify-content: space-between;
+}
+
+.app-nav {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-width: min(100%, 240px);
+  margin-left: 0;
+  padding: 0 4px;
+}
+
+.app-bar-aside {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  flex-shrink: 0;
+}
+
+.app-user-email {
+  font-size: 12px;
+  font-weight: 700;
+  max-width: min(200px, 32vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--bento-ink);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(18, 18, 18, 0.12);
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.app-user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(300px, 48vw);
+  padding: 5px 12px 5px 6px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--bento-ink);
+  background: var(--ui-white);
+  box-shadow: 3px 3px 0 rgba(10, 10, 10, 0.12);
+  text-decoration: none;
+  color: var(--bento-ink);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.app-user-chip:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 rgba(10, 10, 10, 0.16);
+}
+
+.app-user-chip:focus-visible {
+  outline: 2px solid var(--bento-orange);
+  outline-offset: 2px;
+}
+
+.app-user-chip--active {
+  background: linear-gradient(180deg, #fff 0%, var(--bento-yellow) 100%);
+  box-shadow: 3px 3px 0 rgba(10, 10, 10, 0.2);
+}
+
+.app-user-chip-avatar {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #c4b5fd 0%, var(--bento-yellow) 100%);
+  border: 2px solid var(--bento-ink);
+  color: var(--bento-ink);
+}
+
+.app-user-chip-email {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-guest-pill {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 7px 12px;
+  border-radius: var(--radius-pill);
+  border: var(--bento-border);
+  background: linear-gradient(180deg, #fff 0%, var(--bento-yellow) 100%);
+  color: var(--bento-ink);
+  box-shadow: 3px 3px 0 rgba(10, 10, 10, 0.18);
 }
 
 .app-logo-mark-svg {
@@ -332,10 +477,6 @@
 }
 
 /* Шапка: навигация-«таблетки» */
-.app-nav {
-  gap: 10px;
-}
-
 .app-nav-pill {
   display: inline-flex;
   align-items: center;
@@ -895,22 +1036,12 @@
   box-shadow: none;
 }
 
-/* Навигация: аккаунт */
+/* Навигация: аккаунт (legacy — см. .app-bar-aside / .app-user-email) */
 .app-nav-auth {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-}
-
-.app-nav-email {
-  font-size: 13px;
-  font-weight: 700;
-  max-width: min(200px, 28vw);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--bento-ink);
 }
 
 .app-nav-pill--ghost {

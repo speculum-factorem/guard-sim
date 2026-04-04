@@ -53,7 +53,7 @@ dev: free-port
 		echo "Ожидание http://127.0.0.1:8080/api/scenarios …"; \
 		ok=0; i=0; \
 		while [ "$$i" -lt 180 ]; do \
-		  if curl -sf -H "X-GuardSim-Player: 00000000-0000-0000-0000-000000000099" "http://127.0.0.1:8080/api/scenarios" >/dev/null 2>&1; then ok=1; break; fi; \
+		  if curl -sf -H "X-GuardSim-Player: 00000000-0000-0000-0000-000000000099" -H "X-GuardSim-Demo: 1" "http://127.0.0.1:8080/api/scenarios" >/dev/null 2>&1; then ok=1; break; fi; \
 		  i=$$((i+1)); sleep 1; \
 		done; \
 		if [ "$$ok" != 1 ]; then echo "Ошибка: API не поднялся за 3 мин. Проверьте: cd $(BACKEND) && mvn spring-boot:run"; kill 0; exit 1; fi; \

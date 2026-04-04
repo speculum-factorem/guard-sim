@@ -1,6 +1,5 @@
 package com.guardsim.scenario
 
-import com.guardsim.career.CareerRole
 import com.guardsim.scenario.internal.InternalChoice
 import com.guardsim.scenario.internal.InternalHotspot
 import com.guardsim.scenario.internal.InternalInvestigationPanel
@@ -415,7 +414,6 @@ class ScenarioRegistry {
                     ),
                 ),
             ),
-            requiredRole = CareerRole.EMPLOYEE,
         )
 
         /** Вредоносное вложение. */
@@ -536,7 +534,6 @@ class ScenarioRegistry {
                     ),
                 ),
             ),
-            requiredRole = CareerRole.EMPLOYEE,
         )
 
         /** Комбинированная цепочка: «гендиректор», срочность, вложение и поддельный сервис. */
@@ -710,7 +707,6 @@ class ScenarioRegistry {
                     ),
                 ),
             ),
-            requiredRole = CareerRole.SECURITY_ADMIN,
         )
 
         /** BEC: «поставщик» меняет банковские реквизиты по email — реальная схема для переводов на счёт мошенников. */
@@ -719,7 +715,6 @@ class ScenarioRegistry {
             title = "«Поставщик» сменил реквизиты",
             type = ScenarioType.EMAIL,
             description = "Письмо якобы от контрагента с новыми банковскими данными. Так перехватывают реальные платежи B2B.",
-            requiredRole = CareerRole.EMPLOYEE,
             steps = listOf(
                 InternalStep(
                     id = "vb-1",
@@ -833,7 +828,6 @@ class ScenarioRegistry {
             title = "Покупатель просит уйти с Avito",
             type = ScenarioType.SOCIAL,
             description = "Реальная схема: перевод на «гаранта» вне площадки, поддельные страницы оплаты, потеря денег и товара.",
-            requiredRole = CareerRole.EMPLOYEE,
             steps = listOf(
                 InternalStep(
                     id = "mo-1",
@@ -938,7 +932,6 @@ class ScenarioRegistry {
             title = "Обязательный «опрос HR» по ссылке",
             type = ScenarioType.EMAIL,
             description = "Реальные кампании: письмо про обязательный опрос или обучение, вход через поддельный SSO на похожем домене.",
-            requiredRole = CareerRole.EMPLOYEE,
             steps = listOf(
                 InternalStep(
                     id = "hs-1",
@@ -1066,7 +1059,6 @@ class ScenarioRegistry {
             title = "«IT-поддержка»: пароль истекает через час",
             type = ScenarioType.EMAIL,
             description = "Распространённый фишинг: письмо от похожего на сервисный адрес, срочность и ссылка на «сброс пароля» вне SSO.",
-            requiredRole = CareerRole.EMPLOYEE,
             steps = listOf(
                 InternalStep(
                     id = "il-1",
@@ -1166,7 +1158,6 @@ class ScenarioRegistry {
             title = "Звонок «от финдира»: срочный перевод",
             type = ScenarioType.EMAIL,
             description = "Реальные кейсы: синтез голоса или подмена номера, знание контекста проектов, давление перевести на «новый счёт контрагента».",
-            requiredRole = CareerRole.SECURITY_ADMIN,
             steps = listOf(
                 InternalStep(
                     id = "ev-1",

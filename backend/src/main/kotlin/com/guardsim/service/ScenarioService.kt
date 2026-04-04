@@ -9,8 +9,6 @@ import com.guardsim.dto.StepPublicDto
 import com.guardsim.dto.RedFlagCandidatePublicDto
 import com.guardsim.dto.RedFlagGameDto
 import com.guardsim.dto.UrlCompareGameDto
-import com.guardsim.player.PlayerEntity
-import com.guardsim.player.PlayerService
 import com.guardsim.scenario.ScenarioRegistry
 import com.guardsim.scenario.internal.InternalChoice
 import com.guardsim.scenario.internal.InternalScenario
@@ -22,19 +20,15 @@ import org.springframework.stereotype.Service
 @Service
 class ScenarioService(
     private val registry: ScenarioRegistry,
-    private val playerService: PlayerService,
 ) {
 
-    fun listSummariesForPlayer(player: PlayerEntity): List<ScenarioSummaryDto> =
+    fun listSummaries(): List<ScenarioSummaryDto> =
         registry.all().sortedBy { it.id }.map { s ->
-            val locked = !playerService.canAccess(player, s)
             ScenarioSummaryDto(
                 id = s.id,
                 title = s.title,
                 type = s.type,
                 description = s.description,
-                locked = locked,
-                requiredRole = s.requiredRole,
             )
         }
 

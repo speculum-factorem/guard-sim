@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { SITE_NAME } from "../siteMeta";
 
 type LogoMarkProps = {
   className?: string;
@@ -8,9 +9,9 @@ type LogoMarkProps = {
 };
 
 /**
- * Знак GuardSim: скруглённый квадрат, градиент оранжевый → мятный, галочка, обводка «bento».
+ * Логотип приложения: скруглённый квадрат, градиент оранжевый → мятный, галочка, обводка «bento».
  */
-export function LogoMark({ className = "", size = 40, title = "GuardSim" }: LogoMarkProps) {
+export function LogoMark({ className = "", size = 40, title = SITE_NAME }: LogoMarkProps) {
   const raw = useId().replace(/:/g, "");
   const gradId = `logo-grad-${raw}`;
 

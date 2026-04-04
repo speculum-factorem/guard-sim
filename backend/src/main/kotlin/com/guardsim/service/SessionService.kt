@@ -29,12 +29,6 @@ class SessionService(
         if (scenario.steps.isEmpty()) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Сценарий без шагов")
         }
-        if (!playerService.canAccess(player, scenario)) {
-            throw ResponseStatusException(
-                HttpStatus.FORBIDDEN,
-                "Сценарий пока заблокирован. Повысьте роль: пройдите доступные миссии.",
-            )
-        }
         val sessionId = UUID.randomUUID()
         val entity = GameSessionEntity(
             id = sessionId,
@@ -58,7 +52,7 @@ class SessionService(
     }
 
     @Transactional
-    fun submitAnswer(sessionId: UUID, stepId: String, body: AnswerRequest): AnswerResponse {
+    fun submitAnswer(sessionId: UUID, stepId: String, body: AnswerRequest, callerPlayerId: UUID): AnswerResponse {
         val entity = sessions.findById(sessionId)
             .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Сессия не найдена") }
         if (entity.completed) {
@@ -66,6 +60,9 @@ class SessionService(
         }
         val playerClient = entity.playerClientId
             ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Сессия без профиля игрока")
+        if (playerClient != callerPlayerId) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Эта сессия принадлежит другому игроку")
+        }
         val player = playerService.getOrCreate(playerClient)
 
         val scenario = scenarios.findInternal(entity.scenarioId)
@@ -120,22 +117,22 @@ class SessionService(
         }
         sessions.save(entity)
 
-        val roleBeforePromotions = player.role
         val totalRepDelta = repDelta + investigationDelta
         val career = if (completed) {
             val snap = playerService.onScenarioFinished(
                 player,
                 entity.scenarioId,
                 entity.hadIncorrectStep,
-                roleBeforePromotions,
             )
             snap.copy(reputationDelta = totalRepDelta, reputation = player.reputation)
         } else {
             CareerSnapshotDto(
                 reputation = player.reputation,
                 reputationDelta = totalRepDelta,
-                role = player.role,
-                roleChanged = false,
+                experience = player.experiencePoints,
+                experienceDelta = 0,
+                level = playerService.levelFromExperience(player.experiencePoints),
+                levelChanged = false,
                 perfectScenarioStreak = player.perfectScenarioStreak,
                 newAchievements = emptyList(),
             )

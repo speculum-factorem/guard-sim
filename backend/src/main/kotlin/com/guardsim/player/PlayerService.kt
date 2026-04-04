@@ -2,13 +2,11 @@ package com.guardsim.player
 
 import com.guardsim.career.AchievementCatalog
 import com.guardsim.career.AchievementDefinition
-import com.guardsim.career.CareerRole
 import com.guardsim.dto.AchievementDto
 import com.guardsim.dto.CareerSnapshotDto
 import com.guardsim.dto.PlayerAchievementStateDto
 import com.guardsim.dto.PlayerStateDto
-import com.guardsim.scenario.internal.InternalScenario
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -16,18 +14,23 @@ import java.util.UUID
 @Service
 class PlayerService(
     private val players: PlayerRepository,
-    @Value("\${guardsim.scenarios.unlock-all:false}")
-    private val unlockAllScenarios: Boolean,
 ) {
 
+    /** Уровень 1 при 0–99 XP, уровень 2 при 100–199 и т.д. */
+    fun levelFromExperience(exp: Int): Int = exp.coerceAtLeast(0) / 100 + 1
+
+    /**
+     * Два параллельных запроса с одним [clientId] могли оба не увидеть строку и попытаться INSERT — ловим и читаем существующую.
+     */
     @Transactional
     fun getOrCreate(clientId: UUID): PlayerEntity =
         players.findById(clientId).orElseGet {
-            players.save(PlayerEntity(clientId = clientId))
+            try {
+                players.save(PlayerEntity(clientId = clientId))
+            } catch (ex: DataIntegrityViolationException) {
+                players.findById(clientId).orElseThrow { ex }
+            }
         }
-
-    fun canAccess(player: PlayerEntity, scenario: InternalScenario): Boolean =
-        unlockAllScenarios || player.role.ordinal >= scenario.requiredRole.ordinal
 
     @Transactional
     fun applyAnswerReputation(player: PlayerEntity, correct: Boolean, criticalIfWrong: Boolean): Int {
@@ -53,7 +56,6 @@ class PlayerService(
         player: PlayerEntity,
         scenarioId: String,
         hadIncorrectStep: Boolean,
-        roleSnapshotBefore: CareerRole,
     ): CareerSnapshotDto {
         val completed = parseCsv(player.completedScenarioIdsCsv).toMutableSet()
         completed.add(scenarioId)
@@ -64,6 +66,10 @@ class PlayerService(
         } else {
             player.perfectScenarioStreak = 0
         }
+
+        val levelBefore = levelFromExperience(player.experiencePoints)
+        val xpGain = if (hadIncorrectStep) 25 else 45
+        player.experiencePoints = (player.experiencePoints + xpGain).coerceAtMost(1_000_000)
 
         val existing = parseCsv(player.achievementIdsCsv).toMutableSet()
         val newAchievements = mutableListOf<AchievementDefinition>()
@@ -78,15 +84,28 @@ class PlayerService(
             unlockAchievement(existing, newAchievements, ACH_TEN_PERFECT)
         }
 
+        if (TRACK_INBOX.all { it in completed }) {
+            unlockAchievement(existing, newAchievements, ACH_TRACK_INBOX)
+        }
+        if (TRACK_SOCIAL.all { it in completed }) {
+            unlockAchievement(existing, newAchievements, ACH_TRACK_SOCIAL)
+        }
+        if (TRACK_SOC.all { it in completed }) {
+            unlockAchievement(existing, newAchievements, ACH_TRACK_SOC)
+        }
+
         player.achievementIdsCsv = joinCsv(existing)
-        promoteIfNeeded(player, completed)
         players.save(player)
+
+        val levelAfter = levelFromExperience(player.experiencePoints)
 
         return CareerSnapshotDto(
             reputation = player.reputation,
             reputationDelta = 0,
-            role = player.role,
-            roleChanged = player.role != roleSnapshotBefore,
+            experience = player.experiencePoints,
+            experienceDelta = xpGain,
+            level = levelAfter,
+            levelChanged = levelAfter > levelBefore,
             perfectScenarioStreak = player.perfectScenarioStreak,
             newAchievements = newAchievements.map { AchievementDto(it.id, it.title, it.description) },
         )
@@ -105,15 +124,6 @@ class PlayerService(
         out.add(def)
     }
 
-    private fun promoteIfNeeded(player: PlayerEntity, completed: Set<String>) {
-        if (player.role == CareerRole.INTERN && completed.contains(BASIC_PHISHING)) {
-            player.role = CareerRole.EMPLOYEE
-        }
-        if (player.role.ordinal <= CareerRole.EMPLOYEE.ordinal && BASIC_ALL.all { it in completed }) {
-            player.role = CareerRole.SECURITY_ADMIN
-        }
-    }
-
     fun toStateDto(player: PlayerEntity): PlayerStateDto {
         val unlocked = parseCsv(player.achievementIdsCsv).toSet()
         val ach = AchievementCatalog.ALL.map {
@@ -127,7 +137,8 @@ class PlayerService(
         return PlayerStateDto(
             clientId = player.clientId.toString(),
             reputation = player.reputation,
-            role = player.role,
+            experience = player.experiencePoints,
+            level = levelFromExperience(player.experiencePoints),
             perfectScenarioStreak = player.perfectScenarioStreak,
             completedScenarioIds = parseCsv(player.completedScenarioIdsCsv),
             achievements = ach,
@@ -144,11 +155,24 @@ class PlayerService(
         private const val ACH_FIRST_PHISHING = "first-phishing-spotless"
         private const val ACH_ZERO_LEAK_WEEK = "zero-leak-week"
         private const val ACH_TEN_PERFECT = "ten-perfect-row"
+        private const val ACH_TRACK_INBOX = "challenge-track-inbox"
+        private const val ACH_TRACK_SOCIAL = "challenge-track-social"
+        private const val ACH_TRACK_SOC = "challenge-track-soc"
 
-        val BASIC_ALL: Set<String> = setOf(
-            BASIC_PHISHING,
-            "social-prize",
+        private val TRACK_INBOX: Set<String> = setOf(
+            "phishing-email",
             "malicious-attachment",
+            "vendor-payment-bec",
+            "hr-portal-phish",
+            "it-support-lookalike",
+        )
+        private val TRACK_SOCIAL: Set<String> = setOf(
+            "social-prize",
+            "marketplace-off-platform",
+        )
+        private val TRACK_SOC: Set<String> = setOf(
+            "combined-ceo-phish",
+            "exec-wire-vishing",
         )
     }
 }

@@ -1,5 +1,8 @@
 import type { ScenarioSummary } from "./types";
 
+/** Сценарии дорожки «ИБ: инциденты» — колонка «ИБ» на хабе. */
+const SECURITY_SCENARIO_IDS = new Set<string>(["combined-ceo-phish", "exec-wire-vishing"]);
+
 export function typeLabel(t: ScenarioSummary["type"]): string {
   if (t === "EMAIL") {
     return "Почта";
@@ -22,7 +25,7 @@ export function channelLabel(col: "mail" | "social" | "security"): string {
 }
 
 export function hubColumnForScenario(s: ScenarioSummary): "mail" | "social" | "security" {
-  if (s.requiredRole === "SECURITY_ADMIN") {
+  if (SECURITY_SCENARIO_IDS.has(s.id)) {
     return "security";
   }
   if (s.type === "SOCIAL") {
@@ -54,7 +57,7 @@ export function firstOpenScenarioId(columns: {
   security: ScenarioSummary[];
 }): string | null {
   for (const list of [columns.mail, columns.social, columns.security]) {
-    const s = list.find((x) => !x.locked);
+    const s = list[0];
     if (s) {
       return s.id;
     }

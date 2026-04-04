@@ -3,7 +3,7 @@
  */
 
 export type TaskChannelFilter = "all" | "mail" | "social" | "security";
-export type TaskSortColumn = "status" | "title" | "channel" | "role";
+export type TaskSortColumn = "status" | "title" | "channel";
 export type TaskSortDir = "asc" | "desc";
 
 const STORAGE_KEY = "guardSim.taskListFilters.v1";
@@ -33,7 +33,7 @@ function isChannel(x: unknown): x is TaskChannelFilter {
 }
 
 function isSortColumn(x: unknown): x is TaskSortColumn {
-  return x === "status" || x === "title" || x === "channel" || x === "role";
+  return x === "status" || x === "title" || x === "channel";
 }
 
 function isSortDir(x: unknown): x is TaskSortDir {
@@ -49,7 +49,13 @@ export function loadTaskListFilters(): TaskListFiltersSnapshot {
     const p = JSON.parse(raw) as Partial<TaskListFiltersSnapshot>;
     const query = typeof p.query === "string" ? p.query : DEFAULTS.query;
     const channel = isChannel(p.channel) ? p.channel : DEFAULTS.channel;
-    const sortColumn = isSortColumn(p.sortColumn) ? p.sortColumn : DEFAULTS.sortColumn;
+    let sortColumn: TaskSortColumn = DEFAULTS.sortColumn;
+    const rawSort = p.sortColumn as string | undefined;
+    if (rawSort === "role") {
+      sortColumn = "title";
+    } else if (isSortColumn(rawSort)) {
+      sortColumn = rawSort;
+    }
     const sortDir = isSortDir(p.sortDir) ? p.sortDir : DEFAULTS.sortDir;
     const ps = typeof p.pageSize === "number" && PAGE_SIZES.has(p.pageSize) ? p.pageSize : DEFAULTS.pageSize;
     const showCompleted = typeof p.showCompleted === "boolean" ? p.showCompleted : DEFAULTS.showCompleted;

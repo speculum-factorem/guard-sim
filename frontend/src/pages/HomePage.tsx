@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { fetchPlayerState, fetchScenarios } from "../api";
+import { canUseAppRoutes } from "../demoMode";
+import { navigateToGuestDashboard } from "../guestDemoNav";
+import { useUserMe } from "../hooks/useUserMe";
+import { loginHref } from "../navigationConstants";
 import { firstOpenScenarioId, splitScenariosByColumn } from "../scenarioHub";
 import type { PlayerState, ScenarioSummary } from "../types";
 
@@ -23,10 +27,14 @@ const SLIDER_SLIDES = [
 ] as const;
 
 export function HomePage() {
+  const navigate = useNavigate();
+  const { me } = useUserMe();
   const [items, setItems] = useState<ScenarioSummary[] | null>(null);
   const [player, setPlayer] = useState<PlayerState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [slideIndex, setSlideIndex] = useState(0);
+  const appUnlocked = canUseAppRoutes(me);
+  const dashHref = appUnlocked ? "/dashboard" : loginHref("/dashboard");
 
   const columns = useMemo(() => {
     if (!items) {
@@ -38,6 +46,12 @@ export function HomePage() {
   const quickStartId = useMemo(() => firstOpenScenarioId(columns), [columns]);
 
   useEffect(() => {
+    if (!appUnlocked) {
+      setPlayer(null);
+      setItems(null);
+      setError(null);
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
@@ -47,6 +61,7 @@ export function HomePage() {
         }
         setPlayer(p);
         setItems(data);
+        setError(null);
       } catch (e) {
         if (!cancelled) {
           setError(e instanceof Error ? e.message : "Не удалось загрузить данные");
@@ -56,7 +71,7 @@ export function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [appUnlocked]);
 
   const slide = SLIDER_SLIDES[slideIndex] ?? SLIDER_SLIDES[0];
   const slideNext = () => setSlideIndex((i) => (i + 1) % SLIDER_SLIDES.length);
@@ -80,22 +95,25 @@ export function HomePage() {
         <div className="hero-content">
           <h1 className="hero-bento-title">Защита. Фокус. Контроль.</h1>
           <p className="hero-lead">
-            Почта, лента и тикеты — в интерфейсах, похожих на рабочие. Репутация и роль растут вместе с навыком, без
-            сухого теста.
+            Почта, лента и тикеты — в интерфейсах, похожих на рабочие. Опыт, уровень и репутация растут вместе с навыком,
+            без сухого теста.
           </p>
           <div className="hero-cta">
-            <Link to="/dashboard" className="btn btn-primary">
+            <Link to={dashHref} className="btn btn-primary">
               Начать
             </Link>
+            <button
+              type="button"
+              className="btn btn-secondary home-demo-btn"
+              onClick={() => navigateToGuestDashboard(navigate)}
+            >
+              Демо
+            </button>
             {quickStartId ? (
               <Link to={`/play/${encodeURIComponent(quickStartId)}`} className="btn btn-secondary">
                 Быстрый старт
               </Link>
-            ) : (
-              <Link to="/dashboard" className="btn btn-secondary">
-                Дашборд
-              </Link>
-            )}
+            ) : null}
           </div>
         </div>
       </section>
@@ -204,7 +222,7 @@ export function HomePage() {
       <section className="bento-cta" aria-labelledby="bento-cta-title">
         <h2 id="bento-cta-title">Ваши данные. Ваши решения. Ваша репутация.</h2>
         <div className="bento-cta-row">
-          <Link to="/dashboard" className="btn btn-primary">
+          <Link to={dashHref} className="btn btn-primary">
             К задачам и достижениям
           </Link>
           {quickStartId ? (
@@ -216,14 +234,14 @@ export function HomePage() {
       </section>
 
       {error ? <div className="error-banner">{error}</div> : null}
-      {items === null && !error ? <div className="skeleton" aria-busy /> : null}
+      {appUnlocked && items === null && !error ? <div className="skeleton" aria-busy /> : null}
       {player && items ? (
         <p className="home-mini-hint">
           Данные игрока загружены. Откройте{" "}
-          <Link to="/dashboard" className="home-mini-hint-link">
+          <Link to={dashHref} className="home-mini-hint-link">
             дашборд
           </Link>
-          , чтобы увидеть роль, достижения и задачи.
+          , чтобы увидеть уровень, бейджи и задачи.
         </p>
       ) : null}
     </div>

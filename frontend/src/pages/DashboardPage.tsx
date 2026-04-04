@@ -5,6 +5,7 @@ import { ContinueTrackHint } from "../components/ContinueTrackHint";
 import { GuardsimOnboardingBanner } from "../components/GuardsimOnboardingBanner";
 import { WeeklyGoalBanner } from "../components/WeeklyGoalBanner";
 import { WorkdeskMonitor } from "../components/WorkdeskMonitor";
+import { levelLabel } from "../progressLabels";
 import { firstOpenScenarioId, splitScenariosByColumn } from "../scenarioHub";
 import type { PlayerState, ScenarioSummary } from "../types";
 
@@ -54,32 +55,37 @@ export function DashboardPage() {
   }, [items, player]);
 
   return (
-    <div className="dashboard-page dashboard-page--lc lc-theme">
+    <div className="dashboard-page dashboard-page--lc dashboard-page--arcade lc-theme">
       <div className="lc-dashboard-shell">
-        <header className="lc-dashboard-hero">
+        <header className="lc-dashboard-hero lc-dashboard-hero--arcade">
           <div className="lc-dashboard-hero-main">
-            <h1 className="lc-dashboard-title">Каталог задач</h1>
+            <p className="lc-dashboard-kicker">Каталог миссий</p>
+            <h1 className="lc-dashboard-title">Задачи и сценарии</h1>
             <p className="lc-dashboard-lead">
-              Интерактивные сценарии в духе реальных инцидентов. Фильтры и сортировка сохраняются в браузере.
-              {quickStartId ? (
-                <>
-                  {" "}
-                  Начните с первой доступной задачи в таблице ниже.
-                </>
-              ) : null}
+              Интерактивные инциденты в стиле рабочих интерфейсов: почта, лента, тикеты. Фильтры таблицы сохраняются в
+              браузере.
+              {quickStartId ? <> Ниже — ваша очередь на поле.</> : null}
             </p>
+            {player ? (
+              <div className="lc-dashboard-player-tag">
+                <span className="lc-dashboard-tag">{levelLabel(player.level)}</span>
+                <span>
+                  {player.experience} XP · доверие {player.reputation}%
+                </span>
+              </div>
+            ) : null}
           </div>
           {progressStats ? (
-            <ul className="lc-dashboard-stats" aria-label="Сводка по прогрессу">
-              <li className="lc-stat-card">
+            <ul className="lc-dashboard-stats lc-dashboard-stats--arcade" aria-label="Сводка по прогрессу">
+              <li className="lc-stat-card lc-stat-card--arcade-a">
                 <span className="lc-stat-value">{progressStats.solved}</span>
-                <span className="lc-stat-label">Решено</span>
+                <span className="lc-stat-label">Пройдено</span>
               </li>
-              <li className="lc-stat-card">
+              <li className="lc-stat-card lc-stat-card--arcade-b">
                 <span className="lc-stat-value">{progressStats.total}</span>
-                <span className="lc-stat-label">Всего</span>
+                <span className="lc-stat-label">В каталоге</span>
               </li>
-              <li className="lc-stat-card lc-stat-card--accent">
+              <li className="lc-stat-card lc-stat-card--accent lc-stat-card--arcade-c">
                 <span className="lc-stat-value">{progressStats.pct}%</span>
                 <span className="lc-stat-label">Прогресс</span>
               </li>

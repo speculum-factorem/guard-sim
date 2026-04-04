@@ -23,6 +23,21 @@ object AchievementCatalog {
             title = "Десять сценариев без критики",
             description = "10 сценариев подряд без ни одной ошибки на пути.",
         ),
+        AchievementDefinition(
+            id = "challenge-track-inbox",
+            title = "Дорожка: Входящие под ударом",
+            description = "Вы завершили все сценарии челлендж-дорожки про почту и поддельные запросы.",
+        ),
+        AchievementDefinition(
+            id = "challenge-track-social",
+            title = "Дорожка: Лента и сделки",
+            description = "Вы завершили все сценарии дорожки про соцсети и сделки вне площадки.",
+        ),
+        AchievementDefinition(
+            id = "challenge-track-soc",
+            title = "Дорожка: ИБ — инциденты",
+            description = "Вы завершили все сценарии дорожки для ответа на сложные инциденты.",
+        ),
     )
 
     private val byId: Map<String, AchievementDefinition> = ALL.associateBy { it.id }

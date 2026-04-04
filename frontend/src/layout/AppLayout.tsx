@@ -8,6 +8,7 @@ import { AppFooter } from "../components/AppFooter";
 import { LogoMark } from "../components/LogoMark";
 import { canUseAppRoutes } from "../demoMode";
 import { DASHBOARD_TASKS_HREF, loginHref } from "../navigationConstants";
+import { getPlayerId } from "../playerId";
 import { SITE_NAME } from "../siteMeta";
 import type { UserMe } from "../types";
 
@@ -27,6 +28,14 @@ export function AppLayout({ children }: { children: ReactNode }) {
     let gen = 0;
     function syncMe() {
       const my = ++gen;
+      /* Без JWT профиль в UI — всегда «гость»; обновляем сразу, чтобы выход не оставлял старый email в шапке. */
+      if (!getAuthToken()) {
+        setMe({
+          playerId: getPlayerId(),
+          guest: true,
+          email: null,
+        });
+      }
       fetchMe()
         .then((m) => {
           if (my === gen) {

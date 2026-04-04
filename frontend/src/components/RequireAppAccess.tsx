@@ -32,9 +32,11 @@ export function RequireAppAccess({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
+    let gen = 0;
 
     function run() {
       if (isDemoModeActive()) {
+        gen += 1;
         if (!cancelled) {
           setStatus("ok");
         }
@@ -43,19 +45,21 @@ export function RequireAppAccess({ children }: { children: ReactNode }) {
 
       const token = getAuthToken();
       if (!token || isJwtExpired(token)) {
+        gen += 1;
         if (!cancelled) {
           setStatus("denied");
         }
         return;
       }
 
+      const myGen = ++gen;
       if (!cancelled) {
         setStatus("loading");
       }
 
       fetchMe()
         .then((user) => {
-          if (cancelled) {
+          if (cancelled || myGen !== gen) {
             return;
           }
           if (isDemoModeActive()) {
@@ -65,7 +69,7 @@ export function RequireAppAccess({ children }: { children: ReactNode }) {
           setStatus(user.guest === false ? "ok" : "denied");
         })
         .catch(() => {
-          if (cancelled) {
+          if (cancelled || myGen !== gen) {
             return;
           }
           clearAuthToken();
@@ -78,6 +82,7 @@ export function RequireAppAccess({ children }: { children: ReactNode }) {
     const unsub = subscribeAuthChanged(run);
     return () => {
       cancelled = true;
+      gen += 1;
       unsub();
     };
   }, [location.pathname, location.search, location.hash]);

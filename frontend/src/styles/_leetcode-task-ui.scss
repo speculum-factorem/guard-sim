@@ -727,6 +727,20 @@
   color: var(--arc-purple);
 }
 
+.lc-theme .lc-attack-type-badge {
+  display: inline-flex;
+  align-items: center;
+  max-width: min(100%, 320px);
+  padding: 4px 10px;
+  border-radius: var(--lc-radius);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--lc-muted);
+  border: 1px solid var(--lc-border-strong);
+  background: var(--lc-surface-sub);
+}
+
 .lc-theme.sim-page-lc .sim-panel,
 .lc-theme .sim-panel--lc {
   border: 1px solid var(--lc-border);

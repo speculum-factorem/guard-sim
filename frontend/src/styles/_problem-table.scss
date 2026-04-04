@@ -313,6 +313,11 @@
   width: 96px;
 }
 
+.lc-col-attack {
+  width: min(200px, 22vw);
+  min-width: 140px;
+}
+
 .lc-col-role {
   width: min(160px, 14vw);
 }
@@ -336,6 +341,18 @@
 .lc-td-title {
   vertical-align: top;
   position: relative;
+}
+
+.lc-td-attack {
+  vertical-align: top;
+}
+
+.lc-attack-type {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ui-dark-gray);
 }
 
 .lc-tr:hover td {
@@ -736,15 +753,15 @@
   }
 
   .lc-table tbody td:nth-child(2)::before {
-    content: "Статус";
+    content: "Тип атаки";
   }
 
   .lc-table tbody td:nth-child(3)::before {
-    content: "Канал";
+    content: "Статус";
   }
 
   .lc-table tbody td:nth-child(4)::before {
-    content: "Действие";
+    content: "Канал";
   }
 
   .lc-table tbody td.lc-td-action {

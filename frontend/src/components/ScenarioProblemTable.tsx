@@ -56,6 +56,9 @@ function compareRows(
       cmp = order(hubColumnForScenario(a)) - order(hubColumnForScenario(b));
       break;
     }
+    case "attackType":
+      cmp = a.attackTypeLabel.localeCompare(b.attackTypeLabel, "ru");
+      break;
     case "status":
       cmp = statusRank(a, completed) - statusRank(b, completed);
       break;
@@ -113,7 +116,8 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
         (s) =>
           s.title.toLowerCase().includes(q) ||
           s.description.toLowerCase().includes(q) ||
-          s.id.toLowerCase().includes(q),
+          s.id.toLowerCase().includes(q) ||
+          s.attackTypeLabel.toLowerCase().includes(q),
       );
     }
     return list;
@@ -196,7 +200,7 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
             <input
               type="search"
               className="lc-input lc-search-input"
-              placeholder="Название, описание или id…"
+              placeholder="Название, описание, тип атаки или id…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               autoComplete="off"
@@ -274,6 +278,12 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
                   {sortIndicator("title")}
                 </button>
               </th>
+              <th scope="col" className="lc-col-attack">
+                <button type="button" className="lc-th-btn" onClick={() => toggleSort("attackType")}>
+                  Тип атаки
+                  {sortIndicator("attackType")}
+                </button>
+              </th>
               <th scope="col" className="lc-col-status">
                 <button type="button" className="lc-th-btn" onClick={() => toggleSort("status")}>
                   Статус
@@ -305,6 +315,11 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
                       </Link>
                       <p className="lc-title-desc">{s.description}</p>
                     </div>
+                  </td>
+                  <td className="lc-td-attack">
+                    <span className="lc-attack-type" title={s.attackTypeLabel}>
+                      {s.attackTypeLabel}
+                    </span>
                   </td>
                   <td>
                     <StatusPill s={s} completed={completed} />

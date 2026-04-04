@@ -8,6 +8,8 @@ data class InternalScenario(
     val title: String,
     val type: ScenarioType,
     val description: String,
+    /** Краткая метка типа атаки для каталога (RU), напр. «Фишинг», «Вишинг». */
+    val attackTypeLabel: String,
     /** Если null — выводится из [type]: EMAIL→MAIL, SOCIAL→SOCIAL */
     val hubChannel: ScenarioHubChannel? = null,
     val steps: List<InternalStep>,

@@ -135,6 +135,7 @@ function RoadmapTrack({
                   <div className="quest-node-main">
                     <span className="quest-node-kicker">Этап {index + 1}</span>
                     <h3 className="quest-node-title">{s.title}</h3>
+                    <span className="quest-node-attack">{s.attackTypeLabel}</span>
                     <span className="quest-node-hint">{completed ? "Пройдено" : "Доступно"}</span>
                   </div>
                   <Link to={`/play/${encodeURIComponent(sid)}`} className="quest-node-action btn btn-secondary">

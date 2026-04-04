@@ -48,6 +48,19 @@ export const CHALLENGE_TRACKS: ChallengeTrackDef[] = [
     accent: "orange",
   },
   {
+    id: "consumer-accounts-scams",
+    title: "Учётки и деньги (быт)",
+    description:
+      "Смсишинг и поддельный сайт банка, вишинг «антифрода», фишинг под утечку пароля (stuffing) и перевод «другу» на новую карту.",
+    scenarioIds: [
+      "smishing-bank-card-unblock",
+      "vishing-bank-fake-security-call",
+      "credential-stuffing-fake-lockout",
+      "chat-friend-new-card-scam",
+    ],
+    accent: "lilac",
+  },
+  {
     id: "benign-baseline",
     title: "Когда угрозы нет",
     description:

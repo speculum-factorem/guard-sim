@@ -9,6 +9,8 @@ export interface ScenarioSummary {
   type: ScenarioType;
   description: string;
   hubChannel: ScenarioHubChannel;
+  /** Тип кибератаки (RU), с бэкенда */
+  attackTypeLabel: string;
 }
 
 export interface ChoicePublic {
@@ -95,6 +97,7 @@ export interface ScenarioDetail {
   type: ScenarioType;
   description: string;
   hubChannel: ScenarioHubChannel;
+  attackTypeLabel: string;
   steps: StepPublic[];
 }
 

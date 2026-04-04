@@ -40,6 +40,10 @@ class ScenarioRegistry {
                 calendarLegitInvite(),
                 extensionAllowlistBenign(),
                 emailItMaintenanceBenign(),
+                consumerBankSmishingAndFakeSite(),
+                consumerBankVishing(),
+                credentialStuffingPhishEmail(),
+                personalRequisitesScamMessenger(),
             )
 
         /** Фишинговое письмо «срочная смена пароля». */
@@ -48,6 +52,7 @@ class ScenarioRegistry {
             title = "Срочное письмо от «банка»",
             type = ScenarioType.EMAIL,
             description = "Проверьте, как вы распознаёте фишинг в почте и что делать с подозрительными письмами.",
+            attackTypeLabel = "Фишинг (e-mail, поддельный сайт)",
             steps = listOf(
                 InternalStep(
                     id = "pe-1",
@@ -273,6 +278,7 @@ class ScenarioRegistry {
             title = "«Поздравляем» во ВКонтакте",
             type = ScenarioType.SOCIAL,
             description = "Разбор типичной схемы в соцсети: фальшивые розыгрыши и кража учётных данных.",
+            attackTypeLabel = "Фишинг / ложный розыгрыш",
             steps = listOf(
                 InternalStep(
                     id = "sp-1",
@@ -451,6 +457,7 @@ class ScenarioRegistry {
             title = "Странный счёт во вложении",
             type = ScenarioType.EMAIL,
             description = "Поведение с подозрительными вложениями: двойные расширения и неожиданные файлы.",
+            attackTypeLabel = "Вредоносное вложение",
             steps = listOf(
                 InternalStep(
                     id = "ma-1",
@@ -571,6 +578,7 @@ class ScenarioRegistry {
             title = "«Срочно от гендиректора»: цепочка атаки",
             type = ScenarioType.EMAIL,
             description = "Комбинированный инцидент: поддельный авторитет, вредоносное вложение и фишинговая ссылка. Для роли администратора безопасности.",
+            attackTypeLabel = "Комбинированная атака (BEC, вложение, фишинг)",
             hubChannel = ScenarioHubChannel.SECURITY,
             steps = listOf(
                 InternalStep(
@@ -745,6 +753,7 @@ class ScenarioRegistry {
             title = "«Поставщик» сменил реквизиты",
             type = ScenarioType.EMAIL,
             description = "Письмо якобы от контрагента с новыми банковскими данными. Так перехватывают реальные платежи B2B.",
+            attackTypeLabel = "Подмена реквизитов (BEC)",
             steps = listOf(
                 InternalStep(
                     id = "vb-1",
@@ -858,6 +867,7 @@ class ScenarioRegistry {
             title = "Покупатель просит уйти с Avito",
             type = ScenarioType.SOCIAL,
             description = "Реальная схема: перевод на «гаранта» вне площадки, поддельные страницы оплаты, потеря денег и товара.",
+            attackTypeLabel = "Мошенничество вне площадки",
             steps = listOf(
                 InternalStep(
                     id = "mo-1",
@@ -962,6 +972,7 @@ class ScenarioRegistry {
             title = "Обязательный «опрос HR» по ссылке",
             type = ScenarioType.EMAIL,
             description = "Реальные кампании: письмо про обязательный опрос или обучение, вход через поддельный SSO на похожем домене.",
+            attackTypeLabel = "Фишинг (поддельный портал / SSO)",
             steps = listOf(
                 InternalStep(
                     id = "hs-1",
@@ -1089,6 +1100,7 @@ class ScenarioRegistry {
             title = "«IT-поддержка»: пароль истекает через час",
             type = ScenarioType.EMAIL,
             description = "Распространённый фишинг: письмо от похожего на сервисный адрес, срочность и ссылка на «сброс пароля» вне SSO.",
+            attackTypeLabel = "Фишинг (поддельная техподдержка)",
             steps = listOf(
                 InternalStep(
                     id = "il-1",
@@ -1188,6 +1200,7 @@ class ScenarioRegistry {
             title = "Звонок «от финдира»: срочный перевод",
             type = ScenarioType.EMAIL,
             description = "Реальные кейсы: синтез голоса или подмена номера, знание контекста проектов, давление перевести на «новый счёт контрагента».",
+            attackTypeLabel = "Вишинг / социальная инженерия",
             hubChannel = ScenarioHubChannel.SECURITY,
             steps = listOf(
                 InternalStep(
@@ -1295,8 +1308,9 @@ class ScenarioRegistry {
             id = "messenger-forwarded-phish",
             title = "Мессенджер: переслано из канала",
             type = ScenarioType.SOCIAL,
-            hubChannel = ScenarioHubChannel.SECURITY,
             description = "В рабочем чате переслали пост из публичного канала с «бонусом для сотрудников» и ссылкой на сторонний домен.",
+            attackTypeLabel = "Фишинг (мессенджер)",
+            hubChannel = ScenarioHubChannel.SECURITY,
             steps = listOf(
                 InternalStep(
                     id = "mfp-1",
@@ -1380,8 +1394,9 @@ class ScenarioRegistry {
             id = "calendar-fake-teams-invite",
             title = "Календарь: подозрительное приглашение",
             type = ScenarioType.EMAIL,
-            hubChannel = ScenarioHubChannel.SECURITY,
             description = "В календаре появилось приглашение на «обязательную» встречу с угрозой блокировки и ссылкой на сторонний домен.",
+            attackTypeLabel = "Фишинг (календарь / приглашение)",
+            hubChannel = ScenarioHubChannel.SECURITY,
             steps = listOf(
                 InternalStep(
                     id = "cft-1",
@@ -1465,8 +1480,9 @@ class ScenarioRegistry {
             id = "extension-corporate-mail-trap",
             title = "Расширение для «корпоративной почты»",
             type = ScenarioType.EMAIL,
-            hubChannel = ScenarioHubChannel.SECURITY,
             description = "В выдаче магазина расширений — предложение установить дополнение для Gmail с опасным набором разрешений.",
+            attackTypeLabel = "Вредоносное / опасное расширение",
+            hubChannel = ScenarioHubChannel.SECURITY,
             steps = listOf(
                 InternalStep(
                     id = "ecm-1",
@@ -1548,8 +1564,9 @@ class ScenarioRegistry {
             id = "messenger-internal-benign",
             title = "Мессенджер: объявление из официального канала",
             type = ScenarioType.SOCIAL,
-            hubChannel = ScenarioHubChannel.SECURITY,
             description = "В чате переслано сообщение из верифицированного внутреннего канала HR со ссылкой на интранет и спокойным текстом без давления.",
+            attackTypeLabel = "Угрозы нет (легитимная коммуникация)",
+            hubChannel = ScenarioHubChannel.SECURITY,
             steps = listOf(
                 InternalStep(
                     id = "mib-1",
@@ -1631,8 +1648,9 @@ class ScenarioRegistry {
             id = "calendar-legit-invite",
             title = "Календарь: плановый бриф от IT",
             type = ScenarioType.EMAIL,
-            hubChannel = ScenarioHubChannel.SECURITY,
             description = "В календаре — стандартное приглашение от IT на корпоративном домене, без угроз и без подозрительных ссылок.",
+            attackTypeLabel = "Угрозы нет (легитимное приглашение)",
+            hubChannel = ScenarioHubChannel.SECURITY,
             steps = listOf(
                 InternalStep(
                     id = "cli-1",
@@ -1714,8 +1732,9 @@ class ScenarioRegistry {
             id = "extension-allowlist-benign",
             title = "Расширение из списка ИТ",
             type = ScenarioType.EMAIL,
-            hubChannel = ScenarioHubChannel.SECURITY,
             description = "В каталоге — утверждённое корпоративное расширение с минимальными правами и издателем организации.",
+            attackTypeLabel = "Угрозы нет (политика ИТ)",
+            hubChannel = ScenarioHubChannel.SECURITY,
             steps = listOf(
                 InternalStep(
                     id = "eab-1",
@@ -1796,8 +1815,9 @@ class ScenarioRegistry {
             id = "email-it-maintenance-benign",
             title = "Почта: плановые работы IT",
             type = ScenarioType.EMAIL,
-            hubChannel = ScenarioHubChannel.SECURITY,
             description = "Информационное письмо о окне обслуживания VPN: без запроса паролей и без посторонних доменов.",
+            attackTypeLabel = "Угрозы нет (служебное уведомление)",
+            hubChannel = ScenarioHubChannel.SECURITY,
             steps = listOf(
                 InternalStep(
                     id = "eit-1",
@@ -1873,6 +1893,387 @@ class ScenarioRegistry {
                         RITM-448821 · Internal · Confidential
                     """.trimIndent(),
                     pressureSeconds = 40,
+                ),
+            ),
+        )
+
+        /** Смсишинг «банк»: блокировка карты и ссылка; второй шаг — поддельный домен входа. */
+        fun consumerBankSmishingAndFakeSite(): InternalScenario = InternalScenario(
+            id = "smishing-bank-card-unblock",
+            title = "СМС: «карта ограничена», ссылка на «разблокировку»",
+            type = ScenarioType.SOCIAL,
+            description = "Типичная схема для граждан: SMS или мессенджер от имени банка, срочная ссылка и фишинговая страница входа.",
+            attackTypeLabel = "Смсишинг и фишинговый сайт",
+            hubChannel = ScenarioHubChannel.SECURITY,
+            steps = listOf(
+                InternalStep(
+                    id = "sbs-1",
+                    situationBrief = """
+                        Вы обычный пользователь смартфона. Приходит сообщение, похожее на SMS или push банка:
+                        карта временно ограничена, чтобы снять ограничение — перейти по короткой ссылке.
+                    """.trimIndent(),
+                    narrative = """
+                        MyBank: Карта *4567 ограничена по соображениям безопасности.
+                        Разблокировка: https://mybank-id-unlock.net/fw/7k2m
+                        Не отвечайте на это сообщение. «Горячая линия»: +7 (900) 111-22-33
+                    """.trimIndent(),
+                    narrativeNoise = "МТС: остаток пакета 1.2 ГБ · Доставка Ozon завтра",
+                    choices = listOf(
+                        InternalChoice(
+                            id = "sbs-1-a",
+                            label = "Перейду по ссылке из сообщения — так быстрее разблокируют",
+                            correct = false,
+                            explanationWhenChosen = "Ссылки в SMS от имени банка часто ведут на фишинг. Номер «поддержки» в том же сообщении может быть поддельным.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Страница могла украсть логин и пароль от банка. Срочно позвоните в банк по номеру с карты и смените доступы через официальное приложение.",
+                        ),
+                        InternalChoice(
+                            id = "sbs-1-b",
+                            label = "Открою официальное приложение банка или наберу номер с оборота карты / с сайта банка — не из этого сообщения",
+                            correct = true,
+                            explanationWhenChosen = "Верно: канал, который вы сами открыли из надёжного источника, а не ссылка из непроверенного текста.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "sbs-1-c",
+                            label = "Перешлю скриншот и ссылку родственнику: «это правда?»",
+                            correct = false,
+                            explanationWhenChosen = "Распространение ссылки увеличивает шанс, что кто-то кликнет. Лучше предупредить словами без активной ссылки.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.CHAT_MESSENGER,
+                    simChatTitle = "Сообщения",
+                    simChatSenderLabel = "MyBank",
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "sbs-1-hint",
+                            title = "Смсишинг",
+                            body = "Банки редко просят перейти по произвольной короткой ссылке в SMS для «разблокировки». Домен mybank-id-unlock.net не совпадает с официальным сайтом организации.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "sbs-1-link",
+                            label = "Открыть ссылку mybank-id-unlock.net",
+                            choiceId = "sbs-1-a",
+                            variant = "LINK",
+                        ),
+                        InternalHotspot(
+                            id = "sbs-1-app",
+                            label = "Приложение банка / номер с карты",
+                            choiceId = "sbs-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "sbs-1-fwd",
+                            label = "Переслать ссылку близким",
+                            choiceId = "sbs-1-c",
+                            variant = "SHARE",
+                        ),
+                    ),
+                    pressureSeconds = 55,
+                ),
+                InternalStep(
+                    id = "sbs-2",
+                    situationBrief = """
+                        Представьте, что вы уже на странице «входа в банк», открытой по ссылке из сомнительного сообщения.
+                        Сравните два адреса так, как в строке браузера перед вводом пароля.
+                    """.trimIndent(),
+                    narrative = "Какой адрес вы бы выбрали для ввода пароля, если бы не знали контекста письма — только строку URL?",
+                    choices = listOf(
+                        InternalChoice(
+                            id = "sbs-2-a",
+                            label = "Правый адрес — короче и с «id», похоже на сервис безопасности",
+                            correct = false,
+                            explanationWhenChosen = "Короткое имя и слово «unlock» не делают домен официальным. Смотрите на зону и совпадение с известным сайтом банка.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Пароль мог утечь на поддельный хостинг. Смените пароль только через официальный канал.",
+                        ),
+                        InternalChoice(
+                            id = "sbs-2-b",
+                            label = "Левый адрес — поддомен известного банковского домена; правый — посторонний сайт",
+                            correct = true,
+                            explanationWhenChosen = "Верно: online.mybank.example в зоне банка; mybank-id-unlock.net — отдельный домен, типичный для фишинга.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "sbs-2-c",
+                            label = "Зайду на оба и сравню дизайн страниц",
+                            correct = false,
+                            explanationWhenChosen = "Даже открытие поддельной страницы и ввод данных — риск. Достаточно сравнить домены без «пробного» входа.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.MINI_URL_COMPARE,
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "sbs-2-dom",
+                            title = "Домены",
+                            body = "Официальный вход обычно на домене организации (например online.mybank.example). Отдельные домены с дефисами и словами unlock/secure часто фишинговые.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    urlCompareGame = InternalUrlCompareGame(
+                        leftUrl = "https://online.mybank.example/login",
+                        rightUrl = "https://mybank-id-unlock.net/login",
+                        leftChoiceId = "sbs-2-b",
+                        rightChoiceId = "sbs-2-a",
+                        caption = "Слева — адрес в зоне известного банка; справа — отдельный домен. Выберите действие, как на практике.",
+                    ),
+                    narrativeNoise = "Баннер: «Кредит 0% — одобрение за 1 минуту»",
+                    pressureSeconds = 50,
+                ),
+            ),
+        )
+
+        /** Вишинг: звонок «антифрод» с просьбой назвать код из SMS и данные карты. */
+        fun consumerBankVishing(): InternalScenario = InternalScenario(
+            id = "vishing-bank-fake-security-call",
+            title = "Звонок «служба безопасности банка»",
+            type = ScenarioType.SOCIAL,
+            description = "Мошенники представляются антифродом, знают последние цифры карты (из утечек) и просят код из SMS «для отмены перевода».",
+            attackTypeLabel = "Вишинг",
+            hubChannel = ScenarioHubChannel.SECURITY,
+            steps = listOf(
+                InternalStep(
+                    id = "cv-1",
+                    situationBrief = """
+                        Вам звонят на личный телефон. Голос уверенный: «Служба безопасности MyBank, зафиксирована попытка перевода 87 000 ₽.
+                        Чтобы отменить операцию, назовите код из SMS и полный номер карты для сверки».
+                    """.trimIndent(),
+                    narrative = """
+                        Звонок с обычного мобильного номера. Собеседник называет ваши имя и последние 4 цифры карты (такие данные часто утекают).
+                        Просят срочно продиктовать одноразовый код из свежего SMS — «иначе спишут деньги через 2 минуты».
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "cv-1-a",
+                            label = "Продиктую код из SMS — нужно же отменить перевод",
+                            correct = false,
+                            explanationWhenChosen = "Код из SMS часто является подтверждением перевода или смены настроек. Настоящий банк не просит продиктовать его незнакомцу по телефону.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Мошенники могли подтвердить перевод или привязку устройства. Немедленно заблокируйте карту через приложение и позвоните в банк по официальному номеру.",
+                        ),
+                        InternalChoice(
+                            id = "cv-1-b",
+                            label = "Положу трубку и сам наберу номер банка с карты или из официального приложения — не перезванивая на входящий",
+                            correct = true,
+                            explanationWhenChosen = "Верно: инициатор звонка должен быть вы, а номер — из проверенного источника, а не «тот, с которого позвонили».",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "cv-1-c",
+                            label = "Раз они знают последние цифры карты, значит это точно банк",
+                            correct = false,
+                            explanationWhenChosen = "Фрагменты данных из утечек не подтверждают личность звонящего. Это стандартный приём вишинга.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.GENERIC,
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "cv-1-vish",
+                            title = "Вишинг",
+                            body = "Подмена номера (spoofing) и знание кусков PII из баз утечек делают звонок правдоподобным. Коды OTP никому не диктуют.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "cv-1-otp",
+                            label = "Назвать код из SMS",
+                            choiceId = "cv-1-a",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "cv-1-hang",
+                            label = "Положить трубку и позвонить в банк самому",
+                            choiceId = "cv-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "cv-1-trust",
+                            label = "Доверять из-за последних цифр карты",
+                            choiceId = "cv-1-c",
+                            variant = "ACTION",
+                        ),
+                    ),
+                    pressureSeconds = 60,
+                ),
+            ),
+        )
+
+        /** Письмо про «взлом» и утечку пароля с другого сайта — развод на ввод пароля (релевантно credential stuffing). */
+        fun credentialStuffingPhishEmail(): InternalScenario = InternalScenario(
+            id = "credential-stuffing-fake-lockout",
+            title = "Почта: «пароль светится в утечке — срочно войдите»",
+            type = ScenarioType.EMAIL,
+            description = "Фишинг под уведомление о компрометации: если один и тот же пароль на разных сервисах, мошенники подталкивают ввести его на поддельной странице.",
+            attackTypeLabel = "Credential stuffing / фишинг",
+            hubChannel = ScenarioHubChannel.MAIL,
+            steps = listOf(
+                InternalStep(
+                    id = "csf-1",
+                    situationBrief = """
+                        В личной почте письмо от имени крупного сервиса: ваш пароль якобы найден в утечке, аккаунт заблокирован до подтверждения.
+                        Ссылка ведёт на домен, похожий на название бренда, но не официальный.
+                    """.trimIndent(),
+                    narrative = """
+                        Мы обнаружили вход с IP в Бразилии и совпадение вашего пароля с базой утечек 2024 года.
+                        Войдите по ссылке ниже в течение 24 часов, иначе аккаунт будет удалён.
+
+                        Подтвердить доступ: https://meta-secure-login-verify.net/account/recover
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "csf-1-a",
+                            label = "Перейду по ссылке и введу пароль — так восстановлю доступ",
+                            correct = false,
+                            explanationWhenChosen = "Ввод пароля на странице по ссылке из письма — цель фишинга. Домен meta-secure-login-verify.net не является официальным доменом компании.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Пароль мог попасть к мошенникам и использоваться для перебора (stuffing) на других сайтах, если вы повторно используете пароли.",
+                        ),
+                        InternalChoice(
+                            id = "csf-1-b",
+                            label = "Не перехожу; открою сервис из приложения или закладки; сменю пароль там; включу двухфакторку; на других сайтах — другие пароли (менеджер паролей)",
+                            correct = true,
+                            explanationWhenChosen = "Верно: утечки реальны, но проверка и смена — только через официальные каналы. Уникальные пароли и MFA резко снижают ущерб от stuffing.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "csf-1-c",
+                            label = "Один надёжный пароль на все сайты — так проще не забыть",
+                            correct = false,
+                            explanationWhenChosen = "Один пароль на всё — именно то, что делает credential stuffing опасным: одна утечка открывает десятки сервисов.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.EMAIL_CLIENT,
+                    emailSubject = "Срочно: аккаунт заблокирован — подтвердите после утечки пароля",
+                    emailFrom = "Security Team <no-reply@meta-secure-login-verify.net>",
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "csf-1-stuff",
+                            title = "Credential stuffing",
+                            body = "Злоумышленники автоматически пробуют пары email+пароль из старых утечек. Отдельные пароли и MFA это ломают. Письмо же может быть полностью вымышленным поводом для клика.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "csf-1-link",
+                            label = "Ссылка «Подтвердить доступ»",
+                            choiceId = "csf-1-a",
+                            variant = "LINK",
+                        ),
+                        InternalHotspot(
+                            id = "csf-1-safe",
+                            label = "Официальное приложение / смена пароля без ссылки из письма",
+                            choiceId = "csf-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "csf-1-reuse",
+                            label = "Один пароль везде удобнее",
+                            choiceId = "csf-1-c",
+                            variant = "REPLY",
+                        ),
+                    ),
+                    narrativeNoise = """
+                        ---
+                        Вы получили это письмо, потому что подписаны на рассылку Meta. Отписаться можно в настройках.
+                        © 2026 Meta · Защита аккаунта
+                    """.trimIndent(),
+                    pressureSeconds = 65,
+                ),
+            ),
+        )
+
+        /** Мессенджер: «знакомый» просит срочно перевести на новую карту — подмена реквизитов для частных лиц. */
+        fun personalRequisitesScamMessenger(): InternalScenario = InternalScenario(
+            id = "chat-friend-new-card-scam",
+            title = "Чат: «переведи на новую карту, моя заблокирована»",
+            type = ScenarioType.SOCIAL,
+            description = "BEC-подобная схема для людей: в WhatsApp/Telegram «родственник или друг» просит срочный перевод на новые реквизиты.",
+            attackTypeLabel = "Социальная инженерия / подмена реквизитов",
+            hubChannel = ScenarioHubChannel.SOCIAL,
+            steps = listOf(
+                InternalStep(
+                    id = "crs-1",
+                    situationBrief = """
+                        Вам пишет контакт с именем и аватаром знакомого человека в мессенджере.
+                        Текст срочный: старая карта недоступна, нужен перевод на «новую», реквизиты в сообщении.
+                    """.trimIndent(),
+                    narrative = """
+                        Привет, это я. Мою карту на день заблокировали после покупки за границей, не могу оплатить аренду.
+                        Перекинь пожалуйста 18 500 ₽ на эту, до вечера разблокируют: Т-Банк *6314 получатель ИП …
+
+                        Только не звони — в метро плохо ловит 🙏
+                    """.trimIndent(),
+                    narrativeNoise = "Голосовое: 0:03 · Стикер 👍",
+                    choices = listOf(
+                        InternalChoice(
+                            id = "crs-1-a",
+                            label = "Переведу сразу — человеку срочно, потом разберёмся",
+                            correct = false,
+                            explanationWhenChosen = "Срочность и запрет позвонить — красные флаги. Взломанные и клонированные аккаунты часто просят перевод на чужие реквизиты.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Деньги ушли мошенникам; возврат затруднён. Всегда верифицируйте реквизиты голосом по номеру, который знали до переписки.",
+                        ),
+                        InternalChoice(
+                            id = "crs-1-b",
+                            label = "Позвоню по номеру из телефонной книги (не из чата) или встречу лично — реквизиты подтвержу вторым каналом",
+                            correct = true,
+                            explanationWhenChosen = "Верно: любые новые реквизиты от «знакомого» в чате подтверждаются независимо от переписки.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "crs-1-c",
+                            label = "Спрошу в том же чате: «Ты точно не бот?» — если ответит нормально, переведу",
+                            correct = false,
+                            explanationWhenChosen = "Атакующий контролирует чат и ответит «да». Это не проверка личности.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.CHAT_MESSENGER,
+                    simChatTitle = "WhatsApp · Кирилл",
+                    simChatSenderLabel = "Кирилл",
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "crs-1-bec",
+                            title = "Подмена для частных лиц",
+                            body = "Схема как у BEC: доверие к каналу и срочность. Отличие — суммы P2P и личный контекст. Реквизиты только после звонка на старый номер или личного контакта.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "crs-1-pay",
+                            label = "Перевести на карту из сообщения",
+                            choiceId = "crs-1-a",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "crs-1-call",
+                            label = "Звонок по номеру из контактов",
+                            choiceId = "crs-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "crs-1-chat",
+                            label = "Уточнить в том же чате",
+                            choiceId = "crs-1-c",
+                            variant = "REPLY",
+                        ),
+                    ),
+                    pressureSeconds = 55,
                 ),
             ),
         )

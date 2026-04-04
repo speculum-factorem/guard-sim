@@ -15,6 +15,7 @@ function sc(id: string): ScenarioSummary {
     type: "EMAIL",
     description: "",
     hubChannel: "MAIL",
+    attackTypeLabel: "Тест",
   };
 }
 

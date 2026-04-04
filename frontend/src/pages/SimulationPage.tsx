@@ -604,6 +604,9 @@ export function SimulationPage() {
             <div className="lc-problem-title-row">
               <h1 className="lc-problem-title">{detail.title}</h1>
               <div className="lc-problem-meta">
+                <span className="lc-attack-type-badge" title="Тип кибератаки">
+                  {detail.attackTypeLabel}
+                </span>
                 <span className={`lc-diff ${missionDiffClass(detail.hubChannel ?? "MAIL")}`}>
                   {missionChannelLabel(detail.hubChannel ?? "MAIL")}
                 </span>

@@ -7,6 +7,7 @@ export function ScenarioCard({ s }: { s: ScenarioSummary }) {
     <article className="hub-scenario-card">
       <span className={`card-badge ${hubBadgeClass(s)}`}>{hubBadgeLabel(s)}</span>
       <h3 className="hub-scenario-title">{s.title}</h3>
+      <p className="hub-scenario-attack">{s.attackTypeLabel}</p>
       <p className="hub-scenario-desc">{s.description}</p>
       <Link to={`/play/${encodeURIComponent(s.id)}`} className="btn btn-primary hub-scenario-open">
         Открыть

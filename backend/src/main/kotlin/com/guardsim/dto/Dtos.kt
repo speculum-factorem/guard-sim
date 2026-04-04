@@ -74,6 +74,8 @@ data class ScenarioSummaryDto(
     val description: String,
     /** MAIL | SOCIAL | SECURITY */
     val hubChannel: String,
+    /** Тип кибератаки (короткая подпись на русском) */
+    val attackTypeLabel: String,
 )
 
 data class ScenarioDetailDto(
@@ -82,6 +84,7 @@ data class ScenarioDetailDto(
     val type: ScenarioType,
     val description: String,
     val hubChannel: String,
+    val attackTypeLabel: String,
     val steps: List<StepPublicDto>,
 )
 

@@ -32,6 +32,7 @@ class ScenarioService(
                 type = s.type,
                 description = s.description,
                 hubChannel = effectiveHubChannel(s).name,
+                attackTypeLabel = s.attackTypeLabel,
             )
         }
 
@@ -47,6 +48,7 @@ class ScenarioService(
             type = s.type,
             description = s.description,
             hubChannel = effectiveHubChannel(s).name,
+            attackTypeLabel = s.attackTypeLabel,
             steps = s.steps.map(::toPublicStep),
         )
 

@@ -305,6 +305,7 @@ export function AccountPage() {
                           <thead>
                             <tr>
                               <th scope="col">Сценарий</th>
+                              <th scope="col">Тип атаки</th>
                               <th scope="col">Канал</th>
                               <th scope="col">Статус</th>
                             </tr>
@@ -314,6 +315,9 @@ export function AccountPage() {
                               <tr key={row.id}>
                                 <td>
                                   <span className="account-table-title">{row.title}</span>
+                                </td>
+                                <td>
+                                  <span className="account-table-attack">{row.attackTypeLabel}</span>
                                 </td>
                                 <td>
                                   <span className={`account-channel account-channel--${row.type.toLowerCase()}`}>

@@ -3,7 +3,7 @@
  */
 
 export type TaskChannelFilter = "all" | "mail" | "social" | "security";
-export type TaskSortColumn = "status" | "title" | "channel";
+export type TaskSortColumn = "status" | "title" | "channel" | "attackType";
 export type TaskSortDir = "asc" | "desc";
 
 const STORAGE_KEY = "guardSim.taskListFilters.v1";
@@ -33,7 +33,7 @@ function isChannel(x: unknown): x is TaskChannelFilter {
 }
 
 function isSortColumn(x: unknown): x is TaskSortColumn {
-  return x === "status" || x === "title" || x === "channel";
+  return x === "status" || x === "title" || x === "channel" || x === "attackType";
 }
 
 function isSortDir(x: unknown): x is TaskSortDir {

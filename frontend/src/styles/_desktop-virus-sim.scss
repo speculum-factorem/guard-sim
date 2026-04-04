@@ -392,7 +392,6 @@ $ubuntu-dock-inset: 72px;
   z-index: 22;
   display: flex;
   flex-direction: column;
-  max-height: 78%;
   overflow: hidden;
   background: #fff;
   border: 1px solid #c8c8c8;
@@ -402,12 +401,53 @@ $ubuntu-dock-inset: 72px;
     0 12px 28px rgba(0, 0, 0, 0.18);
 }
 
+.dvs-window--ubuntu:not(.dvs-window--tiled) {
+  max-height: none;
+  min-height: 140px;
+  box-sizing: border-box;
+}
+
 .dvs-window--ubuntu {
   border-radius: 12px;
   border-color: #bdbdbd;
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.08),
     0 16px 40px rgba(0, 0, 0, 0.16);
+}
+
+.dvs-window--tiled.dvs-window--ubuntu {
+  border-radius: 0;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.12),
+    0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.dvs-window--maximized {
+  top: $ubuntu-panel-h !important;
+  left: $ubuntu-dock-inset !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+}
+
+.dvs-window--fullscreen {
+  top: $ubuntu-panel-h !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+}
+
+.dvs-window--popup.dvs-window--p1-rollup:not(.dvs-window--tiled) {
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
 }
 
 .dvs-window--terminal {
@@ -448,6 +488,11 @@ $ubuntu-dock-inset: 72px;
   min-height: 36px;
   padding-left: 0;
   border-radius: 12px 12px 0 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.dvs-win-titlebar--tiled {
+  border-radius: 0 !important;
 }
 
 /* Заголовок как в mutter/Yaru: кнопки слева, заголовок по центру */
@@ -588,6 +633,75 @@ $ubuntu-dock-inset: 72px;
   color: #fff;
 }
 
+.dvs-win-resize {
+  position: absolute;
+  z-index: 70;
+}
+
+.dvs-win-resize--n {
+  top: 0;
+  left: 10px;
+  right: 10px;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+.dvs-win-resize--s {
+  bottom: 0;
+  left: 10px;
+  right: 10px;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+.dvs-win-resize--e {
+  right: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+.dvs-win-resize--w {
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+.dvs-win-resize--ne {
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  cursor: nesw-resize;
+}
+
+.dvs-win-resize--nw {
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  cursor: nwse-resize;
+}
+
+.dvs-win-resize--se {
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  cursor: nwse-resize;
+}
+
+.dvs-win-resize--sw {
+  bottom: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  cursor: nesw-resize;
+}
+
 .dvs-win-cap {
   width: 46px;
   border: none;
@@ -595,7 +709,7 @@ $ubuntu-dock-inset: 72px;
   margin: 0;
   background: transparent;
   color: #1a1a1a;
-  cursor: default;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -632,6 +746,15 @@ $ubuntu-dock-inset: 72px;
   box-sizing: border-box;
 }
 
+/* Восстановить (два прямоугольника) */
+.dvs-win-cap--max-tiled::after {
+  width: 7px;
+  height: 7px;
+  border: 1px solid currentColor;
+  box-shadow: 2px -2px 0 -1px currentColor;
+  transform: translate(-1px, 1px);
+}
+
 .dvs-win-cap--close::after {
   content: "\00d7";
   font-size: 16px;
@@ -648,6 +771,10 @@ $ubuntu-dock-inset: 72px;
   line-height: 1.5;
   color: $os-text;
   background: #fff;
+}
+
+.dvs-window--ubuntu .dvs-win-body {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .dvs-win-body--terminal {

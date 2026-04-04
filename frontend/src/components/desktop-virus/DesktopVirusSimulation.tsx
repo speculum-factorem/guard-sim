@@ -8,6 +8,19 @@ import {
 
 type Phase = "playing" | "won" | "lost";
 
+type ParasitePopup = {
+  id: string;
+  title: string;
+  top: number;
+  left: number;
+  z: number;
+  w: number;
+  h: number;
+  minimized: boolean;
+  maximized: boolean;
+  fullscreen: boolean;
+};
+
 const WIN_IDS = ["explorer", "antivirus", "firewall", "console", "taskmgr"] as const;
 type WinId = (typeof WIN_IDS)[number];
 
@@ -27,18 +40,43 @@ const WIN_LAYOUT: Record<WinId, { top: string; left: string; width: string }> = 
   taskmgr: { top: "8%", left: "26%", width: "min(560px, 95vw)" },
 };
 
+/** Позиция и размер в % от .dvs-desktop (как в оконном менеджере) */
+type WinGeom = { top: number; left: number; w: number; h: number };
+
+type ResizeEdge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
+
 function parseLayoutPct(s: string): number {
   return parseFloat(String(s).replace("%", "").trim()) || 0;
 }
 
-const WIN_POS_INITIAL: Record<WinId, { top: number; left: number }> = (WIN_IDS as readonly WinId[]).reduce(
+function clampNum(n: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, n));
+}
+
+const WIN_DEFAULT_WH: Record<WinId, { w: number; h: number }> = {
+  explorer: { w: 36, h: 50 },
+  antivirus: { w: 30, h: 44 },
+  firewall: { w: 34, h: 48 },
+  console: { w: 42, h: 40 },
+  taskmgr: { w: 46, h: 54 },
+};
+
+const WIN_GEOM_INITIAL: Record<WinId, WinGeom> = (WIN_IDS as readonly WinId[]).reduce(
   (acc, id) => {
     const L = WIN_LAYOUT[id];
-    acc[id] = { top: parseLayoutPct(L.top), left: parseLayoutPct(L.left) };
+    const wh = WIN_DEFAULT_WH[id];
+    acc[id] = { top: parseLayoutPct(L.top), left: parseLayoutPct(L.left), w: wh.w, h: wh.h };
     return acc;
   },
-  {} as Record<WinId, { top: number; left: number }>,
+  {} as Record<WinId, WinGeom>,
 );
+
+function emptyWinRecord<T>(v: T): Record<WinId, T> {
+  return (WIN_IDS as readonly WinId[]).reduce((acc, id) => {
+    acc[id] = v;
+    return acc;
+  }, {} as Record<WinId, T>);
+}
 
 function DockIconGlyph(props: { winId: WinId; className?: string }) {
   const { winId, className } = props;
@@ -264,15 +302,62 @@ function useWindowManager() {
   };
 }
 
-/** Как в Ubuntu (слева): закрыть, свернуть, развернуть */
-function GnomeCaptionButtons(props: { onClose: () => void; theme?: "light" | "dark" }) {
-  const { onClose, theme = "light" } = props;
+/** Как в Ubuntu (слева): закрыть, свернуть, развернуть / восстановить */
+function GnomeCaptionButtons(props: {
+  onClose: () => void;
+  onMinimize: () => void;
+  onMaximizeClick: (e: React.MouseEvent) => void;
+  theme?: "light" | "dark";
+  isRestored: boolean;
+}) {
+  const { onClose, onMinimize, onMaximizeClick, theme = "light", isRestored } = props;
+  const capMax = `dvs-win-cap dvs-win-cap--max${isRestored ? "" : " dvs-win-cap--max-tiled"}`;
   return (
     <div className={`dvs-win-caps dvs-win-caps--yaru dvs-win-caps--gnome${theme === "dark" ? " dvs-win-caps--dark" : ""}`}>
-      <button type="button" className="dvs-win-cap dvs-win-cap--close" aria-label="Закрыть" onClick={onClose} />
-      <button type="button" className="dvs-win-cap dvs-win-cap--min" aria-hidden tabIndex={-1} />
-      <button type="button" className="dvs-win-cap dvs-win-cap--max" aria-hidden tabIndex={-1} />
+      <button
+        type="button"
+        className="dvs-win-cap dvs-win-cap--close"
+        aria-label="Закрыть"
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={onClose}
+      />
+      <button
+        type="button"
+        className="dvs-win-cap dvs-win-cap--min"
+        aria-label="Свернуть"
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={onMinimize}
+      />
+      <button
+        type="button"
+        className={capMax}
+        title="Развернуть (Shift — на весь экран симуляции)"
+        aria-label={isRestored ? "Развернуть" : "Восстановить"}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={onMaximizeClick}
+      />
     </div>
+  );
+}
+
+const RESIZE_EDGES: ResizeEdge[] = ["n", "s", "e", "w", "ne", "nw", "se", "sw"];
+
+function WindowResizeHandles(props: { onResizeStart: (edge: ResizeEdge, e: React.MouseEvent) => void }) {
+  const { onResizeStart } = props;
+  return (
+    <>
+      {RESIZE_EDGES.map((edge) => (
+        <div
+          key={edge}
+          className={`dvs-win-resize dvs-win-resize--${edge}`}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onResizeStart(edge, e);
+          }}
+        />
+      ))}
+    </>
   );
 }
 
@@ -292,32 +377,72 @@ function UbuntuShowAppsIcon() {
 function DesktopWindowFrame(props: {
   winId: WinId;
   z: number;
-  position: { top: number; left: number };
+  geom: WinGeom;
+  minimized: boolean;
+  maximized: boolean;
+  fullscreen: boolean;
   onClose: () => void;
+  onMinimize: () => void;
+  onMaximizeClick: (e: React.MouseEvent) => void;
   onPointerDown: () => void;
   onTitleMouseDown: (e: React.MouseEvent) => void;
+  onTitleDoubleClick: (e: React.MouseEvent) => void;
+  onResizeStart: (edge: ResizeEdge, e: React.MouseEvent) => void;
   children: ReactNode;
   chrome?: "app" | "terminal";
 }) {
-  const { winId, z, position, onClose, onPointerDown, onTitleMouseDown, children, chrome = "app" } = props;
-  const L = WIN_LAYOUT[winId];
+  const {
+    winId,
+    z,
+    geom,
+    minimized,
+    maximized,
+    fullscreen,
+    onClose,
+    onMinimize,
+    onMaximizeClick,
+    onPointerDown,
+    onTitleMouseDown,
+    onTitleDoubleClick,
+    onResizeStart,
+    children,
+    chrome = "app",
+  } = props;
   const isTerm = chrome === "terminal";
+  const tiled = maximized || fullscreen;
+  const isRestored = !maximized && !fullscreen;
+
+  if (minimized) return null;
+
   return (
     <div
-      className={`dvs-window dvs-window--os dvs-window--ubuntu${isTerm ? " dvs-window--terminal" : ""}`}
-      style={{
-        top: `${position.top}%`,
-        left: `${position.left}%`,
-        width: L.width,
-        zIndex: z,
-      }}
+      className={`dvs-window dvs-window--os dvs-window--ubuntu${isTerm ? " dvs-window--terminal" : ""}${tiled ? " dvs-window--tiled" : ""}${maximized ? " dvs-window--maximized" : ""}${fullscreen ? " dvs-window--fullscreen" : ""}`}
+      style={
+        tiled
+          ? { zIndex: z }
+          : {
+              top: `${geom.top}%`,
+              left: `${geom.left}%`,
+              width: `${geom.w}%`,
+              height: `${geom.h}%`,
+              zIndex: z,
+            }
+      }
       onPointerDown={onPointerDown}
     >
+      {!tiled ? <WindowResizeHandles onResizeStart={onResizeStart} /> : null}
       <div
-        className={`dvs-win-titlebar dvs-win-titlebar--gnome${isTerm ? " dvs-win-titlebar--terminal dvs-win-titlebar--ubuntu-term" : " dvs-win-titlebar--ubuntu"}`}
+        className={`dvs-win-titlebar dvs-win-titlebar--gnome${isTerm ? " dvs-win-titlebar--terminal dvs-win-titlebar--ubuntu-term" : " dvs-win-titlebar--ubuntu"}${tiled ? " dvs-win-titlebar--tiled" : ""}`}
         onMouseDown={onTitleMouseDown}
+        onDoubleClick={onTitleDoubleClick}
       >
-        <GnomeCaptionButtons onClose={onClose} theme={isTerm ? "dark" : "light"} />
+        <GnomeCaptionButtons
+          onClose={onClose}
+          onMinimize={onMinimize}
+          onMaximizeClick={onMaximizeClick}
+          theme={isTerm ? "dark" : "light"}
+          isRestored={isRestored}
+        />
         <span className="dvs-win-title dvs-win-title--gnome">{WIN_LABELS[winId].title}</span>
         <span className="dvs-win-titlebar-spacer" aria-hidden />
       </div>
@@ -381,8 +506,14 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
   const [startOpen, setStartOpen] = useState(false);
   const startRef = useRef<HTMLDivElement>(null);
   const desktopRef = useRef<HTMLDivElement>(null);
-  const [winPos, setWinPos] = useState<Record<WinId, { top: number; left: number }>>(() => ({ ...WIN_POS_INITIAL }));
-  const winPosRef = useRef(winPos);
+  const [winGeom, setWinGeom] = useState<Record<WinId, WinGeom>>(() => ({ ...WIN_GEOM_INITIAL }));
+  const winGeomRef = useRef(winGeom);
+  const [minimized, setMinimized] = useState<Record<WinId, boolean>>(() => emptyWinRecord(false));
+  const [maximized, setMaximized] = useState<Record<WinId, boolean>>(() => emptyWinRecord(false));
+  const [fullscreen, setFullscreen] = useState<Record<WinId, boolean>>(() => emptyWinRecord(false));
+  const maximizedRef = useRef(maximized);
+  const fullscreenRef = useRef(fullscreen);
+  const savedGeomRef = useRef<Partial<Record<WinId, WinGeom>>>({});
   const winDragRef = useRef<null | {
     id: WinId;
     sx: number;
@@ -392,13 +523,36 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
     dw: number;
     dh: number;
   }>(null);
+  const resizeRef = useRef<null | {
+    id: WinId;
+    edge: ResizeEdge;
+    sx: number;
+    sy: number;
+    g: WinGeom;
+    dw: number;
+    dh: number;
+  }>(null);
   const [rubberBox, setRubberBox] = useState<null | { x: number; y: number; w: number; h: number }>(null);
   const rubberOriginRef = useRef<null | { ox: number; oy: number }>(null);
   const shell = useWindowManager();
   const [phase, setPhase] = useState<Phase>("playing");
 
   /* ── Уровень 1: паразит ── */
-  const [p1Popups, setP1Popups] = useState<{ id: string; title: string; top: number; left: number; z: number }[]>([]);
+  const [p1Popups, setP1Popups] = useState<ParasitePopup[]>([]);
+  const p1PopupsRef = useRef(p1Popups);
+  useEffect(() => {
+    p1PopupsRef.current = p1Popups;
+  }, [p1Popups]);
+
+  const p1ResizeRef = useRef<null | {
+    popId: string;
+    edge: ResizeEdge;
+    sx: number;
+    sy: number;
+    g: WinGeom;
+    dw: number;
+    dh: number;
+  }>(null);
   const p1IdRef = useRef(0);
   const p1ZRef = useRef(100);
 
@@ -425,8 +579,16 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
   }, [rhAv]);
 
   useEffect(() => {
-    winPosRef.current = winPos;
-  }, [winPos]);
+    winGeomRef.current = winGeom;
+  }, [winGeom]);
+
+  useEffect(() => {
+    maximizedRef.current = maximized;
+  }, [maximized]);
+
+  useEffect(() => {
+    fullscreenRef.current = fullscreen;
+  }, [fullscreen]);
 
   /* ── Уровень 5: ботнет ── */
   const [nbBlocked, setNbBlocked] = useState<Set<string>>(() => new Set());
@@ -467,7 +629,11 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
     setCasualSelected(null);
     setConsoleLines(["GuardSim Console v1.0", "Введите команду и нажмите Enter."]);
     setConsoleInput("");
-    setWinPos({ ...WIN_POS_INITIAL });
+    setWinGeom({ ...WIN_GEOM_INITIAL });
+    setMinimized(emptyWinRecord(false));
+    setMaximized(emptyWinRecord(false));
+    setFullscreen(emptyWinRecord(false));
+    savedGeomRef.current = {};
     setRubberBox(null);
     rubberOriginRef.current = null;
     // eslint-disable-next-line react-hooks/exhaustive-deps -- сброс при смене сценария
@@ -546,6 +712,11 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
             top: 5 + Math.random() * 55,
             left: 4 + Math.random() * 58,
             z: p1ZRef.current,
+            w: 26,
+            h: 22,
+            minimized: false,
+            maximized: false,
+            fullscreen: false,
           },
         ];
       });
@@ -622,13 +793,158 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
   const openFromStart = (id: WinId) => {
     shell.openWindow(id);
     shell.bringToFront(id);
+    setMinimized((m) => ({ ...m, [id]: false }));
     setStartOpen(false);
   };
 
   const activateFromDock = (id: WinId) => {
     if (!shell.open[id]) shell.openWindow(id);
     shell.bringToFront(id);
+    setMinimized((m) => ({ ...m, [id]: false }));
   };
+
+  const toggleMaximizeWin = useCallback((id: WinId) => {
+    if (fullscreenRef.current[id]) {
+      setFullscreen((f) => ({ ...f, [id]: false }));
+      const s = savedGeomRef.current[id];
+      if (s) {
+        setWinGeom((g) => ({ ...g, [id]: { ...s } }));
+        winGeomRef.current = { ...winGeomRef.current, [id]: { ...s } };
+      }
+      return;
+    }
+    if (maximizedRef.current[id]) {
+      setMaximized((m) => ({ ...m, [id]: false }));
+      const s = savedGeomRef.current[id];
+      if (s) {
+        setWinGeom((g) => ({ ...g, [id]: { ...s } }));
+        winGeomRef.current = { ...winGeomRef.current, [id]: { ...s } };
+      }
+      return;
+    }
+    savedGeomRef.current[id] = { ...winGeomRef.current[id] };
+    setMaximized((m) => ({ ...m, [id]: true }));
+  }, []);
+
+  const toggleFullscreenWin = useCallback((id: WinId) => {
+    if (fullscreenRef.current[id]) {
+      setFullscreen((f) => ({ ...f, [id]: false }));
+      const s = savedGeomRef.current[id];
+      if (s) {
+        setWinGeom((g) => ({ ...g, [id]: { ...s } }));
+        winGeomRef.current = { ...winGeomRef.current, [id]: { ...s } };
+      }
+      setMaximized((m) => ({ ...m, [id]: false }));
+      return;
+    }
+    if (!maximizedRef.current[id]) {
+      savedGeomRef.current[id] = { ...winGeomRef.current[id] };
+    }
+    setMaximized((m) => ({ ...m, [id]: false }));
+    setFullscreen((f) => ({ ...f, [id]: true }));
+  }, []);
+
+  const onWinMaxClick = useCallback(
+    (id: WinId, e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (e.shiftKey) toggleFullscreenWin(id);
+      else toggleMaximizeWin(id);
+    },
+    [toggleFullscreenWin, toggleMaximizeWin],
+  );
+
+  const onWinMinimize = useCallback((id: WinId) => {
+    setMinimized((m) => ({ ...m, [id]: true }));
+  }, []);
+
+  const closeWin = useCallback(
+    (id: WinId) => {
+      shell.closeWindow(id);
+      setMinimized((m) => ({ ...m, [id]: false }));
+      setMaximized((m) => ({ ...m, [id]: false }));
+      setFullscreen((f) => ({ ...f, [id]: false }));
+      delete savedGeomRef.current[id];
+    },
+    [shell],
+  );
+
+  const winZ = useCallback(
+    (id: WinId) => (fullscreen[id] ? Math.max(580, shell.zIndexFor(id)) : shell.zIndexFor(id)),
+    [fullscreen, shell],
+  );
+
+  const onTitleDblClick = useCallback(
+    (id: WinId, e: React.MouseEvent) => {
+      if ((e.target as HTMLElement).closest("button")) return;
+      toggleMaximizeWin(id);
+    },
+    [toggleMaximizeWin],
+  );
+
+  const handleResizeStart = useCallback(
+    (id: WinId, edge: ResizeEdge, e: React.MouseEvent) => {
+      if (e.button !== 0) return;
+      const desk = desktopRef.current;
+      if (!desk) return;
+      const dr = desk.getBoundingClientRect();
+      resizeRef.current = {
+        id,
+        edge,
+        sx: e.clientX,
+        sy: e.clientY,
+        g: { ...winGeomRef.current[id] },
+        dw: Math.max(1, dr.width),
+        dh: Math.max(1, dr.height),
+      };
+      shell.bringToFront(id);
+      document.body.style.userSelect = "none";
+
+      const minW = 18;
+      const minH = 15;
+
+      const onMove = (ev: MouseEvent) => {
+        const d = resizeRef.current;
+        if (!d) return;
+        const dx = ((ev.clientX - d.sx) / d.dw) * 100;
+        const dy = ((ev.clientY - d.sy) / d.dh) * 100;
+        const { g, edge: ed } = d;
+        let { top, left, w, h } = g;
+
+        if (ed.includes("e")) w = clampNum(g.w + dx, minW, 100 - left);
+        if (ed.includes("s")) h = clampNum(g.h + dy, minH, 100 - top);
+        if (ed.includes("w")) {
+          const nw = clampNum(g.w - dx, minW, g.left + g.w);
+          left = g.left + g.w - nw;
+          w = nw;
+        }
+        if (ed.includes("n")) {
+          const nh = clampNum(g.h - dy, minH, g.top + g.h);
+          top = g.top + g.h - nh;
+          h = nh;
+        }
+
+        left = clampNum(left, 0, 100 - w);
+        top = clampNum(top, 0, 100 - h);
+        if (left + w > 100) w = 100 - left;
+        if (top + h > 100) h = 100 - top;
+
+        setWinGeom((prev) => {
+          const next = { ...prev, [d.id]: { top, left, w, h } };
+          winGeomRef.current = next;
+          return next;
+        });
+      };
+      const onUp = () => {
+        resizeRef.current = null;
+        document.body.style.userSelect = "";
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("mouseup", onUp);
+      };
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseup", onUp);
+    },
+    [shell],
+  );
 
   const handleWinTitleMouseDown = useCallback(
     (id: WinId, e: React.MouseEvent) => {
@@ -637,32 +953,66 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
       const desk = desktopRef.current;
       if (!desk) return;
       e.preventDefault();
-      const r = desk.getBoundingClientRect();
-      const p = winPosRef.current[id];
-      winDragRef.current = {
-        id,
-        sx: e.clientX,
-        sy: e.clientY,
-        ot: p.top,
-        ol: p.left,
-        dw: Math.max(1, r.width),
-        dh: Math.max(1, r.height),
+      const dr = desk.getBoundingClientRect();
+      const dw = Math.max(1, dr.width);
+      const dh = Math.max(1, dr.height);
+
+      const startX = e.clientX;
+      const startY = e.clientY;
+      let dragActive = false;
+      let geom = { ...winGeomRef.current[id] };
+      const wasTiled = fullscreenRef.current[id] || maximizedRef.current[id];
+
+      const applyUntileAtPointer = () => {
+        const saved = savedGeomRef.current[id] ?? geom;
+        const nl = ((startX - e.nativeEvent.offsetX) - dr.left) / dw * 100;
+        const nt = ((startY - e.nativeEvent.offsetY) - dr.top) / dh * 100;
+        geom = {
+          ...saved,
+          left: clampNum(nl, 0, 100 - saved.w),
+          top: clampNum(nt, 0, 100 - saved.h),
+        };
+        setFullscreen((f) => ({ ...f, [id]: false }));
+        setMaximized((m) => ({ ...m, [id]: false }));
+        setWinGeom((g) => ({ ...g, [id]: geom }));
+        winGeomRef.current = { ...winGeomRef.current, [id]: geom };
       };
+
       shell.bringToFront(id);
-      document.body.style.cursor = "grabbing";
-      document.body.style.userSelect = "none";
 
       const onMove = (ev: MouseEvent) => {
+        if (!dragActive) {
+          if (Math.abs(ev.clientX - startX) < 5 && Math.abs(ev.clientY - startY) < 5) return;
+          dragActive = true;
+          if (wasTiled) applyUntileAtPointer();
+          winDragRef.current = {
+            id,
+            sx: ev.clientX,
+            sy: ev.clientY,
+            ot: winGeomRef.current[id].top,
+            ol: winGeomRef.current[id].left,
+            dw,
+            dh,
+          };
+          document.body.style.cursor = "grabbing";
+          document.body.style.userSelect = "none";
+          return;
+        }
         const d = winDragRef.current;
         if (!d) return;
         const dx = ((ev.clientX - d.sx) / d.dw) * 100;
         const dy = ((ev.clientY - d.sy) / d.dh) * 100;
-        let top = d.ot + dy;
-        let left = d.ol + dx;
-        top = Math.max(4, Math.min(80, top));
-        left = Math.max(0.5, Math.min(72, left));
-        setWinPos((prev) => ({ ...prev, [d.id]: { top, left } }));
+        setWinGeom((prev) => {
+          const hh = prev[d.id].h;
+          const ww = prev[d.id].w;
+          const top = clampNum(d.ot + dy, 0, 100 - hh);
+          const left = clampNum(d.ol + dx, 0, 100 - ww);
+          const next = { ...prev, [d.id]: { ...prev[d.id], top, left } };
+          winGeomRef.current = next;
+          return next;
+        });
       };
+
       const onUp = () => {
         winDragRef.current = null;
         document.body.style.cursor = "";
@@ -675,6 +1025,109 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
     },
     [shell],
   );
+
+  const patchP1Popup = useCallback((popId: string, ch: Partial<ParasitePopup>) => {
+    setP1Popups((list) => list.map((p) => (p.id === popId ? { ...p, ...ch } : p)));
+  }, []);
+
+  const p1SavedRef = useRef<Record<string, WinGeom>>({});
+
+  const toggleP1Max = useCallback((popId: string) => {
+    setP1Popups((list) =>
+      list.map((p) => {
+        if (p.id !== popId) return p;
+        if (p.fullscreen) {
+          const s = p1SavedRef.current[popId];
+          const next = s ? { ...p, ...s, fullscreen: false, maximized: false } : { ...p, fullscreen: false, maximized: false };
+          delete p1SavedRef.current[popId];
+          return next;
+        }
+        if (p.maximized) {
+          const s = p1SavedRef.current[popId];
+          const next = s ? { ...p, ...s, maximized: false } : { ...p, maximized: false };
+          return next;
+        }
+        p1SavedRef.current[popId] = { top: p.top, left: p.left, w: p.w, h: p.h };
+        return { ...p, maximized: true };
+      }),
+    );
+  }, []);
+
+  const toggleP1Fullscreen = useCallback((popId: string) => {
+    setP1Popups((list) =>
+      list.map((p) => {
+        if (p.id !== popId) return p;
+        if (p.fullscreen) {
+          const s = p1SavedRef.current[popId];
+          const base = s ?? { top: p.top, left: p.left, w: p.w, h: p.h };
+          delete p1SavedRef.current[popId];
+          return { ...p, ...base, fullscreen: false, maximized: false };
+        }
+        if (!p.maximized) p1SavedRef.current[popId] = { top: p.top, left: p.left, w: p.w, h: p.h };
+        return { ...p, fullscreen: true, maximized: false };
+      }),
+    );
+  }, []);
+
+  const handleP1ResizeStart = useCallback((popId: string, edge: ResizeEdge, e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    const pop = p1PopupsRef.current.find((x) => x.id === popId);
+    if (!pop || pop.minimized || pop.maximized || pop.fullscreen) return;
+    const desk = desktopRef.current;
+    if (!desk) return;
+    const dr = desk.getBoundingClientRect();
+    const g: WinGeom = { top: pop.top, left: pop.left, w: pop.w, h: pop.h };
+    p1ResizeRef.current = {
+      popId,
+      edge,
+      sx: e.clientX,
+      sy: e.clientY,
+      g,
+      dw: Math.max(1, dr.width),
+      dh: Math.max(1, dr.height),
+    };
+    document.body.style.userSelect = "none";
+
+    const minW = 14;
+    const minH = 12;
+
+    const onMove = (ev: MouseEvent) => {
+      const d = p1ResizeRef.current;
+      if (!d) return;
+      const dx = ((ev.clientX - d.sx) / d.dw) * 100;
+      const dy = ((ev.clientY - d.sy) / d.dh) * 100;
+      const { g: gg, edge: ed } = d;
+      let { top, left, w, h } = gg;
+
+      if (ed.includes("e")) w = clampNum(gg.w + dx, minW, 100 - left);
+      if (ed.includes("s")) h = clampNum(gg.h + dy, minH, 100 - top);
+      if (ed.includes("w")) {
+        const nw = clampNum(gg.w - dx, minW, gg.left + gg.w);
+        left = gg.left + gg.w - nw;
+        w = nw;
+      }
+      if (ed.includes("n")) {
+        const nh = clampNum(gg.h - dy, minH, gg.top + gg.h);
+        top = gg.top + gg.h - nh;
+        h = nh;
+      }
+
+      left = clampNum(left, 0, 100 - w);
+      top = clampNum(top, 0, 100 - h);
+      if (left + w > 100) w = 100 - left;
+      if (top + h > 100) h = 100 - top;
+
+      patchP1Popup(popId, { top, left, w, h });
+    };
+    const onUp = () => {
+      p1ResizeRef.current = null;
+      document.body.style.userSelect = "";
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, [patchP1Popup]);
 
   const onRubberPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
@@ -817,11 +1270,18 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
         {shell.open.explorer ? (
           <DesktopWindowFrame
             winId="explorer"
-            z={shell.zIndexFor("explorer")}
-            position={winPos.explorer}
-            onClose={() => shell.closeWindow("explorer")}
+            z={winZ("explorer")}
+            geom={winGeom.explorer}
+            minimized={minimized.explorer}
+            maximized={maximized.explorer}
+            fullscreen={fullscreen.explorer}
+            onClose={() => closeWin("explorer")}
+            onMinimize={() => onWinMinimize("explorer")}
+            onMaximizeClick={(e) => onWinMaxClick("explorer", e)}
             onPointerDown={() => shell.bringToFront("explorer")}
             onTitleMouseDown={(e) => handleWinTitleMouseDown("explorer", e)}
+            onTitleDoubleClick={(e) => onTitleDblClick("explorer", e)}
+            onResizeStart={(edge, e) => handleResizeStart("explorer", edge, e)}
           >
             {virusId === "file_worm" ? (
               <>
@@ -931,11 +1391,18 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
         {shell.open.antivirus ? (
           <DesktopWindowFrame
             winId="antivirus"
-            z={shell.zIndexFor("antivirus")}
-            position={winPos.antivirus}
-            onClose={() => shell.closeWindow("antivirus")}
+            z={winZ("antivirus")}
+            geom={winGeom.antivirus}
+            minimized={minimized.antivirus}
+            maximized={maximized.antivirus}
+            fullscreen={fullscreen.antivirus}
+            onClose={() => closeWin("antivirus")}
+            onMinimize={() => onWinMinimize("antivirus")}
+            onMaximizeClick={(e) => onWinMaxClick("antivirus", e)}
             onPointerDown={() => shell.bringToFront("antivirus")}
             onTitleMouseDown={(e) => handleWinTitleMouseDown("antivirus", e)}
+            onTitleDoubleClick={(e) => onTitleDblClick("antivirus", e)}
+            onResizeStart={(edge, e) => handleResizeStart("antivirus", edge, e)}
           >
             <div className="dvs-av-deco">
               <p className="dvs-av-deco-status">● Мониторинг в реальном времени: включён</p>
@@ -1002,11 +1469,18 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
         {shell.open.firewall ? (
           <DesktopWindowFrame
             winId="firewall"
-            z={shell.zIndexFor("firewall")}
-            position={winPos.firewall}
-            onClose={() => shell.closeWindow("firewall")}
+            z={winZ("firewall")}
+            geom={winGeom.firewall}
+            minimized={minimized.firewall}
+            maximized={maximized.firewall}
+            fullscreen={fullscreen.firewall}
+            onClose={() => closeWin("firewall")}
+            onMinimize={() => onWinMinimize("firewall")}
+            onMaximizeClick={(e) => onWinMaxClick("firewall", e)}
             onPointerDown={() => shell.bringToFront("firewall")}
             onTitleMouseDown={(e) => handleWinTitleMouseDown("firewall", e)}
+            onTitleDoubleClick={(e) => onTitleDblClick("firewall", e)}
+            onResizeStart={(edge, e) => handleResizeStart("firewall", edge, e)}
           >
             <>
               <p className="dvs-win-hint">Профиль: частная сеть</p>
@@ -1058,11 +1532,18 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
         {shell.open.console ? (
           <DesktopWindowFrame
             winId="console"
-            z={shell.zIndexFor("console")}
-            position={winPos.console}
-            onClose={() => shell.closeWindow("console")}
+            z={winZ("console")}
+            geom={winGeom.console}
+            minimized={minimized.console}
+            maximized={maximized.console}
+            fullscreen={fullscreen.console}
+            onClose={() => closeWin("console")}
+            onMinimize={() => onWinMinimize("console")}
+            onMaximizeClick={(e) => onWinMaxClick("console", e)}
             onPointerDown={() => shell.bringToFront("console")}
             onTitleMouseDown={(e) => handleWinTitleMouseDown("console", e)}
+            onTitleDoubleClick={(e) => onTitleDblClick("console", e)}
+            onResizeStart={(edge, e) => handleResizeStart("console", edge, e)}
             chrome="terminal"
           >
             <div className="dvs-console-out" role="log">
@@ -1107,11 +1588,18 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
         {shell.open.taskmgr ? (
           <DesktopWindowFrame
             winId="taskmgr"
-            z={shell.zIndexFor("taskmgr")}
-            position={winPos.taskmgr}
-            onClose={() => shell.closeWindow("taskmgr")}
+            z={winZ("taskmgr")}
+            geom={winGeom.taskmgr}
+            minimized={minimized.taskmgr}
+            maximized={maximized.taskmgr}
+            fullscreen={fullscreen.taskmgr}
+            onClose={() => closeWin("taskmgr")}
+            onMinimize={() => onWinMinimize("taskmgr")}
+            onMaximizeClick={(e) => onWinMaxClick("taskmgr", e)}
             onPointerDown={() => shell.bringToFront("taskmgr")}
             onTitleMouseDown={(e) => handleWinTitleMouseDown("taskmgr", e)}
+            onTitleDoubleClick={(e) => onTitleDblClick("taskmgr", e)}
+            onResizeStart={(edge, e) => handleResizeStart("taskmgr", edge, e)}
           >
             <div className="dvs-tm-tabs">
               <button type="button" className={`dvs-tm-tab${tmTab === "proc" ? " dvs-tm-tab--on" : ""}`} onClick={() => setTmTab("proc")}>
@@ -1281,22 +1769,56 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
 
         {/* Паразит: всплывающие окна */}
         {virusId === "process_parasite" && phase === "playing"
-          ? p1Popups.map((pop) => (
-              <div
-                key={pop.id}
-                className="dvs-window dvs-window--popup dvs-window--threat dvs-window--ubuntu"
-                style={{ top: `${pop.top}%`, left: `${pop.left}%`, width: "min(280px, 82vw)", zIndex: pop.z }}
-              >
-                <div className="dvs-win-titlebar dvs-win-titlebar--gnome dvs-win-titlebar--ubuntu dvs-win-titlebar--popup-gnome">
-                  <GnomeCaptionButtons onClose={() => closeP1Popup(pop.id)} />
-                  <span className="dvs-win-title dvs-win-title--gnome">{pop.title}</span>
-                  <span className="dvs-win-titlebar-spacer" aria-hidden />
+          ? p1Popups.map((pop) => {
+              const tiled = pop.maximized || pop.fullscreen;
+              const isRestored = !pop.maximized && !pop.fullscreen;
+              const zPop = pop.fullscreen ? Math.max(590, pop.z) : pop.z;
+              return (
+                <div
+                  key={pop.id}
+                  className={`dvs-window dvs-window--popup dvs-window--threat dvs-window--ubuntu${tiled ? " dvs-window--tiled" : ""}${pop.maximized ? " dvs-window--maximized" : ""}${pop.fullscreen ? " dvs-window--fullscreen" : ""}${pop.minimized ? " dvs-window--p1-rollup" : ""}`}
+                  style={
+                    tiled
+                      ? { zIndex: zPop }
+                      : {
+                          top: `${pop.top}%`,
+                          left: `${pop.left}%`,
+                          width: `${pop.w}%`,
+                          height: `${pop.h}%`,
+                          zIndex: zPop,
+                        }
+                  }
+                >
+                  {!tiled && !pop.minimized ? (
+                    <WindowResizeHandles onResizeStart={(edge, e) => handleP1ResizeStart(pop.id, edge, e)} />
+                  ) : null}
+                  <div
+                    className={`dvs-win-titlebar dvs-win-titlebar--gnome dvs-win-titlebar--ubuntu dvs-win-titlebar--popup-gnome${tiled ? " dvs-win-titlebar--tiled" : ""}`}
+                    onDoubleClick={(e) => {
+                      if ((e.target as HTMLElement).closest("button")) return;
+                      toggleP1Max(pop.id);
+                    }}
+                  >
+                    <GnomeCaptionButtons
+                      onClose={() => closeP1Popup(pop.id)}
+                      onMinimize={() => patchP1Popup(pop.id, { minimized: !pop.minimized })}
+                      onMaximizeClick={(e) => {
+                        if (e.shiftKey) toggleP1Fullscreen(pop.id);
+                        else toggleP1Max(pop.id);
+                      }}
+                      isRestored={isRestored}
+                    />
+                    <span className="dvs-win-title dvs-win-title--gnome">{pop.title}</span>
+                    <span className="dvs-win-titlebar-spacer" aria-hidden />
+                  </div>
+                  {pop.minimized ? null : (
+                    <div className="dvs-win-body dvs-win-body--compact">
+                      <p>Подозрительное окно (симуляция).</p>
+                    </div>
+                  )}
                 </div>
-                <div className="dvs-win-body dvs-win-body--compact">
-                  <p>Подозрительное окно (симуляция).</p>
-                </div>
-              </div>
-            ))
+              );
+            })
           : null}
 
         {virusId === "process_parasite" && phase === "playing" ? (

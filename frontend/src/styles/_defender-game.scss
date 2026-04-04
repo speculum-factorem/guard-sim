@@ -257,6 +257,30 @@ $bg3: #10142a;  // card / input bg
   margin: 0 auto 8px;
 }
 
+.defender-practice-tick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: rgba(180, 200, 230, 0.75);
+}
+
+.defender-practice-tick-label {
+  white-space: nowrap;
+}
+
+.defender-practice-tick-input {
+  width: 64px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba($dc, 0.35);
+  background: rgba($bg2, 0.95);
+  color: #fff;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+}
+
 // ─── BRIEFING SCREEN ─────────────────────────────────────────────────────────
 
 .defender-briefing-screen {
@@ -636,55 +660,6 @@ $bg3: #10142a;  // card / input bg
 
 .defender-attacker-sep {
   color: rgba(255, 190, 190, 0.35);
-}
-
-.defender-playbook {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 5px 8px;
-  margin-left: auto;
-  max-width: 100%;
-}
-
-.defender-playbook-label {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: rgba($dc, 0.55);
-  width: 100%;
-  @media (min-width: 900px) {
-    width: auto;
-    margin-right: 4px;
-  }
-}
-
-.def-playbook-chip {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  padding: 2px 6px;
-  border-radius: 2px;
-  border: 1px solid rgba(180, 200, 230, 0.2);
-  color: rgba(180, 200, 230, 0.45);
-  background: rgba(0, 0, 0, 0.25);
-
-  &--done {
-    border-color: rgba($dg, 0.45);
-    color: $dg;
-    background: rgba($dg, 0.06);
-  }
-
-  &--hint {
-    border-color: rgba($dy, 0.55);
-    color: $dy;
-    animation: def-playbook-pulse 1.8s ease-in-out infinite;
-  }
-}
-
-@keyframes def-playbook-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.55; }
 }
 
 // ─── MAIN LAYOUT ─────────────────────────────────────────────────────────────
@@ -1186,6 +1161,27 @@ $bg3: #10142a;  // card / input bg
     color: rgba($dy, 0.8);
     border-left: 2px solid rgba($dy, 0.3);
     padding-left: 14px;
+  }
+}
+
+.def-term-ip {
+  display: inline;
+  padding: 0 2px;
+  margin: 0 1px;
+  border: none;
+  border-radius: 2px;
+  background: rgba($dc, 0.12);
+  color: rgba(130, 210, 255, 0.95);
+  font: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  cursor: pointer;
+  text-decoration: underline dotted rgba($dc, 0.45);
+  text-underline-offset: 2px;
+
+  &:hover {
+    background: rgba($dc, 0.22);
+    color: #fff;
   }
 }
 

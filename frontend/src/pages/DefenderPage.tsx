@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { recordDefenderLoss, recordDefenderWin, type DefenderGameMode } from "../defenderStatsStorage";
 
 // ═══════════════════════════════════════════════════════════════════════
 // TYPES
@@ -8,9 +9,6 @@ import { Link } from "react-router-dom";
 type NodeId = "inet" | "fw" | "web01" | "app01" | "db01" | "dc01";
 type NodeStatus = "clean" | "scanning" | "compromised" | "isolated" | "defended";
 type Phase = "select" | "briefing" | "playing" | "won" | "lost";
-type GameMode = "training" | "combat";
-type PlaybookKey = "logs" | "wireshark" | "nmap" | "strings" | "block" | "kill" | "isolate" | "patch";
-type PlaybookFlags = Record<PlaybookKey, boolean>;
 type TermLineType = "input" | "output" | "error" | "info" | "system";
 interface TermLine { id: number; type: TermLineType; text: string }
 
@@ -21,6 +19,7 @@ interface NodeState {
   cdKill: number;
   cdBlock: number;
   cdPatch: number;
+  cdHeal: number;
 }
 
 interface Log {
@@ -40,8 +39,10 @@ interface Scenario {
   description: string;
   briefing: string;
   attackPath: NodeId[];
-  /** Базовый интервал хода (сек.) в боевом режиме */
+  /** Базовый интервал хода (сек.) в стандартном режиме */
   tickInterval: number;
+  /** vaultbreaker: пауза до появления следующего вредоносного IP (всего до attackerIps.length) */
+  vaultRevealIntervalSec?: number;
   arrivalLogs: Partial<Record<NodeId, string[]>>;
   loseNode: NodeId;
   loseMessage: string;
@@ -93,7 +94,58 @@ const ACTION_COST = {
   wireshark: 12,
   nmap: 16,
   strings: 10,
+  heal: 24,
 } as const;
+
+const IPV4_IN_TEXT = /\b(?:(?:25[0-5]|2[0-4]\d|1?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|1?\d\d?)\b/g;
+
+function termLinePartsWithIps(text: string): { s: string; ip: boolean }[] {
+  const out: { s: string; ip: boolean }[] = [];
+  IPV4_IN_TEXT.lastIndex = 0;
+  const re = new RegExp(IPV4_IN_TEXT.source, "g");
+  let m: RegExpExecArray | null;
+  let last = 0;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) out.push({ s: text.slice(last, m.index), ip: false });
+    out.push({ s: m[0], ip: true });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push({ s: text.slice(last), ip: false });
+  if (out.length === 0) out.push({ s: text, ip: false });
+  return out;
+}
+
+function TermLineContent({ text, lineType }: { text: string; lineType: TermLineType }) {
+  const parts = useMemo(() => termLinePartsWithIps(text), [text]);
+  const nodes: ReactNode[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    const p = parts[i]!;
+    if (p.ip) {
+      nodes.push(
+        <button
+          key={i}
+          type="button"
+          className="def-term-ip"
+          title="Скопировать IP"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            void navigator.clipboard.writeText(p.s).catch(() => {});
+          }}
+        >
+          {p.s}
+        </button>,
+      );
+    } else if (p.s) {
+      nodes.push(<span key={i}>{p.s}</span>);
+    }
+  }
+  return (
+    <div className={`def-terminal-line def-terminal-line--${lineType}`}>
+      {nodes}
+    </div>
+  );
+}
 
 function parseIpv4(s: string): string | null {
   const t = s.trim();
@@ -106,8 +158,15 @@ function parseIpv4(s: string): string | null {
   return ok ? `${Number(m[1])}.${Number(m[2])}.${Number(m[3])}.${Number(m[4])}` : null;
 }
 
-function allAttackersBlocked(blocked: readonly string[], scenario: Scenario): boolean {
-  return scenario.attackerIps.every((ip) => blocked.includes(ip));
+function allAttackersBlocked(blocked: readonly string[], ips: readonly string[]): boolean {
+  return ips.length > 0 && ips.every((ip) => blocked.includes(ip));
+}
+
+function vaultAllHealthy(nodes: Record<NodeId, NodeState>): boolean {
+  return ALL_NODE_IDS.every((id) => {
+    const n = nodes[id];
+    return !n.attacker && (n.status === "clean" || n.status === "defended");
+  });
 }
 
 interface DiscoveryState {
@@ -137,7 +196,13 @@ function normalizeNmapSubnet(arg: string): string | null {
 
 type PushTermFn = (text: string, type?: TermLineType) => void;
 
-function emitWiresharkCapture(scenario: Scenario, nodeId: NodeId, pushTerm: PushTermFn) {
+function emitWiresharkCapture(
+  scenario: Scenario,
+  nodeId: NodeId,
+  pushTerm: PushTermFn,
+  attackerSlice?: readonly string[],
+) {
+  const att = attackerSlice ?? scenario.attackerIps;
   const scenarioId = scenario.id;
   const host = NODE_DEFS[nodeId].label;
   pushTerm(`━━ Wireshark · симулированный захват · ${host} (${nodeId}) ━━`, "info");
@@ -191,15 +256,16 @@ function emitWiresharkCapture(scenario: Scenario, nodeId: NodeId, pushTerm: Push
 
   if (nodeId === scenario.wiresharkIntelNode) {
     pushTerm("━━ [INTEL] Подтверждение источников (PCAP + сигнатуры) ━━", "system");
-    for (const ip of scenario.attackerIps) {
+    for (const ip of att) {
       pushTerm(`  ★ ${ip}  — подтверждён как источник атаки (блокируй: block ${ip})`, "error");
     }
     pushTerm("  Ложные совпадения отсекаются по содержимому сессии, не только по объёму трафика.", "info");
   }
 }
 
-function emitNmapScan(scenario: Scenario, pushTerm: PushTermFn) {
+function emitNmapScan(scenario: Scenario, pushTerm: PushTermFn, attackerSlice?: readonly string[]) {
   const scenarioId = scenario.id;
+  const att = attackerSlice ?? scenario.attackerIps;
   pushTerm(`Starting Nmap 7.94 ( https://nmap.org ) — симуляция сканирования ${NMAP_SUBNET}`, "info");
   pushTerm("Interesting ports on 10.10.0.1 (gateway.corp):", "output");
   pushTerm("  PORT    STATE SERVICE", "output");
@@ -239,10 +305,10 @@ function emitNmapScan(scenario: Scenario, pushTerm: PushTermFn) {
     pushTerm("  3389/tcp  open  ms-wbt-server  ← АНОМАЛИЯ: RDP на DB-сервере (нарушение сегментации)", "error");
   }
   pushTerm("", "output");
-  const extMix = [...new Set([...scenario.attackerIps, ...scenario.noiseIps])].slice(0, 6);
+  const extMix = [...new Set([...att, ...scenario.noiseIps])].slice(0, 6);
   pushTerm("NetFilter / sampled external talkers → корп. сегмент (SIEM fusion):", "info");
   for (const ip of extMix) {
-    const isBad = scenario.attackerIps.includes(ip);
+    const isBad = att.includes(ip);
     const tag = isBad ? "высокий приоритет корреляции" : "вероятный шум / CDN / сканер";
     pushTerm(`  ${ip.padEnd(16)} ${tag}`, isBad ? "error" : "output");
   }
@@ -336,7 +402,7 @@ const SCENARIOS: Scenario[] = [
     diffColor: "#3dffa0",
     attackType: "SQL-инъекция",
     description: "Несколько внешних IP в NetFlow; PCAP на WEB-01 выделяет источник. Энергия и block для каждого вредоносного IP.",
-    briefing: "В логах и NetFlow видно несколько внешних IP; истинный источник подтверждается wireshark на WEB-01 и блокируется: block 203.45.178.92.\n\nЭнергия SOC ограничена — нельзя с первой секунды изолировать всю сеть: сначала logs (fw) + nmap или PCAP на узле разведки.\n\nВектор: INTERNET → … → DB-01. ПОБЕДА: все attacker IP заблокированы, полный чеклист, путь закрыт.",
+    briefing: "В логах и NetFlow видно несколько внешних IP; истинный источник подтверждается wireshark на WEB-01 и блокируется: block 203.45.178.92.\n\nЭнергия SOC ограничена — нельзя с первой секунды изолировать всю сеть: сначала logs (fw) + nmap или PCAP на узле разведки.\n\nВектор: INTERNET → … → DB-01. ПОБЕДА: все вредоносные IP заблокированы, путь закрыт (изоляция/патч на узлах вектора).",
     attackPath: ["inet", "fw", "web01", "app01", "db01"],
     tickInterval: 12,
     arrivalLogs: {
@@ -388,9 +454,11 @@ const SCENARIOS: Scenario[] = [
     diffColor: "#ff2d78",
     attackType: "Ransomware",
     description: "SMB-атака и шум CDN в корреляции. Подтверждение на WEB-01, затем block. Длинный интервал хода.",
-    briefing: "SMB-эксплойт с внешнего IP; в потоке есть шум CDN. Подтверждение — wireshark на WEB-01 или FW, блокировка источника.\n\nЭнергия: планируй изоляции после разведки.",
+    briefing:
+      "SMB-эксплойт; в потоке появляются новые вредоносные IP по таймеру (до 5). NetFlow и PCAP — как обычно.\n\nПОБЕДА: все узлы в состоянии ЧИСТО или ЗАЩИЩЁН, нигде нет активной атаки (☠). Очистка узлов: heal <node>. Блокировка вредоносного IP обрывает текущую латеральную фазу.",
     attackPath: ["inet", "fw", "web01", "app01", "db01"],
     tickInterval: 12,
+    vaultRevealIntervalSec: 36,
     arrivalLogs: {
       fw:    ["EternalBlue exploit MS17-010 — АКТИВНО на порт 445", "Массовое SMB-сканирование всей подсети /24"],
       web01: ["LockBit dropper: /tmp/.config/.cache.bin", "Шифрование /var/www/* началось — 100% за 8 сек"],
@@ -401,7 +469,13 @@ const SCENARIOS: Scenario[] = [
     loseMessage: "Ransomware зашифровал базу данных. Резервных копий нет. Инфраструктура парализована. Требование выкупа: 50 BTC.",
     stringsArtifact: "/tmp/.config/.cache.bin",
     patchPlaybookNode: "app01",
-    attackerIps: ["203.45.178.92"],
+    attackerIps: [
+      "203.45.178.92",
+      "185.220.101.47",
+      "198.51.100.77",
+      "45.33.32.156",
+      "104.244.74.57",
+    ],
     noiseIps: ["54.230.1.1", "151.101.1.1"],
     netflowLogNode: "fw",
     wiresharkIntelNode: "web01",
@@ -439,7 +513,7 @@ function initNodes(): Record<NodeId, NodeState> {
     ALL_NODE_IDS.map((id) => [id, {
       status: id === "inet" ? "compromised" as NodeStatus : "clean" as NodeStatus,
       attacker: id === "inet",
-      cdIsolate: 0, cdKill: 0, cdBlock: 0, cdPatch: 0,
+      cdIsolate: 0, cdKill: 0, cdBlock: 0, cdPatch: 0, cdHeal: 0,
     }])
   ) as Record<NodeId, NodeState>;
 }
@@ -452,67 +526,13 @@ const STATUS_LABEL: Record<NodeStatus, string> = {
   defended: "ЗАЩИЩЁН",
 };
 
-const PLAYBOOK_ORDER: PlaybookKey[] = ["logs", "wireshark", "nmap", "strings", "block", "kill", "isolate", "patch"];
-
-const PLAYBOOK_SHORT: Record<PlaybookKey, string> = {
-  logs: "logs",
-  wireshark: "shark",
-  nmap: "nmap",
-  strings: "str",
-  block: "block",
-  kill: "kill",
-  isolate: "iso",
-  patch: "patch",
-};
-
-function emptyPlaybook(): PlaybookFlags {
-  return {
-    logs: false,
-    wireshark: false,
-    nmap: false,
-    strings: false,
-    block: false,
-    kill: false,
-    isolate: false,
-    patch: false,
-  };
+function cooldownSec(base: number): number {
+  return Math.max(2, Math.round(base));
 }
 
-function playbookComplete(p: PlaybookFlags): boolean {
-  return PLAYBOOK_ORDER.every((k) => p[k]);
-}
-
-function firstMissingPlaybook(p: PlaybookFlags): PlaybookKey | null {
-  for (const k of PLAYBOOK_ORDER) {
-    if (!p[k]) return k;
-  }
-  return null;
-}
-
-function cooldownSec(base: number, mode: GameMode): number {
-  return Math.max(2, Math.round(base * (mode === "training" ? 0.45 : 1)));
-}
-
-function tickForMode(sc: Scenario, mode: GameMode): number {
-  if (mode === "training") return Math.max(26, Math.round(sc.tickInterval * 2.1));
+function tickForPlayMode(sc: Scenario, mode: DefenderGameMode, practiceTickSec: number): number {
+  if (mode === "practice") return Math.max(5, Math.min(180, Math.round(practiceTickSec)));
   return Math.max(12, sc.tickInterval);
-}
-
-function PlaybookBar({ flags, training }: { flags: PlaybookFlags; training: boolean }) {
-  const miss = firstMissingPlaybook(flags);
-  return (
-    <div className="defender-playbook" aria-label="Чеклист протокола SOC">
-      <span className="defender-playbook-label">ЧЕКЛИСТ</span>
-      {PLAYBOOK_ORDER.map((k) => (
-        <span
-          key={k}
-          className={`def-playbook-chip${flags[k] ? " def-playbook-chip--done" : ""}${training && miss === k ? " def-playbook-chip--hint" : ""}`}
-        >
-          {flags[k] ? "✓" : "○"} {PLAYBOOK_SHORT[k]}
-        </span>
-      ))}
-    </div>
-  );
 }
 
 function CommandSidebar() {
@@ -525,6 +545,7 @@ function CommandSidebar() {
     { cmd: "kill <node>", hint: "пока ☠ на узле" },
     { cmd: "isolate <node>", hint: "после kill; нужна разведка" },
     { cmd: "patch <node>", hint: "только узел миссии" },
+    { cmd: "heal <node>", hint: "сброс к ЧИСТО (без ☠)" },
     { cmd: "status", hint: "карта в терминале" },
     { cmd: "help / clear / abort", hint: "справка, очистка, выход" },
   ];
@@ -700,7 +721,9 @@ function LogPanel({ logs }: { logs: Log[] }) {
 
 export function DefenderPage() {
   const [phase, setPhase] = useState<Phase>("select");
-  const [gameMode, setGameMode] = useState<GameMode>("combat");
+  const [playMode, setPlayMode] = useState<DefenderGameMode>("standard");
+  const [practiceTickSec, setPracticeTickSec] = useState(30);
+  const [vaultState, setVaultState] = useState<{ visible: number; cd: number }>({ visible: 1, cd: 45 });
   const [scenario, setScenario] = useState<Scenario | null>(null);
   const [nodes, setNodes] = useState<Record<NodeId, NodeState>>(initNodes);
   const [attackerIdx, setAttackerIdx] = useState(0);
@@ -717,16 +740,15 @@ export function DefenderPage() {
   const [scoreFloats, setScoreFloats] = useState<{ id: number; text: string; ok: boolean }[]>([]);
   const [threatLevel, setThreatLevel] = useState(0);
   const [alertFlash, setAlertFlash] = useState(false);
-  const [playbook, setPlaybook] = useState<PlaybookFlags>(emptyPlaybook);
   const [termLines, setTermLines] = useState<TermLine[]>([]);
   const [termInput, setTermInput] = useState("");
   const [termHistoryCmds, setTermHistoryCmds] = useState<string[]>([]);
   const [_termHistoryIdx, setTermHistoryIdx] = useState(-1);
   const termOutputRef = useRef<HTMLDivElement>(null);
   const termInputRef = useRef<HTMLInputElement>(null);
-  const protocolWarnedRef = useRef(false);
   const ipBlockWarnedRef = useRef(false);
   const winTriggeredRef = useRef(false);
+  const lossRecordedRef = useRef(false);
 
   const pushTerm = useCallback((text: string, type: TermLineType = "output") => {
     setTermLines((prev) => [...prev.slice(-299), { id: Date.now() + Math.random(), type, text }]);
@@ -747,9 +769,16 @@ export function DefenderPage() {
     setTimeout(() => setAlertFlash(false), 600);
   }, []);
 
-  const markPlaybook = useCallback((k: PlaybookKey) => {
-    setPlaybook((prev) => (prev[k] ? prev : { ...prev, [k]: true }));
-  }, []);
+  const addLogRef = useRef(addLog);
+  addLogRef.current = addLog;
+  const pushTermRef = useRef(pushTerm);
+  pushTermRef.current = pushTerm;
+
+  const visibleMaliciousIps = useMemo(() => {
+    if (!scenario) return [] as string[];
+    if (scenario.id === "vaultbreaker") return scenario.attackerIps.slice(0, vaultState.visible);
+    return [...scenario.attackerIps];
+  }, [scenario, vaultState.visible]);
 
   // ── Game loop ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -768,22 +797,46 @@ export function DefenderPage() {
           next[id] = {
             ...n,
             cdIsolate: Math.max(0, n.cdIsolate - 1),
-            cdKill:    Math.max(0, n.cdKill - 1),
-            cdBlock:   Math.max(0, n.cdBlock - 1),
-            cdPatch:   Math.max(0, n.cdPatch - 1),
+            cdKill: Math.max(0, n.cdKill - 1),
+            cdBlock: Math.max(0, n.cdBlock - 1),
+            cdPatch: Math.max(0, n.cdPatch - 1),
+            cdHeal: Math.max(0, n.cdHeal - 1),
           };
         }
         return next;
       });
 
+      if (scenario.id === "vaultbreaker") {
+        setVaultState((vs) => {
+          if (vs.visible >= scenario.attackerIps.length) return vs;
+          const nextCd = vs.cd - 1;
+          if (nextCd > 0) return { ...vs, cd: nextCd };
+          const nv = vs.visible + 1;
+          const ip = scenario.attackerIps[nv - 1];
+          queueMicrotask(() => {
+            addLogRef.current("warn", `Новый вредоносный IP в инциденте: ${ip}`);
+            pushTermRef.current(`[VAULT] Появился источник ${ip}.`, "error");
+          });
+          return {
+            visible: nv,
+            cd: nv >= scenario.attackerIps.length ? 0 : (scenario.vaultRevealIntervalSec ?? 45),
+          };
+        });
+      }
+
       setCountdown((c) => {
         const next = c - 1;
         if (next > 0) return next;
 
+        const sc = scenario;
+        if (allAttackersBlocked(blockedIps, sc.attackerIps)) {
+          const blockedSlow = sc.attackerIps.filter((ip) => blockedIps.includes(ip)).length * 2;
+          return tickSeconds + Math.min(10, blockedSlow);
+        }
+
         // Attacker advances!
         setAttackerIdx((prevIdx) => {
           setNodes((prevNodes) => {
-            const sc = scenario;
             const nextIdx = prevIdx + 1;
 
             if (nextIdx >= sc.attackPath.length) return prevNodes;
@@ -851,7 +904,6 @@ export function DefenderPage() {
           return prevIdx + 1;
         });
 
-        const sc = scenario;
         const blockedSlow = sc.attackerIps.filter((ip) => blockedIps.includes(ip)).length * 2;
         return tickSeconds + Math.min(10, blockedSlow);
       });
@@ -874,19 +926,27 @@ export function DefenderPage() {
     setScenario(sc);
     setNodes(initNodes());
     setAttackerIdx(0);
-    const t0 = tickForMode(sc, gameMode);
+    const t0 = tickForPlayMode(sc, playMode, practiceTickSec);
     setTickSeconds(t0);
     setCountdown(t0);
-    setPlaybook(emptyPlaybook());
-    protocolWarnedRef.current = false;
+    setVaultState(
+      sc.id === "vaultbreaker"
+        ? { visible: 1, cd: sc.vaultRevealIntervalSec ?? 45 }
+        : { visible: sc.attackerIps.length, cd: 0 },
+    );
     ipBlockWarnedRef.current = false;
     winTriggeredRef.current = false;
+    lossRecordedRef.current = false;
     setSelectedNode(null);
+    const perimeterLog =
+      sc.id === "vaultbreaker"
+        ? `VAULT: сейчас активен IP ${sc.attackerIps[0]}; новые источники (до ${sc.attackerIps.length}) каждые ${sc.vaultRevealIntervalSec ?? 45}с.`
+        : `Периметр: заблокируй каждый вредоносный IP: ${sc.attackerIps.join(", ")}`;
     setLogs([
       mkLog("info", `Инцидент ${sc.name} — ответные меры активированы`),
       mkLog("warn", "SIEM: аномальная активность зафиксирована"),
       mkLog("crit", `Атака типа «${sc.attackType}» — подтверждено`),
-      mkLog("info", `Протокол SOC: чеклист + block каждого IP: ${sc.attackerIps.join(", ")}`),
+      mkLog("info", perimeterLog),
       mkLog("warn", `NetFlow шум: также видны ${sc.noiseIps.slice(0, 3).join(", ")}… — коррелируй с PCAP/nmap.`),
     ]);
     setScore(500);
@@ -898,22 +958,27 @@ export function DefenderPage() {
     setThreatLevel(15);
     setScoreFloats([]);
     setAlertFlash(false);
-    const modeLine = gameMode === "training"
-      ? "Режим ТРЕНИРОВКА: медленнее ход атакующего, короче КД команд, подсказка на чеклисте."
-      : "Режим БОЕВОЙ: стандартные КД и темп.";
+    const modeLine =
+      playMode === "practice"
+        ? `Режим ТРЕНИРОВКА: интервал хода атакующего ${t0}с (настраивается на экране выбора).`
+        : "Стандартный режим: темп и КД по сценарию.";
+    const srcLine =
+      sc.id === "vaultbreaker"
+        ? `Активные источники сейчас: ${sc.attackerIps[0]} (ещё появятся). PCAP: wireshark ${sc.wiresharkIntelNode} ИЛИ logs ${sc.netflowLogNode} + nmap.`
+        : `Источники атаки (блокируй каждый): ${sc.attackerIps.join(", ")} — подтверждение: wireshark ${sc.wiresharkIntelNode} ИЛИ logs ${sc.netflowLogNode} + nmap.`;
     setTermLines([
       { id: 1, type: "system", text: `SOC TERMINAL v2.1 — ${sc.name}` },
       { id: 2, type: "system", text: modeLine },
-      { id: 3, type: "info",   text: `Источники атаки (блокируй каждый): ${sc.attackerIps.join(", ")} — подтверждение: wireshark ${sc.wiresharkIntelNode} ИЛИ logs ${sc.netflowLogNode} + nmap.` },
-      { id: 4, type: "info",   text: `Энергия ${ENERGY_START}/${ENERGY_MAX} (+${ENERGY_REGEN_PER_TICK}/с). Изоляция только после разведки.` },
-      { id: 5, type: "info",   text: `strings: ${sc.stringsArtifact} · patch: ${NODE_DEFS[sc.patchPlaybookNode].label} · block: block <IP>` },
-      { id: 6, type: "info",   text: "Введи 'help'. Tab — узлы. Слева — справочник команд." },
+      { id: 3, type: "info", text: srcLine },
+      { id: 4, type: "info", text: `Энергия ${ENERGY_START}/${ENERGY_MAX} (+${ENERGY_REGEN_PER_TICK}/с). Изоляция только после разведки.` },
+      { id: 5, type: "info", text: `strings: ${sc.stringsArtifact} · patch: ${NODE_DEFS[sc.patchPlaybookNode].label} · heal: heal <node> · block: block <IP>` },
+      { id: 6, type: "info", text: "Введи 'help'. Клик по IPv4 в выводе — копирование. Tab — узлы." },
     ]);
     setTermInput("");
     setTermHistoryCmds([]);
     setTermHistoryIdx(-1);
     setPhase("playing");
-  }, [gameMode]);
+  }, [playMode, practiceTickSec]);
 
   // ── Actions ─────────────────────────────────────────────────────────
   const actIsolate = useCallback((nodeId: NodeId) => {
@@ -936,15 +1001,14 @@ export function DefenderPage() {
     setEnergy((e) => e - ACTION_COST.isolate);
     setNodes((prev) => ({
       ...prev,
-      [nodeId]: { ...prev[nodeId], status: "isolated", attacker: false, cdIsolate: cooldownSec(20, gameMode) },
+      [nodeId]: { ...prev[nodeId], status: "isolated", attacker: false, cdIsolate: cooldownSec(20) },
     }));
     addLog("info", `Изоляция ${NODE_DEFS[nodeId].label}: узел отключён от сети`);
     pushTerm(`[OK] ${NODE_DEFS[nodeId].label} изолирован — соединения разорваны  +120  (−${ACTION_COST.isolate} энерг.)`, "output");
     addFloat("+120", true);
     setScore((s) => s + 120);
     setThreatLevel((t) => Math.max(0, t - 15));
-    markPlaybook("isolate");
-  }, [nodes, energy, discovery, scenario, addLog, addFloat, pushTerm, markPlaybook, gameMode]);
+  }, [nodes, energy, discovery, scenario, addLog, addFloat, pushTerm]);
 
   const actKillProc = useCallback((nodeId: NodeId) => {
     if (!scenario) return;
@@ -960,21 +1024,20 @@ export function DefenderPage() {
     pushTerm(`[OK] Процессы на ${NODE_DEFS[nodeId].label} завершены — атакующий отброшен назад  +60  (−${ACTION_COST.kill} энерг.)`, "output");
     addFloat("+60", true);
     setScore((s) => s + 60);
-    markPlaybook("kill");
     if (scenario) {
       setAttackerIdx((ai) => {
         const prevNodeId = scenario.attackPath[ai - 1];
         if (prevNodeId) {
           setNodes((p2) => ({
             ...p2,
-            [nodeId]: { ...p2[nodeId], attacker: false, status: "compromised", cdKill: cooldownSec(14, gameMode) },
+            [nodeId]: { ...p2[nodeId], attacker: false, status: "compromised", cdKill: cooldownSec(14) },
             [prevNodeId]: { ...p2[prevNodeId], attacker: true },
           }));
         }
         return Math.max(0, ai - 1);
       });
     }
-  }, [nodes, energy, addLog, addFloat, pushTerm, scenario, markPlaybook, gameMode]);
+  }, [nodes, energy, addLog, addFloat, pushTerm, scenario]);
 
   const actBlockIp = useCallback((ipRaw: string) => {
     const ip = parseIpv4(ipRaw);
@@ -1003,7 +1066,7 @@ export function DefenderPage() {
     if (!scenario.attackerIps.includes(ip)) {
       if (scenario.noiseIps.includes(ip)) {
         setEnergy((e) => Math.max(0, e - ACTION_COST.block));
-        setBlockCd(cooldownSec(18, gameMode));
+        setBlockCd(cooldownSec(18));
         addLog("warn", `Правило DROP для ${ip} — адрес из зоны шума, не цель инцидента`);
         pushTerm(`[WARN] ${ip} — типичный CDN/сканер; энергия −${ACTION_COST.block}. Ищи IP из PCAP/intel.`, "error");
         addFloat("−шум", false);
@@ -1012,22 +1075,33 @@ export function DefenderPage() {
       }
       return;
     }
+    if (scenario.id === "vaultbreaker" && !visibleMaliciousIps.includes(ip)) {
+      pushTerm("[ERR] IP ещё не активен в инциденте — дождись появления по таймеру VAULT.", "error");
+      return;
+    }
     setEnergy((e) => e - ACTION_COST.block);
-    setBlockCd(cooldownSec(18, gameMode));
-    setBlockedIps((prev) => {
-      if (prev.includes(ip)) return prev;
-      const next = [...prev, ip];
-      if (allAttackersBlocked(next, scenario)) {
-        queueMicrotask(() => markPlaybook("block"));
-      }
-      return next;
-    });
+    setBlockCd(cooldownSec(18));
+    setBlockedIps((prev) => (prev.includes(ip) ? prev : [...prev, ip]));
     addLog("info", `iptables DROP ${ip} — вредоносный источник заблокирован`);
     pushTerm(`[OK] iptables -A INPUT -s ${ip} -j DROP  +40  (−${ACTION_COST.block} энерг.)`, "output");
     addFloat("+40", true);
     setScore((s) => s + 40);
     setThreatLevel((t) => Math.max(0, t - 10));
-  }, [blockCd, energy, blockedIps, discovery, scenario, addLog, addFloat, pushTerm, markPlaybook, gameMode]);
+    setAttackerIdx(0);
+    setCountdown(tickSeconds);
+    setNodes((prev) => {
+      const next = { ...prev } as Record<NodeId, NodeState>;
+      for (const id of ALL_NODE_IDS) {
+        if (id === "inet") {
+          next.inet = { ...prev.inet, attacker: true };
+        } else {
+          next[id] = { ...prev[id], attacker: false };
+        }
+      }
+      return next;
+    });
+    pushTerm("[SOC] Канал к IP перекрыт — активное продвижение по внутренней сети остановлено.", "info");
+  }, [blockCd, energy, blockedIps, discovery, scenario, addLog, addFloat, pushTerm, visibleMaliciousIps, tickSeconds]);
 
   const actPatch = useCallback((nodeId: NodeId) => {
     if (energy < ACTION_COST.patch) {
@@ -1046,14 +1120,13 @@ export function DefenderPage() {
     setEnergy((e) => e - ACTION_COST.patch);
     setNodes((prev) => ({
       ...prev,
-      [nodeId]: { ...prev[nodeId], status: "defended", cdPatch: cooldownSec(25, gameMode) },
+      [nodeId]: { ...prev[nodeId], status: "defended", cdPatch: cooldownSec(25) },
     }));
     addLog("info", `Патч применён на ${NODE_DEFS[nodeId].label} — уязвимость устранена`);
     pushTerm(`[OK] ${NODE_DEFS[nodeId].label}: патч установлен — узел защищён  +100  (−${ACTION_COST.patch} энерг.)`, "output");
     addFloat("+100", true);
     setScore((s) => s + 100);
-    markPlaybook("patch");
-  }, [nodes, energy, addLog, addFloat, pushTerm, scenario, markPlaybook, gameMode]);
+  }, [nodes, energy, addLog, addFloat, pushTerm, scenario]);
 
   const actCheckLogs = useCallback((nodeId: NodeId) => {
     if (!scenario) return;
@@ -1073,15 +1146,47 @@ export function DefenderPage() {
       pushTerm(`  +10`, "output");
     }
     if (nodeId === scenario.netflowLogNode) {
-      const mix = [...new Set([...scenario.attackerIps, ...scenario.noiseIps])];
+      const mix = [...new Set([...visibleMaliciousIps, ...scenario.noiseIps])];
       pushTerm(`[NETFLOW] Топ внешних IP (агрегация SIEM, 1ч): ${mix.join(", ")}`, "info");
       pushTerm("★ Сопоставь с nmap и PCAP — не все адреса равны по риску.", "info");
       setDiscovery((d) => ({ ...d, flowLogSeen: true }));
     }
-    markPlaybook("logs");
     addFloat("+10", true);
     setScore((s) => s + 10);
-  }, [scenario, energy, addLog, addFloat, pushTerm, markPlaybook]);
+  }, [scenario, energy, addLog, addFloat, pushTerm, visibleMaliciousIps]);
+
+  const actHeal = useCallback(
+    (nodeId: NodeId) => {
+      if (energy < ACTION_COST.heal) {
+        pushTerm(`[ERR] Недостаточно энергии для heal (${energy}/${ENERGY_MAX}), нужно ${ACTION_COST.heal}.`, "error");
+        return;
+      }
+      const n = nodes[nodeId];
+      if (n.attacker) {
+        pushTerm(`[ERR] На ${NODE_DEFS[nodeId].label} активна атака — сначала kill.`, "error");
+        return;
+      }
+      if (n.cdHeal > 0) {
+        pushTerm(`[ERR] heal на перезарядке (${n.cdHeal}с)`, "error");
+        return;
+      }
+      if (n.status === "clean" && !n.attacker) {
+        pushTerm(`[WARN] ${NODE_DEFS[nodeId].label} уже чист`, "error");
+        return;
+      }
+      setEnergy((e) => e - ACTION_COST.heal);
+      setNodes((prev) => ({
+        ...prev,
+        [nodeId]: { ...prev[nodeId], status: "clean", cdHeal: cooldownSec(20) },
+      }));
+      addLog("info", `Восстановление ${NODE_DEFS[nodeId].label}: узел возвращён в штат`);
+      pushTerm(`[OK] ${NODE_DEFS[nodeId].label}: remediate / сброс к ЧИСТО  +55  (−${ACTION_COST.heal} энерг.)`, "output");
+      addFloat("+55", true);
+      setScore((s) => s + 55);
+      setThreatLevel((t) => Math.max(0, t - 8));
+    },
+    [nodes, energy, addLog, addFloat, pushTerm],
+  );
 
   const processCommand = useCallback((raw: string) => {
     const line = raw.trim();
@@ -1103,22 +1208,27 @@ export function DefenderPage() {
     switch (cmd) {
       case "help": {
         pushTerm("Доступные команды:", "info");
-        pushTerm("  logs <node>      — IoC; на fw — NetFlow (чеклист, энергия)");
-        pushTerm(`  wireshark <node> — PCAP; узел intel → подтверждение IP (чеклист)`);
+        pushTerm("  logs <node>      — IoC; на fw — NetFlow (энергия)");
+        pushTerm(`  wireshark <node> — PCAP; узел intel → подтверждение IP`);
         pushTerm(`  nmap <subnet>    — скан + внешние talkers (${NMAP_SUBNET} …)`);
         pushTerm("  strings <file>   — артефакт сценария");
-        pushTerm("  block <IPv4>     — DROP после intel; все вредоносные IP");
-        pushTerm("  kill / isolate / patch — реагирование (энергия + КД)");
+        pushTerm("  block <IPv4>     — DROP после intel; останавливает латеральное продвижение");
+        pushTerm("  kill / isolate / patch / heal — реагирование (энергия + КД)");
+        pushTerm("  heal <node>      — сброс узла в ЧИСТО (без ☠ на узле)");
         pushTerm("  Изоляция только после разведки (PCAP intel ИЛИ logs fw + nmap).");
-        pushTerm("  status / abort / clear");
+        pushTerm("  IPv4 в выводе — клик для копирования. status / abort / clear");
         break;
       }
       case "status": {
         pushTerm("━━ Статус сети ━━━━━━━━━━━━━━━━━━━━━━━━━━━━", "info");
         pushTerm(`  Энергия SOC: ${energy}/${ENERGY_MAX} (+${ENERGY_REGEN_PER_TICK}/с)`);
         if (scenario) {
+          const vis = scenario.id === "vaultbreaker" ? visibleMaliciousIps : [...scenario.attackerIps];
           pushTerm(`  Источники (заблок.): ${blockedIps.length}/${scenario.attackerIps.length} — ${blockedIps.join(", ") || "—"}`);
-          pushTerm(`  Цели блокировки: ${scenario.attackerIps.join(", ")}`);
+          pushTerm(`  Активные в инциденте: ${vis.join(", ")}`);
+          if (scenario.id === "vaultbreaker") {
+            pushTerm(`  Всего в матрице VAULT: ${scenario.attackerIps.join(", ")}`);
+          }
         }
         for (const id of ALL_NODE_IDS) {
           const n = nodes[id];
@@ -1155,6 +1265,12 @@ export function DefenderPage() {
         actPatch(id);
         break;
       }
+      case "heal":
+      case "remediate": {
+        const id = needNode(); if (!id) break;
+        actHeal(id);
+        break;
+      }
       case "logs":
       case "scan":
       case "check": {
@@ -1171,11 +1287,10 @@ export function DefenderPage() {
           break;
         }
         setEnergy((e) => e - ACTION_COST.wireshark);
-        emitWiresharkCapture(scenario, id, pushTerm);
+        emitWiresharkCapture(scenario, id, pushTerm, visibleMaliciousIps);
         if (id === scenario.wiresharkIntelNode) {
           setDiscovery((d) => ({ ...d, sourcesConfirmed: true }));
         }
-        markPlaybook("wireshark");
         break;
       }
       case "nmap": {
@@ -1194,9 +1309,8 @@ export function DefenderPage() {
           break;
         }
         setEnergy((e) => e - ACTION_COST.nmap);
-        emitNmapScan(scenario, pushTerm);
+        emitNmapScan(scenario, pushTerm, visibleMaliciousIps);
         setDiscovery((d) => ({ ...d, nmapSeen: true }));
-        markPlaybook("nmap");
         break;
       }
       case "strings": {
@@ -1217,10 +1331,8 @@ export function DefenderPage() {
         }
         setEnergy((e) => e - ACTION_COST.strings);
         emitStringsDump(key, pushTerm);
-        if (scenario && normStringsKey(key) === normStringsKey(scenario.stringsArtifact)) {
-          markPlaybook("strings");
-        } else {
-          pushTerm(`[SOC] Для чеклиста нужен артефакт сценария: ${scenario?.stringsArtifact ?? "—"}`, "error");
+        if (scenario && normStringsKey(key) !== normStringsKey(scenario.stringsArtifact)) {
+          pushTerm(`[SOC] Для отчёта по миссии укажи артефакт из брифинга: ${scenario.stringsArtifact}`, "error");
         }
         break;
       }
@@ -1235,7 +1347,7 @@ export function DefenderPage() {
       default:
         pushTerm(`Команда не найдена: ${cmd}. Введи 'help' для списка.`, "error");
     }
-  }, [nodes, scenario, energy, blockedIps, pushTerm, actIsolate, actKillProc, actBlockIp, actPatch, actCheckLogs, markPlaybook]);
+  }, [nodes, scenario, energy, blockedIps, pushTerm, visibleMaliciousIps, actIsolate, actKillProc, actBlockIp, actPatch, actCheckLogs, actHeal]);
 
   const handleTermKey = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -1281,65 +1393,99 @@ export function DefenderPage() {
   }, [termLines.length]);
 
   const triggerWin = useCallback(() => {
-    addLog("info", "ПРОТОКОЛ SOC ЗАКРЫТ — путь удержан, чеклист выполнен");
+    if (!scenario) return;
+    addLog(
+      "info",
+      scenario.id === "vaultbreaker"
+        ? "VAULT: инфраструктура в норме — активной атаки нет"
+        : "ПРОТОКОЛ SOC ЗАКРЫТ — путь удержан, периметр закрыт",
+    );
     pushTerm("━━ МИССИЯ ВЫПОЛНЕНА ━━━━━━━━━━━━━━━━━━━━━━", "system");
-    pushTerm("Инцидент закрыт: расследование и реагирование по чеклисту завершены.", "system");
-    setScore((s) => s + elapsed > 0 ? s + Math.floor(300 / Math.max(elapsed, 1) * 60) : s);
+    pushTerm(
+      scenario.id === "vaultbreaker"
+        ? "Инцидент закрыт: все узлы здоровы (ЧИСТО/ЗАЩИЩЁН), атака не ведётся."
+        : "Инцидент закрыт: все вредоносные источники заблокированы, вектор защищён.",
+      "system",
+    );
+    setScore((s) => {
+      const bonus = elapsed > 0 ? Math.floor((300 / Math.max(elapsed, 1)) * 60) : 0;
+      const next = s + bonus;
+      recordDefenderWin({
+        scenarioId: scenario.id,
+        gameMode: playMode,
+        score: next,
+        elapsedSec: elapsed,
+      });
+      return next;
+    });
     setPhase("won");
-  }, [addLog, pushTerm, elapsed]);
+  }, [addLog, pushTerm, elapsed, scenario, playMode]);
 
-  // Подсказка, если сеть удержана, но чеклист не полон
+  // VAULT: при полной блокировке всех IP — «очистить» интернет-узел на карте
   useEffect(() => {
-    if (phase !== "playing" || !scenario) return;
+    if (phase !== "playing" || !scenario || scenario.id !== "vaultbreaker") return;
+    if (!allAttackersBlocked(blockedIps, scenario.attackerIps)) return;
+    setNodes((prev) => {
+      if (prev.inet.status === "clean" && !prev.inet.attacker) return prev;
+      return {
+        ...prev,
+        inet: { ...prev.inet, status: "clean", attacker: false },
+      };
+    });
+  }, [phase, scenario, blockedIps]);
+
+  // Подсказка: путь удержан, но не все вредоносные IP в DROP (не VAULT — там другая победа)
+  useEffect(() => {
+    if (phase !== "playing" || !scenario || scenario.id === "vaultbreaker") return;
     const loseN = nodes[scenario.loseNode];
     const allPathOk = scenario.attackPath.every((id) => {
       const n = nodes[id];
       return n.status === "isolated" || n.status === "defended" || id === "inet";
     });
     if (!allPathOk || loseN.attacker) {
-      protocolWarnedRef.current = false;
       ipBlockWarnedRef.current = false;
       return;
     }
-    if (!playbookComplete(playbook) && !protocolWarnedRef.current) {
-      protocolWarnedRef.current = true;
-      addLog("warn", "Путь удерживается, но инцидент не закрыт — выполни все пункты чеклиста SOC.");
-      pushTerm("[SOC] Заверши чеклист (строка под HUD): без этого отчёт не принимается.", "error");
-    }
-    if (
-      scenario &&
-      playbookComplete(playbook) &&
-      !allAttackersBlocked(blockedIps, scenario) &&
-      !ipBlockWarnedRef.current
-    ) {
+    if (!allAttackersBlocked(blockedIps, scenario.attackerIps) && !ipBlockWarnedRef.current) {
       ipBlockWarnedRef.current = true;
-      addLog("warn", "Чеклист закрыт по командам, но не все вредоносные IP заблокированы на периметре.");
+      addLog("warn", "Путь удерживается, но не все вредоносные IP заблокированы на периметре.");
       pushTerm(
         `[SOC] Выполни block для: ${scenario.attackerIps.filter((ip) => !blockedIps.includes(ip)).join(", ")}.`,
         "error",
       );
     }
-  }, [nodes, phase, scenario, playbook, blockedIps, addLog, pushTerm]);
+  }, [nodes, phase, scenario, blockedIps, addLog, pushTerm]);
 
-  // Победа: путь закрыт + нет атакующего на цели + полный чеклист
+  // Победа (SQL / TIGER): путь закрыт + нет атакующего на цели + все attacker IP в DROP
   useEffect(() => {
-    if (phase !== "playing" || !scenario) return;
+    if (phase !== "playing" || !scenario || scenario.id === "vaultbreaker") return;
     const loseN = nodes[scenario.loseNode];
     const allPathOk = scenario.attackPath.every((id) => {
       const n = nodes[id];
       return n.status === "isolated" || n.status === "defended" || id === "inet";
     });
-    if (
-      allPathOk &&
-      !loseN.attacker &&
-      playbookComplete(playbook) &&
-      allAttackersBlocked(blockedIps, scenario)
-    ) {
+    if (allPathOk && !loseN.attacker && allAttackersBlocked(blockedIps, scenario.attackerIps)) {
       if (winTriggeredRef.current) return;
       winTriggeredRef.current = true;
       triggerWin();
     }
-  }, [nodes, phase, scenario, playbook, blockedIps, triggerWin]);
+  }, [nodes, phase, scenario, blockedIps, triggerWin]);
+
+  // Победа VAULT: все узлы ЧИСТО или ЗАЩИЩЁН, нигде нет ☠
+  useEffect(() => {
+    if (phase !== "playing" || !scenario || scenario.id !== "vaultbreaker") return;
+    if (!vaultAllHealthy(nodes)) return;
+    if (winTriggeredRef.current) return;
+    winTriggeredRef.current = true;
+    triggerWin();
+  }, [nodes, phase, scenario, triggerWin]);
+
+  useEffect(() => {
+    if (phase !== "lost" || !scenario) return;
+    if (lossRecordedRef.current) return;
+    lossRecordedRef.current = true;
+    recordDefenderLoss({ scenarioId: scenario.id, gameMode: playMode, elapsedSec: elapsed });
+  }, [phase, scenario, playMode, elapsed]);
 
   // ═══════════════════════════════════════════════════════════════════
   // RENDER — SELECT
@@ -1353,38 +1499,51 @@ export function DefenderPage() {
             <div className="defender-select-badge">SOC DEFENDER</div>
             <h1 className="defender-select-title">INCIDENT RESPONSE</h1>
             <p className="defender-select-sub">
-              Несколько внешних IP в логах: найди настоящие источники (NetFlow, nmap, PCAP), затем{" "}
-              <strong>block &lt;IP&gt;</strong> для каждого. Энергия SOC ограничивает спам изоляциями.
-              Режимы: тренировка и боевой; победа — чеклист, блокировка всех источников и удержание пути.
+              NetFlow, nmap, PCAP, затем <strong>block &lt;IP&gt;</strong> — блокировка вредоносного источника обрывает
+              текущее латеральное продвижение. Команда <strong>heal</strong> возвращает узел в ЧИСТО. В терминале IPv4
+              можно копировать кликом.
             </p>
           </div>
 
           <div className="defender-mode-bar" role="group" aria-label="Режим игры">
             <button
               type="button"
-              className={`defender-mode-btn${gameMode === "training" ? " defender-mode-btn--active" : ""}`}
-              onClick={() => setGameMode("training")}
+              className={`defender-mode-btn${playMode === "standard" ? " defender-mode-btn--active" : ""}`}
+              onClick={() => setPlayMode("standard")}
             >
-              ТРЕНИРОВКА
+              СТАНДАРТ
             </button>
             <button
               type="button"
-              className={`defender-mode-btn${gameMode === "combat" ? " defender-mode-btn--active" : ""}`}
-              onClick={() => setGameMode("combat")}
+              className={`defender-mode-btn${playMode === "practice" ? " defender-mode-btn--active" : ""}`}
+              onClick={() => setPlayMode("practice")}
             >
-              БОЕВОЙ
+              ТРЕНИРОВКА
             </button>
+            {playMode === "practice" ? (
+              <label className="defender-practice-tick">
+                <span className="defender-practice-tick-label">Интервал хода (с)</span>
+                <input
+                  type="number"
+                  min={5}
+                  max={180}
+                  value={practiceTickSec}
+                  onChange={(e) => setPracticeTickSec(Number(e.target.value) || 30)}
+                  className="defender-practice-tick-input"
+                />
+              </label>
+            ) : null}
             <p className="defender-mode-hint">
-              {gameMode === "training"
-                ? "Длинный интервал хода, короткие КД, подсветка следующего шага чеклиста."
-                : "Стандартный темп. Чеклист обязателен и в бою."}
+              {playMode === "practice"
+                ? `Темп атакующего: ${Math.max(5, Math.min(180, practiceTickSec))} с на ход (5–180).`
+                : "Темп и КД по сценарию. VAULT BREAKER: до 5 IP по таймеру, победа — все узлы здоровы, без атаки."}
             </p>
           </div>
 
           <div className="defender-scenario-grid">
             {SCENARIOS.map((sc) => {
-              const tCombat = tickForMode(sc, "combat");
-              const tTrain = tickForMode(sc, "training");
+              const tStd = tickForPlayMode(sc, "standard", practiceTickSec);
+              const tPr = tickForPlayMode(sc, "practice", practiceTickSec);
               return (
               <button
                 key={sc.id}
@@ -1401,7 +1560,11 @@ export function DefenderPage() {
                 <h2 className="defender-scenario-name" style={{ color: sc.diffColor }}>{sc.name}</h2>
                 <p className="defender-scenario-desc">{sc.description}</p>
                 <div className="defender-scenario-card-footer">
-                  <span className="defender-scenario-interval">⏱ ход ~{tCombat}с боевой · ~{tTrain}с трен.</span>
+                  <span className="defender-scenario-interval">
+                    ⏱ ход ~{tStd}с стандарт
+                    {playMode === "practice" ? ` · ~${tPr}с в тренировке` : ""}
+                    {sc.id === "vaultbreaker" ? ` · +IP каждые ${sc.vaultRevealIntervalSec ?? 45}с` : ""}
+                  </span>
                   <span className="defender-scenario-start-hint">ВЫБРАТЬ →</span>
                 </div>
               </button>
@@ -1446,23 +1609,41 @@ export function DefenderPage() {
           <div className="defender-briefing-legend">
             <h3 className="defender-briefing-legend-title">Протокол закрытия инцидента</h3>
             <p className="defender-briefing-protocol-hint">
-              Режим: <strong>{gameMode === "training" ? "тренировка" : "боевой"}</strong>.
-              Вредоносные источники (блокируй все):{" "}
-              <code className="defender-briefing-code">{scenario.attackerIps.join(", ")}</code>.
-              Подтверждение: <strong>wireshark {scenario.wiresharkIntelNode}</strong> ИЛИ связка{" "}
-              <strong>logs {scenario.netflowLogNode} + nmap</strong>. Затем команда{" "}
-              <code className="defender-briefing-code">block &lt;IP&gt;</code> для каждого вредоносного адреса.
-              Энергия {ENERGY_START}/{ENERGY_MAX} — каждое действие тратит запас, +{ENERGY_REGEN_PER_TICK}/с восстановление.
-              Артефакт <code className="defender-briefing-code">strings</code>:{" "}
-              <code className="defender-briefing-code">{scenario.stringsArtifact}</code>.
-              Патч: <strong>{NODE_DEFS[scenario.patchPlaybookNode].label}</strong>. Изоляция только после разведки и без активного ☠ на узле (сначала kill).
+              Режим:{" "}
+              <strong>
+                {playMode === "practice"
+                  ? `тренировка (ход ~${tickForPlayMode(scenario, "practice", practiceTickSec)}с)`
+                  : "стандарт"}
+              </strong>
+              .{" "}
+              {scenario.id === "vaultbreaker" ? (
+                <>
+                  VAULT: до {scenario.attackerIps.length} IP, новый каждые {scenario.vaultRevealIntervalSec ?? 45}с. Победа —
+                  все узлы ЧИСТО или ЗАЩИЩЁН, без ☠. Матрица IP:{" "}
+                  <code className="defender-briefing-code">{scenario.attackerIps.join(", ")}</code>.
+                </>
+              ) : (
+                <>
+                  Вредоносные источники:{" "}
+                  <code className="defender-briefing-code">{scenario.attackerIps.join(", ")}</code>. Победа — блокировка
+                  всех и удержание пути.
+                </>
+              )}{" "}
+              Подтверждение: <strong>wireshark {scenario.wiresharkIntelNode}</strong> ИЛИ{" "}
+              <strong>logs {scenario.netflowLogNode} + nmap</strong>.{" "}
+              <code className="defender-briefing-code">block &lt;IP&gt;</code> обрывает латеральную фазу.
+              Энергия {ENERGY_START}/{ENERGY_MAX}, +{ENERGY_REGEN_PER_TICK}/с. Артефакт{" "}
+              <code className="defender-briefing-code">{scenario.stringsArtifact}</code>. Патч:{" "}
+              <strong>{NODE_DEFS[scenario.patchPlaybookNode].label}</strong>.{" "}
+              <code className="defender-briefing-code">heal &lt;node&gt;</code> — сброс к ЧИСТО (без ☠).
             </p>
             <div className="defender-briefing-actions-list">
               {[
-                { key: "ЧЕКЛИСТ", desc: "logs, wireshark, nmap, strings, block×N (все вредн. IP), kill, isolate, patch", cd: "—" },
+                { key: "КОМАНДЫ", desc: "logs, wireshark, nmap, strings, block, kill, isolate, patch, heal", cd: "—" },
                 { key: "ИЗОЛИРОВАТЬ", desc: "После PCAP intel ИЛИ (logs fw + nmap); нужна энергия", cd: "20с" },
                 { key: "KILL", desc: "Сбросить сессию противника на текущем узле", cd: "14с" },
-                { key: "BLOCK", desc: `block <IPv4> по списку источников; +2 с к ходу за каждый заблок. IP`, cd: "18с" },
+                { key: "BLOCK", desc: "DROP вредоносного IP; останавливает продвижение ☠ по внутренней сети", cd: "18с" },
+                { key: "HEAL", desc: "Вернуть узел в ЧИСТО (без активной атаки на узле)", cd: "20с" },
                 { key: "ПАТЧ", desc: `Только узел ${NODE_DEFS[scenario.patchPlaybookNode].label} после kill`, cd: "25с" },
               ].map((a) => (
                 <div key={a.key} className="defender-briefing-action-row">
@@ -1504,7 +1685,9 @@ export function DefenderPage() {
           <h1 className="defender-result-title">{won ? "УГРОЗА НЕЙТРАЛИЗОВАНА" : "ИНЦИДЕНТ НЕ ЛОКАЛИЗОВАН"}</h1>
           <p className="defender-result-subtitle">
             {won
-              ? "Все вредоносные IP заблокированы, чеклист и путь закрыты."
+              ? scenario.id === "vaultbreaker"
+                ? "Все узлы здоровы, активной атаки нет."
+                : "Все вредоносные IP заблокированы, путь атаки закрыт."
               : scenario.loseMessage}
           </p>
 
@@ -1567,8 +1750,8 @@ export function DefenderPage() {
             <span className="defender-hud-scenario" style={{ color: scenario.diffColor }}>
               {scenario.name}
             </span>
-            <span className={`defender-hud-badge${gameMode === "training" ? " defender-hud-badge--train" : ""}`}>
-              {gameMode === "training" ? "ТРЕНИРОВКА" : "БОЕВОЙ"}
+            <span className={`defender-hud-badge${playMode === "practice" ? " defender-hud-badge--train" : ""}`}>
+              {playMode === "practice" ? "ТРЕНИРОВКА" : "СТАНДАРТ"}
             </span>
           </div>
           <span className="defender-hud-type">{scenario.attackType}</span>
@@ -1632,7 +1815,6 @@ export function DefenderPage() {
         <span style={{ color: blockedIps.length >= scenario.attackerIps.length ? "#3dffa0" : "#ffe600" }}>
           Периметр: {blockedIps.length}/{scenario.attackerIps.length} источников
         </span>
-        <PlaybookBar flags={playbook} training={gameMode === "training"} />
       </div>
 
       {/* ── Main content ── */}
@@ -1688,9 +1870,7 @@ export function DefenderPage() {
 
         <div className="def-terminal-output" ref={termOutputRef}>
           {termLines.map((l) => (
-            <div key={l.id} className={`def-terminal-line def-terminal-line--${l.type}`}>
-              {l.text}
-            </div>
+            <TermLineContent key={l.id} text={l.text} lineType={l.type} />
           ))}
         </div>
 

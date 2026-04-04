@@ -355,6 +355,25 @@
   color: var(--gm-text-secondary);
 }
 
+.account-defender-block {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(0, 212, 255, 0.12);
+}
+
+.account-defender-scenarios {
+  margin: 14px 0 0;
+  padding-left: 1.1em;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--gm-text-secondary);
+
+  strong {
+    color: var(--bento-ink);
+    font-weight: 700;
+  }
+}
+
 .account-profile-card {
   padding: 16px 0 0;
 }

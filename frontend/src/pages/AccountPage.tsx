@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { fetchMe, fetchPlayerState, fetchScenarios } from "../api";
 import { notifyAuthChanged } from "../authEvents";
 import { isRegisteredInUi, setDemoModeActive } from "../demoMode";
@@ -11,6 +11,7 @@ import { DASHBOARD_TASKS_HREF } from "../navigationConstants";
 import { sortAchievementsForDisplay } from "../achievementSort";
 import { resolveWeeklyGoal } from "../weeklyGoalStorage";
 import type { PlayerState, ScenarioSummary, UserMe } from "../types";
+import { DEFENDER_SCENARIO_LABELS, loadDefenderStats, type DefenderStats } from "../defenderStatsStorage";
 
 const ACCOUNT_SECTION_IDS = ["account-stats", "account-profile", "account-history", "account-rewards"] as const;
 
@@ -34,6 +35,13 @@ function scenarioChannelRu(s: ScenarioSummary): string {
   }
 }
 
+function formatDefenderDuration(totalSec: number): string {
+  if (totalSec < 60) return `${totalSec} с`;
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return s > 0 ? `${m} мин ${s} с` : `${m} мин`;
+}
+
 function initialsFromEmail(email: string | null | undefined): string {
   if (!email || !email.includes("@")) {
     return "?";
@@ -47,10 +55,16 @@ function initialsFromEmail(email: string | null | undefined): string {
 
 export function AccountPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [me, setMe] = useState<UserMe | null>(null);
   const [player, setPlayer] = useState<PlayerState | null>(null);
   const [scenarios, setScenarios] = useState<ScenarioSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [defenderStats, setDefenderStats] = useState<DefenderStats>(() => loadDefenderStats());
+
+  useEffect(() => {
+    setDefenderStats(loadDefenderStats());
+  }, [location.pathname]);
 
   useEffect(() => {
     let cancelled = false;
@@ -246,6 +260,73 @@ export function AccountPage() {
                         <span className="account-stat-desc">Цель недели (завершения на этой неделе)</span>
                       </div>
                     ) : null}
+                  </div>
+
+                  <div className="account-defender-block">
+                    <div className="account-panel-head">
+                      <h3 className="account-panel-title" id="account-defender-h">
+                        SOC Defender
+                      </h3>
+                      <Link to="/defender" className="btn btn-secondary account-panel-link">
+                        К игре
+                      </Link>
+                    </div>
+                    <p className="account-rewards-lead">
+                      Статистика мини-игры хранится локально в браузере (как гостевой прогресс).
+                    </p>
+                    {defenderStats.gamesPlayed === 0 ? (
+                      <p className="account-empty">Пока нет сыгранных партий — откройте SOC Defender и закройте инцидент.</p>
+                    ) : (
+                      <>
+                        <div className="account-stat-grid">
+                          <div className="account-stat-card">
+                            <span className="account-stat-num">{defenderStats.gamesPlayed}</span>
+                            <span className="account-stat-desc">Игр всего</span>
+                          </div>
+                          <div className="account-stat-card">
+                            <span className="account-stat-num">{defenderStats.wins}</span>
+                            <span className="account-stat-desc">Побед</span>
+                          </div>
+                          <div className="account-stat-card">
+                            <span className="account-stat-num">{defenderStats.losses}</span>
+                            <span className="account-stat-desc">Поражений</span>
+                          </div>
+                          <div className="account-stat-card">
+                            <span className="account-stat-num">
+                              {Math.round((defenderStats.wins / defenderStats.gamesPlayed) * 100)}%
+                            </span>
+                            <span className="account-stat-desc">Доля побед</span>
+                          </div>
+                          <div className="account-stat-card">
+                            <span className="account-stat-num">{defenderStats.bestScore}</span>
+                            <span className="account-stat-desc">Лучший счёт</span>
+                          </div>
+                          <div className="account-stat-card">
+                            <span className="account-stat-num">{formatDefenderDuration(defenderStats.totalTimeSec)}</span>
+                            <span className="account-stat-desc">Время в игре</span>
+                          </div>
+                          <div className="account-stat-card account-stat-card--weekly">
+                            <span className="account-stat-num">
+                              {defenderStats.winsStandard}/{defenderStats.winsPractice}
+                            </span>
+                            <span className="account-stat-desc">Побед (станд. / трен.)</span>
+                          </div>
+                        </div>
+                        {Object.keys(defenderStats.winsByScenarioId).some(
+                          (id) => (defenderStats.winsByScenarioId[id] ?? 0) > 0,
+                        ) ? (
+                          <ul className="account-defender-scenarios">
+                            {Object.entries(defenderStats.winsByScenarioId)
+                              .filter(([, n]) => n > 0)
+                              .map(([id, n]) => (
+                                <li key={id}>
+                                  <strong>{DEFENDER_SCENARIO_LABELS[id] ?? id}</strong> — побед: {n}
+                                </li>
+                              ))}
+                          </ul>
+                        ) : null}
+                      </>
+                    )}
                   </div>
                 </section>
 

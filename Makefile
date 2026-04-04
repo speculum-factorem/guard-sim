@@ -1,4 +1,4 @@
-.PHONY: help install build backend frontend dev clean free-port
+.PHONY: help install build backend frontend dev clean free-port docker-up
 
 BACKEND  := backend
 FRONTEND := frontend
@@ -13,8 +13,10 @@ help:
 	@echo "  make frontend   Только фронтенд (прокси /api → 8080)"
 	@echo "  make build      Сборка бэкенда и production-бандла фронтенда"
 	@echo "  make clean      mvn clean и удаление $(FRONTEND)/dist"
+	@echo "  make docker-up  Сборка и запуск через Docker Compose (см. .env.example)"
 	@echo ""
 	@echo "Перед первым запуском: make install"
+	@echo "Docker: cp .env.example .env, задайте GUARDSIM_JWT_SECRET, затем: docker compose up --build"
 
 install:
 	cd $(BACKEND) && mvn -q -DskipTests compile
@@ -64,3 +66,6 @@ dev: free-port
 clean:
 	cd $(BACKEND) && mvn clean
 	rm -rf $(FRONTEND)/dist
+
+docker-up:
+	docker compose up --build

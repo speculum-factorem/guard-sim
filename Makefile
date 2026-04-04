@@ -7,16 +7,16 @@ help:
 	@echo "GuardSim — цели Makefile:"
 	@echo ""
 	@echo "  make install    Установить зависимости (Maven compile + npm install)"
-	@echo "  make dev        Освобождает :8080, затем API и Vite; Ctrl+C — стоп обоих"
+	@echo "  make dev        Освобождает :8080, затем API и Vite (нужен PostgreSQL на localhost:5432; см. docker compose up -d postgres)"
 	@echo "  make free-port  Завершить процессы, слушающие TCP 8080 (старый Java и т.п.)"
 	@echo "  make backend    Только Spring Boot (:8080)"
 	@echo "  make frontend   Только фронтенд (прокси /api → 8080)"
 	@echo "  make build      Сборка бэкенда и production-бандла фронтенда"
 	@echo "  make clean      mvn clean и удаление $(FRONTEND)/dist"
-	@echo "  make docker-up  Сборка и запуск через Docker Compose (см. .env.example)"
+	@echo "  make docker-up  Сборка и запуск через Docker Compose: PostgreSQL + API + web (см. .env.example)"
 	@echo ""
 	@echo "Перед первым запуском: make install"
-	@echo "Docker: cp .env.example .env, задайте GUARDSIM_JWT_SECRET, затем: docker compose up --build"
+	@echo "Docker: cp .env.example .env, задайте GUARDSIM_JWT_SECRET и POSTGRES_PASSWORD, затем: docker compose up --build"
 
 install:
 	cd $(BACKEND) && mvn -q -DskipTests compile

@@ -1,17 +1,35 @@
-# GuardSim: nginx (статика + прокси /api) + Spring Boot + H2 в volume.
-# 1) cp .env.example .env  и задайте GUARDSIM_JWT_SECRET (длинная случайная строка, не короче 32 байт в UTF-8).
+# GuardSim: nginx (статика + прокси /api) + Spring Boot + PostgreSQL.
+# 1) cp .env.example .env — задайте GUARDSIM_JWT_SECRET и POSTGRES_PASSWORD.
 # 2) docker compose up --build
-# 3) Откройте http://localhost:8080 (по умолчанию; порт задаётся GUARDSIM_WEB_PORT, см. .env.example)
+# 3) http://localhost:8080 (порт GUARDSIM_WEB_PORT, см. .env.example)
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: guardsim
+      POSTGRES_USER: guardsim
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (see .env.example)}
+    volumes:
+      - guardsim-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U guardsim -d guardsim"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     environment:
       GUARDSIM_JWT_SECRET: ${GUARDSIM_JWT_SECRET:?Set GUARDSIM_JWT_SECRET in .env (see .env.example)}
-      SPRING_DATASOURCE_URL: jdbc:h2:file:/app/data/guardsim;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    volumes:
-      - guardsim-data:/app/data
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/guardsim
+      SPRING_DATASOURCE_USERNAME: guardsim
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
     expose:
       - "8080"
     healthcheck:
@@ -23,18 +41,17 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 60s
+      start_period: 90s
 
   web:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      # Хост : контейнер. По умолчанию 8080, чтобы не конфликтовать с nginx/apache на :80.
       - "${GUARDSIM_WEB_PORT:-8080}:80"
     depends_on:
       backend:
         condition: service_healthy
 
 volumes:
-  guardsim-data:
+  guardsim-pgdata:

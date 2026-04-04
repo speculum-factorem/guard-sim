@@ -11,8 +11,6 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends curl \
   && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-# Персистентный том монтируется в /app/data (см. docker-compose)
-ENV SPRING_DATASOURCE_URL=jdbc:h2:file:/app/data/guardsim;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
 COPY --from=build /build/app.jar /app/app.jar
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=50s --retries=3 \

@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestParam
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -41,10 +42,11 @@ class ScenarioController(
     @ResponseStatus(HttpStatus.CREATED)
     fun startSession(
         @PathVariable id: String,
+        @RequestParam(name = "restart", required = false) restart: Boolean?,
         request: HttpServletRequest,
     ): StartSessionResponse {
         request.requireRegisteredUserOrDemo(users)
         val clientId = request.requirePlayerId()
-        return sessionService.startSession(id, clientId)
+        return sessionService.startSession(id, clientId, restart == true)
     }
 }

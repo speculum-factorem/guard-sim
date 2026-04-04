@@ -24,4 +24,9 @@ class PlayerEntity(
     var achievementIdsCsv: String = "",
     @Column(nullable = false)
     var perfectScenarioStreak: Int = 0,
+    /** Понедельник учётной недели для недельной цели (YYYY-MM-DD) */
+    @Column(nullable = true, length = 16)
+    var weeklyGoalWeekStart: String? = null,
+    @Column(nullable = false)
+    var weeklyGoalCount: Int = 0,
 )

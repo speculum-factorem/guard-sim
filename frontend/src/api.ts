@@ -78,8 +78,12 @@ export async function fetchScenario(id: string): Promise<ScenarioDetail> {
   return handleJson(res);
 }
 
-export async function startSession(scenarioId: string): Promise<StartSessionResponse> {
-  const res = await fetch(`/api/scenarios/${encodeURIComponent(scenarioId)}/sessions`, {
+export async function startSession(
+  scenarioId: string,
+  options?: { restart?: boolean },
+): Promise<StartSessionResponse> {
+  const q = options?.restart ? "?restart=true" : "";
+  const res = await fetch(`/api/scenarios/${encodeURIComponent(scenarioId)}/sessions${q}`, {
     method: "POST",
     headers: withPlayerHeaders(),
   });

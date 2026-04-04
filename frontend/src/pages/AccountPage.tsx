@@ -8,7 +8,7 @@ import { resetGuestPlayerId } from "../playerId";
 import { experienceSummary, levelLabel, xpIntoCurrentLevel } from "../progressLabels";
 import { useAccountScrollSpy } from "../hooks/useAccountScrollSpy";
 import { DASHBOARD_TASKS_HREF } from "../navigationConstants";
-import { syncWeeklyGoal } from "../weeklyGoalStorage";
+import { resolveWeeklyGoal } from "../weeklyGoalStorage";
 import type { PlayerState, ScenarioSummary, UserMe } from "../types";
 
 const ACCOUNT_SECTION_IDS = ["account-stats", "account-profile", "account-history", "account-rewards"] as const;
@@ -22,8 +22,15 @@ const ACCOUNT_NAV: { id: (typeof ACCOUNT_SECTION_IDS)[number]; label: string }[]
 
 const HISTORY_PAGE_SIZE = 8;
 
-function scenarioTypeRu(t: ScenarioSummary["type"]): string {
-  return t === "EMAIL" ? "Почта" : "Лента";
+function scenarioChannelRu(s: ScenarioSummary): string {
+  switch (s.hubChannel) {
+    case "SECURITY":
+      return "ИБ";
+    case "SOCIAL":
+      return "Лента";
+    default:
+      return "Почта";
+  }
 }
 
 function initialsFromEmail(email: string | null | undefined): string {
@@ -71,7 +78,7 @@ export function AccountPage() {
     };
   }, []);
 
-  const weekly = useMemo(() => (player ? syncWeeklyGoal(player.completedScenarioIds) : null), [player]);
+  const weekly = useMemo(() => (player ? resolveWeeklyGoal(player) : null), [player]);
 
   const progress = useMemo(() => {
     if (!player || !scenarios) {
@@ -229,7 +236,7 @@ export function AccountPage() {
                         <span className="account-stat-num">
                           {weekly.current}/{weekly.target}
                         </span>
-                        <span className="account-stat-desc">Цель недели (новые прохождения)</span>
+                        <span className="account-stat-desc">Цель недели (завершения на этой неделе)</span>
                       </div>
                     ) : null}
                   </div>
@@ -309,7 +316,7 @@ export function AccountPage() {
                                 </td>
                                 <td>
                                   <span className={`account-channel account-channel--${row.type.toLowerCase()}`}>
-                                    {scenarioTypeRu(row.type)}
+                                    {scenarioChannelRu(row)}
                                   </span>
                                 </td>
                                 <td>

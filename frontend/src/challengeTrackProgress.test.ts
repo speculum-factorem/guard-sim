@@ -14,6 +14,7 @@ function sc(id: string): ScenarioSummary {
     title: `Title ${id}`,
     type: "EMAIL",
     description: "",
+    hubChannel: "MAIL",
   };
 }
 

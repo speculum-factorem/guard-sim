@@ -95,6 +95,7 @@ class PlayerService(
         }
 
         player.achievementIdsCsv = joinCsv(existing)
+        bumpWeeklyGoal(player)
         players.save(player)
 
         val levelAfter = levelFromExperience(player.experiencePoints)
@@ -134,6 +135,8 @@ class PlayerService(
                 unlocked = unlocked.contains(it.id),
             )
         }
+        val weekKey = mondayDateKey()
+        val weeklyCurrent = if (player.weeklyGoalWeekStart == weekKey) player.weeklyGoalCount else 0
         return PlayerStateDto(
             clientId = player.clientId.toString(),
             reputation = player.reputation,
@@ -142,7 +145,20 @@ class PlayerService(
             perfectScenarioStreak = player.perfectScenarioStreak,
             completedScenarioIds = parseCsv(player.completedScenarioIdsCsv),
             achievements = ach,
+            weeklyGoalCurrent = weeklyCurrent,
+            weeklyGoalTarget = WEEKLY_GOAL_TARGET,
+            weeklyGoalWeekStart = weekKey,
         )
+    }
+
+    private fun bumpWeeklyGoal(player: PlayerEntity) {
+        val monday = mondayDateKey()
+        if (player.weeklyGoalWeekStart != monday) {
+            player.weeklyGoalWeekStart = monday
+            player.weeklyGoalCount = 1
+        } else {
+            player.weeklyGoalCount += 1
+        }
     }
 
     private fun parseCsv(raw: String): List<String> =
@@ -151,6 +167,7 @@ class PlayerService(
     private fun joinCsv(ids: Collection<String>): String = ids.distinct().sorted().joinToString(",")
 
     companion object {
+        const val WEEKLY_GOAL_TARGET = 3
         const val BASIC_PHISHING = "phishing-email"
         private const val ACH_FIRST_PHISHING = "first-phishing-spotless"
         private const val ACH_ZERO_LEAK_WEEK = "zero-leak-week"

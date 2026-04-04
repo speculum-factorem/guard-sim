@@ -22,13 +22,40 @@ class SessionService(
 ) {
 
     @Transactional
-    fun startSession(scenarioId: String, playerClientId: UUID): StartSessionResponse {
-        val player = playerService.getOrCreate(playerClientId)
+    fun startSession(scenarioId: String, playerClientId: UUID, restart: Boolean = false): StartSessionResponse {
+        playerService.getOrCreate(playerClientId)
         val scenario = scenarios.findInternal(scenarioId)
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Сценарий не найден")
         if (scenario.steps.isEmpty()) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Сценарий без шагов")
         }
+
+        if (restart) {
+            sessions.deleteByPlayerClientIdAndScenarioIdAndCompletedIsFalse(playerClientId, scenarioId)
+        } else {
+            val existing = sessions.findFirstByPlayerClientIdAndScenarioIdAndCompletedIsFalseOrderByIdDesc(
+                playerClientId,
+                scenarioId,
+            )
+            if (existing.isPresent) {
+                val e = existing.get()
+                val idx = e.currentStepIndex
+                if (idx in scenario.steps.indices) {
+                    return StartSessionResponse(
+                        sessionId = e.id.toString(),
+                        scenarioId = scenario.id,
+                        scenarioTitle = scenario.title,
+                        currentStep = scenarios.toPublicStep(scenario.steps[idx]),
+                        stepIndex = idx,
+                        totalSteps = scenario.steps.size,
+                        resumed = true,
+                        totalScore = e.score,
+                    )
+                }
+                sessions.deleteById(e.id)
+            }
+        }
+
         val sessionId = UUID.randomUUID()
         val entity = GameSessionEntity(
             id = sessionId,
@@ -48,6 +75,8 @@ class SessionService(
             currentStep = scenarios.toPublicStep(first),
             stepIndex = 0,
             totalSteps = scenario.steps.size,
+            resumed = false,
+            totalScore = 0,
         )
     }
 

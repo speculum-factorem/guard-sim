@@ -1,10 +1,14 @@
 export type ScenarioType = "EMAIL" | "SOCIAL";
 
+/** Канал на хабе задач (с сервера) */
+export type ScenarioHubChannel = "MAIL" | "SOCIAL" | "SECURITY";
+
 export interface ScenarioSummary {
   id: string;
   title: string;
   type: ScenarioType;
   description: string;
+  hubChannel: ScenarioHubChannel;
 }
 
 export interface ChoicePublic {
@@ -76,6 +80,7 @@ export interface ScenarioDetail {
   title: string;
   type: ScenarioType;
   description: string;
+  hubChannel: ScenarioHubChannel;
   steps: StepPublic[];
 }
 
@@ -86,6 +91,8 @@ export interface StartSessionResponse {
   currentStep: StepPublic;
   stepIndex: number;
   totalSteps: number;
+  resumed?: boolean;
+  totalScore?: number;
 }
 
 export interface AchievementDto {
@@ -133,6 +140,9 @@ export interface PlayerState {
   perfectScenarioStreak: number;
   completedScenarioIds: string[];
   achievements: PlayerAchievementState[];
+  weeklyGoalCurrent: number;
+  weeklyGoalTarget: number;
+  weeklyGoalWeekStart: string | null;
 }
 
 export interface AuthResponse {

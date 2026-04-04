@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { DASHBOARD_TASKS_HREF } from "../navigationConstants";
-import { syncWeeklyGoal } from "../weeklyGoalStorage";
+import { resolveWeeklyGoal } from "../weeklyGoalStorage";
 import type { PlayerState } from "../types";
 
 export function WeeklyGoalBanner({ player }: { player: PlayerState }) {
   const sortedIdsKey = [...player.completedScenarioIds].sort().join("|");
-  const { current, target } = useMemo(() => syncWeeklyGoal(player.completedScenarioIds), [sortedIdsKey, player]);
+  const { current, target } = useMemo(() => resolveWeeklyGoal(player), [sortedIdsKey, player]);
 
   const pct = Math.min(100, target > 0 ? Math.round((current / target) * 100) : 0);
   const done = current >= target;
@@ -29,8 +29,8 @@ export function WeeklyGoalBanner({ player }: { player: PlayerState }) {
               </>
             ) : (
               <>
-                Пройдите ещё <strong>{Math.max(0, target - current)}</strong> из {target} новых сценариев — счёт
-                обновляется при появлении новых прохождений (локально в браузере).
+                Пройдите ещё <strong>{Math.max(0, target - current)}</strong> из {target} сценариев на этой неделе —
+                счёт обновляется при завершении миссий.
               </>
             )}
           </p>

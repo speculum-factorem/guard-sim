@@ -9,7 +9,9 @@ import com.guardsim.dto.StepPublicDto
 import com.guardsim.dto.RedFlagCandidatePublicDto
 import com.guardsim.dto.RedFlagGameDto
 import com.guardsim.dto.UrlCompareGameDto
+import com.guardsim.scenario.ScenarioHubChannel
 import com.guardsim.scenario.ScenarioRegistry
+import com.guardsim.scenario.ScenarioType
 import com.guardsim.scenario.internal.InternalChoice
 import com.guardsim.scenario.internal.InternalScenario
 import com.guardsim.scenario.internal.InternalStep
@@ -29,6 +31,7 @@ class ScenarioService(
                 title = s.title,
                 type = s.type,
                 description = s.description,
+                hubChannel = effectiveHubChannel(s).name,
             )
         }
 
@@ -43,8 +46,15 @@ class ScenarioService(
             title = s.title,
             type = s.type,
             description = s.description,
+            hubChannel = effectiveHubChannel(s).name,
             steps = s.steps.map(::toPublicStep),
         )
+
+    fun effectiveHubChannel(s: InternalScenario): ScenarioHubChannel =
+        s.hubChannel ?: when (s.type) {
+            ScenarioType.EMAIL -> ScenarioHubChannel.MAIL
+            ScenarioType.SOCIAL -> ScenarioHubChannel.SOCIAL
+        }
 
     fun toPublicStep(step: InternalStep): StepPublicDto {
         val choices = step.choices.map { ChoicePublicDto(it.id, it.label) }

@@ -1,17 +1,26 @@
-import type { ScenarioSummary } from "./types";
+import type { ScenarioHubChannel, ScenarioSummary } from "./types";
 
-/** Сценарии дорожки «ИБ: инциденты» — колонка «ИБ» на хабе. */
-const SECURITY_SCENARIO_IDS = new Set<string>(["combined-ceo-phish", "exec-wire-vishing"]);
-
-export function typeLabel(t: ScenarioSummary["type"]): string {
-  if (t === "EMAIL") {
-    return "Почта";
+/** Бейдж карточки по каналу хаба (три колонки). */
+export function hubBadgeLabel(s: ScenarioSummary): string {
+  switch (s.hubChannel) {
+    case "SECURITY":
+      return "ИБ";
+    case "SOCIAL":
+      return "Лента";
+    default:
+      return "Почта";
   }
-  return "Соцсеть";
 }
 
-export function typeClass(t: ScenarioSummary["type"]): string {
-  return t === "EMAIL" ? "card-badge-email" : "card-badge-social";
+export function hubBadgeClass(s: ScenarioSummary): string {
+  switch (s.hubChannel) {
+    case "SECURITY":
+      return "card-badge-security";
+    case "SOCIAL":
+      return "card-badge-social";
+    default:
+      return "card-badge-email";
+  }
 }
 
 export function channelLabel(col: "mail" | "social" | "security"): string {
@@ -25,10 +34,10 @@ export function channelLabel(col: "mail" | "social" | "security"): string {
 }
 
 export function hubColumnForScenario(s: ScenarioSummary): "mail" | "social" | "security" {
-  if (SECURITY_SCENARIO_IDS.has(s.id)) {
+  if (s.hubChannel === "SECURITY") {
     return "security";
   }
-  if (s.type === "SOCIAL") {
+  if (s.hubChannel === "SOCIAL") {
     return "social";
   }
   return "mail";
@@ -63,4 +72,16 @@ export function firstOpenScenarioId(columns: {
     }
   }
   return null;
+}
+
+/** Подпись канала на экране миссии (бейдж в шапке). */
+export function missionChannelLabel(hub: ScenarioHubChannel): string {
+  switch (hub) {
+    case "SECURITY":
+      return "ИБ";
+    case "SOCIAL":
+      return "Лента";
+    default:
+      return "Почта";
+  }
 }

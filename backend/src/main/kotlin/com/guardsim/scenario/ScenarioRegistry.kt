@@ -5,6 +5,7 @@ import com.guardsim.scenario.internal.InternalHotspot
 import com.guardsim.scenario.internal.InternalInvestigationPanel
 import com.guardsim.scenario.internal.InternalRedFlagCandidate
 import com.guardsim.scenario.internal.InternalRedFlagGame
+import com.guardsim.scenario.ScenarioHubChannel
 import com.guardsim.scenario.internal.InternalScenario
 import com.guardsim.scenario.internal.InternalStep
 import com.guardsim.scenario.internal.InternalUrlCompareGame
@@ -140,7 +141,7 @@ class ScenarioRegistry {
                             ),
                             InternalRedFlagCandidate(
                                 id = "pe-1-d-2",
-                                label = "Есть призыв перейти по ссылке для подтверждения",
+                                label = "Есть призыв перейти по ссылке (само по себе не отдельный «красный флаг» в этой игре — смотрим срочность и домен)",
                                 isRedFlag = false,
                             ),
                             InternalRedFlagCandidate(
@@ -412,6 +413,27 @@ class ScenarioRegistry {
                             scoreDelta = 0,
                         ),
                     ),
+                    uiKind = StepUiKind.SOCIAL_NOTIFICATION,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "sp-3-h-a",
+                            label = "Включить двухфакторную аутентификацию (2FA)",
+                            choiceId = "sp-3-a",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "sp-3-h-b",
+                            label = "Ничего не делать, если пароль сложный",
+                            choiceId = "sp-3-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "sp-3-h-c",
+                            label = "Публиковать меньше фото",
+                            choiceId = "sp-3-c",
+                            variant = "ACTION",
+                        ),
+                    ),
                 ),
             ),
         )
@@ -542,6 +564,7 @@ class ScenarioRegistry {
             title = "«Срочно от гендиректора»: цепочка атаки",
             type = ScenarioType.EMAIL,
             description = "Комбинированный инцидент: поддельный авторитет, вредоносное вложение и фишинговая ссылка. Для роли администратора безопасности.",
+            hubChannel = ScenarioHubChannel.SECURITY,
             steps = listOf(
                 InternalStep(
                     id = "cb-1",
@@ -1158,6 +1181,7 @@ class ScenarioRegistry {
             title = "Звонок «от финдира»: срочный перевод",
             type = ScenarioType.EMAIL,
             description = "Реальные кейсы: синтез голоса или подмена номера, знание контекста проектов, давление перевести на «новый счёт контрагента».",
+            hubChannel = ScenarioHubChannel.SECURITY,
             steps = listOf(
                 InternalStep(
                     id = "ev-1",

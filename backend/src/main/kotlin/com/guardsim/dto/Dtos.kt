@@ -64,6 +64,8 @@ data class ScenarioSummaryDto(
     val title: String,
     val type: ScenarioType,
     val description: String,
+    /** MAIL | SOCIAL | SECURITY */
+    val hubChannel: String,
 )
 
 data class ScenarioDetailDto(
@@ -71,6 +73,7 @@ data class ScenarioDetailDto(
     val title: String,
     val type: ScenarioType,
     val description: String,
+    val hubChannel: String,
     val steps: List<StepPublicDto>,
 )
 
@@ -81,6 +84,9 @@ data class StartSessionResponse(
     val currentStep: StepPublicDto,
     val stepIndex: Int,
     val totalSteps: Int,
+    val resumed: Boolean = false,
+    /** Баллы в сессии (при возобновлении — сохранённые) */
+    val totalScore: Int = 0,
 )
 
 data class AnswerRequest(
@@ -134,6 +140,10 @@ data class PlayerStateDto(
     val perfectScenarioStreak: Int,
     val completedScenarioIds: List<String>,
     val achievements: List<PlayerAchievementStateDto>,
+    val weeklyGoalCurrent: Int,
+    val weeklyGoalTarget: Int,
+    /** Понедельник учётной недели (YYYY-MM-DD) или null */
+    val weeklyGoalWeekStart: String?,
 )
 
 data class RegisterRequest(

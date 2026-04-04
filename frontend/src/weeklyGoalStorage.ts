@@ -1,7 +1,9 @@
 /**
- * Локальная цель «N сценариев на этой неделе» без бэкенда.
- * Считаем новые завершения: id появился в completedScenarioIds и не был в снимке на начало недели / прошлого визита.
+ * Локальная цель «N сценариев на этой неделе» — запасной режим без данных с сервера.
+ * При наличии полей недели в [PlayerState] используйте [resolveWeeklyGoal].
  */
+
+import type { PlayerState } from "./types";
 
 export const WEEKLY_SCENARIO_TARGET = 3;
 
@@ -99,4 +101,23 @@ export function syncWeeklyGoal(completedScenarioIds: readonly string[]): { curre
     target: WEEKLY_SCENARIO_TARGET,
     weekStartKey: currentWeek,
   };
+}
+
+/** Предпочитает счётчик с сервера, если неделя совпадает с локальным понедельником. */
+export function resolveWeeklyGoal(player: PlayerState): { current: number; target: number; weekStartKey: string } {
+  const local = syncWeeklyGoal(player.completedScenarioIds);
+  const monday = mondayDateKey();
+  if (
+    player.weeklyGoalWeekStart != null &&
+    player.weeklyGoalWeekStart === monday &&
+    typeof player.weeklyGoalCurrent === "number" &&
+    typeof player.weeklyGoalTarget === "number"
+  ) {
+    return {
+      current: player.weeklyGoalCurrent,
+      target: player.weeklyGoalTarget,
+      weekStartKey: player.weeklyGoalWeekStart,
+    };
+  }
+  return local;
 }

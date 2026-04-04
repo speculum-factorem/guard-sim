@@ -6,6 +6,7 @@ import { StepSimulation } from "../components/simulation/StepSimulation";
 import { MissionSplitLayoutHint } from "../components/MissionSplitLayoutHint";
 import { fetchScenario, startSession, submitAnswer } from "../api";
 import { dismissMissionSplitHint, isMissionSplitHintDismissed } from "../missionLayoutHintStorage";
+import { missionChannelLabel } from "../scenarioHub";
 import { simulationHttpErrorMessage } from "../simulationErrorMessage";
 import { missionBriefText, stepAnalysisText } from "../missionText";
 import type {
@@ -13,12 +14,19 @@ import type {
   CareerSnapshot,
   ChoicePublic,
   ScenarioDetail,
-  ScenarioType,
+  ScenarioHubChannel,
   StepPublic,
 } from "../types";
 
-function scenarioTypeLabel(t: ScenarioType): string {
-  return t === "EMAIL" ? "Почта" : "Лента";
+function missionDiffClass(hub: ScenarioHubChannel): string {
+  switch (hub) {
+    case "SECURITY":
+      return "lc-diff--security";
+    case "SOCIAL":
+      return "lc-diff--social";
+    default:
+      return "lc-diff--email";
+  }
 }
 
 function hotspotChoiceIds(step: StepPublic): Set<string> {
@@ -256,12 +264,16 @@ export function SimulationPage() {
   const [redFlagSelectionIds, setRedFlagSelectionIds] = useState<string[]>([]);
 
   const pendingAfterConsequenceRef = useRef<AnswerResponse | null>(null);
+  /** Увеличивается при каждом bootstrap — отбрасываем ответы устаревших запросов (Strict Mode / смена сценария). */
+  const sessionLoadGenerationRef = useRef(0);
   const feedbackBannerRef = useRef<HTMLDivElement>(null);
   const continueTopRef = useRef<HTMLButtonElement>(null);
   const continueStickyRef = useRef<HTMLButtonElement>(null);
   const consequenceAckRef = useRef<HTMLButtonElement>(null);
 
   const [splitHintOpen, setSplitHintOpen] = useState(() => !isMissionSplitHintDismissed());
+  const [sessionSyncBusy, setSessionSyncBusy] = useState(false);
+  const [resumedNote, setResumedNote] = useState(false);
 
   useEffect(() => {
     setViewedInvestigationIds([]);
@@ -304,27 +316,29 @@ export function SimulationPage() {
     return () => cancelAnimationFrame(id);
   }, [feedback, pendingNext]);
 
-  useEffect(() => {
-    if (!scenarioId) {
-      return;
-    }
-    let cancelled = false;
-    (async () => {
+  const bootstrapSession = useCallback(
+    async (opts?: { restart?: boolean }) => {
+      if (!scenarioId) {
+        return;
+      }
+      const gen = ++sessionLoadGenerationRef.current;
+      setSessionSyncBusy(true);
+      setError(null);
       try {
         const d = await fetchScenario(scenarioId);
-        if (cancelled) {
+        if (gen !== sessionLoadGenerationRef.current) {
           return;
         }
         setDetail(d);
-        const start = await startSession(scenarioId);
-        if (cancelled) {
+        const start = await startSession(scenarioId, opts?.restart ? { restart: true } : undefined);
+        if (gen !== sessionLoadGenerationRef.current) {
           return;
         }
         setSessionId(start.sessionId);
         setStep(start.currentStep);
         setStepIndex(start.stepIndex);
         setTotalSteps(start.totalSteps);
-        setScore(0);
+        setScore(start.totalScore ?? 0);
         setCompleted(false);
         setFeedback(null);
         setPendingNext(null);
@@ -332,17 +346,28 @@ export function SimulationPage() {
         setLastAchievementToast(null);
         setConsequenceModal(null);
         pendingAfterConsequenceRef.current = null;
+        setViewedInvestigationIds([]);
+        setLastInvestigationRepDelta(null);
+        setRedFlagSelectionIds([]);
+        setResumedNote(!!start.resumed);
       } catch (e) {
-        if (!cancelled) {
-          const sessionMsg = simulationHttpErrorMessage(e);
-          setError(sessionMsg ?? (e instanceof Error ? e.message : "Ошибка загрузки"));
+        if (gen !== sessionLoadGenerationRef.current) {
+          return;
+        }
+        const sessionMsg = simulationHttpErrorMessage(e);
+        setError(sessionMsg ?? (e instanceof Error ? e.message : "Ошибка загрузки"));
+      } finally {
+        if (gen === sessionLoadGenerationRef.current) {
+          setSessionSyncBusy(false);
         }
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [scenarioId]);
+    },
+    [scenarioId],
+  );
+
+  useEffect(() => {
+    bootstrapSession();
+  }, [bootstrapSession]);
 
   const markPanelViewed = useCallback((id: string) => {
     setViewedInvestigationIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
@@ -387,6 +412,7 @@ export function SimulationPage() {
       }
       setBusy(true);
       setError(null);
+      setResumedNote(false);
       try {
         const res = await submitAnswer(
           sessionId,
@@ -434,7 +460,7 @@ export function SimulationPage() {
     ],
   );
 
-  const choiceBlockBusy = busy || !!pendingNext || !!consequenceModal;
+  const choiceBlockBusy = busy || !!pendingNext || !!consequenceModal || sessionSyncBusy;
   const redFlagReady =
     !step?.redFlagGame || redFlagSelectionIds.length === step.redFlagGame.requiredPickCount;
   const stepActionsLocked = choiceBlockBusy || !redFlagReady;
@@ -457,23 +483,35 @@ export function SimulationPage() {
   return (
     <div className="lc-theme sim-page-lc">
       {detail ? (
-        <nav className="lc-breadcrumb" aria-label="Навигация по задачам">
-          <Link to={DASHBOARD_TASKS_HREF}>Задачи</Link>
-          <span className="lc-breadcrumb-sep" aria-hidden>
-            /
+        <nav className="lc-breadcrumb lc-breadcrumb--with-actions" aria-label="Навигация по задачам">
+          <span className="lc-breadcrumb-row">
+            <Link to={DASHBOARD_TASKS_HREF}>Задачи</Link>
+            <span className="lc-breadcrumb-sep" aria-hidden>
+              /
+            </span>
+            <span className="lc-breadcrumb-current" title={detail.title}>
+              {detail.title}
+            </span>
+            {step && !completed ? (
+              <>
+                <span className="lc-breadcrumb-sep" aria-hidden>
+                  /
+                </span>
+                <span className="lc-breadcrumb-step">
+                  Шаг {stepIndex + 1} из {totalSteps}
+                </span>
+              </>
+            ) : null}
           </span>
-          <span className="lc-breadcrumb-current" title={detail.title}>
-            {detail.title}
-          </span>
-          {step && !completed ? (
-            <>
-              <span className="lc-breadcrumb-sep" aria-hidden>
-                /
-              </span>
-              <span className="lc-breadcrumb-step">
-                Шаг {stepIndex + 1} из {totalSteps}
-              </span>
-            </>
+          {sessionId && !completed ? (
+            <button
+              type="button"
+              className="btn btn-text sim-restart-scenario"
+              disabled={sessionSyncBusy || busy}
+              onClick={() => bootstrapSession({ restart: true })}
+            >
+              Начать сначала
+            </button>
           ) : null}
         </nav>
       ) : (
@@ -482,6 +520,11 @@ export function SimulationPage() {
         </Link>
       )}
       {error ? <div className="error-banner">{error}</div> : null}
+      {resumedNote && !completed ? (
+        <p className="sim-resumed-banner" role="status">
+          Продолжена сохранённая попытка — шаг и баллы восстановлены.
+        </p>
+      ) : null}
 
       {consequenceModal ? (
         <div className="consequence-overlay" role="dialog" aria-modal="true" aria-labelledby="consequence-title">
@@ -556,10 +599,8 @@ export function SimulationPage() {
             <div className="lc-problem-title-row">
               <h1 className="lc-problem-title">{detail.title}</h1>
               <div className="lc-problem-meta">
-                <span
-                  className={`lc-diff ${detail.type === "EMAIL" ? "lc-diff--email" : "lc-diff--social"}`}
-                >
-                  {scenarioTypeLabel(detail.type)}
+                <span className={`lc-diff ${missionDiffClass(detail.hubChannel ?? "MAIL")}`}>
+                  {missionChannelLabel(detail.hubChannel ?? "MAIL")}
                 </span>
                 <span className="score-pill" aria-live="polite">
                   Баллы: {score}
@@ -593,15 +634,8 @@ export function SimulationPage() {
               <MissionWindow bodyClassName="mission-window-body--lc">
                 <div className="mission-lc">
                     <aside className="mission-lc-desc" aria-label="Условие задания">
-                      <div className="mission-lc-tabs sim-app-bar" role="tablist" aria-label="Разделы задания">
-                        <div className="mission-lc-tabs-main">
-                          <span className="mission-lc-tab mission-lc-tab--active" role="tab" aria-selected={true}>
-                            Условие
-                          </span>
-                          <span className="mission-lc-tab mission-lc-tab--muted" aria-hidden>
-                            Разбор
-                          </span>
-                        </div>
+                      <div className="mission-lc-head sim-app-bar" aria-label="Заголовок задания">
+                        <span className="mission-lc-head-title">Условие</span>
                         <span className="mission-lc-step-badge">
                           Шаг {stepIndex + 1} / {totalSteps}
                         </span>

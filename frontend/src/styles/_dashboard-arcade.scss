@@ -1,14 +1,14 @@
-/* Дашборд: «аркадный» слой поверх bento / LeetCode-таблицы */
+/* Дашборд: аркадный слой — Arcade Dark Theme */
 
 .dashboard-page.dashboard-page--arcade.dashboard-page--lc {
   background:
-    radial-gradient(ellipse 90% 60% at 50% -15%, rgba(255, 106, 50, 0.14), transparent 55%),
+    radial-gradient(ellipse 90% 60% at 50% -15%, rgba(0, 212, 255, 0.07), transparent 55%),
     repeating-linear-gradient(
       -9deg,
       transparent,
-      transparent 11px,
-      rgba(18, 18, 18, 0.028) 11px,
-      rgba(18, 18, 18, 0.028) 12px
+      transparent 23px,
+      rgba(0, 212, 255, 0.025) 23px,
+      rgba(0, 212, 255, 0.025) 24px
     ),
     var(--lc-surface-sub);
 }
@@ -18,10 +18,10 @@
   align-items: flex-end;
   padding: 22px 22px 24px;
   margin-bottom: 16px;
-  border: 3px solid var(--bento-ink);
+  border: 1px solid rgba(0, 212, 255, 0.2);
   border-radius: var(--bento-radius-lg);
-  background: linear-gradient(152deg, #fffef6 0%, #ffffff 45%, rgba(95, 212, 168, 0.1) 100%);
-  box-shadow: 8px 8px 0 rgba(10, 10, 10, 0.11), 0 14px 48px rgba(0, 0, 0, 0.07);
+  background: linear-gradient(152deg, rgba(0, 212, 255, 0.06) 0%, rgba(13, 13, 31, 0.97) 45%, rgba(61, 255, 160, 0.04) 100%);
+  box-shadow: 0 0 28px rgba(0, 212, 255, 0.15), 0 8px 40px rgba(0, 0, 0, 0.6);
   overflow: hidden;
 }
 
@@ -31,8 +31,8 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 5px;
-  background: linear-gradient(90deg, var(--bento-orange), var(--bento-yellow), #5fd4a8, #c4b5fd);
+  height: 3px;
+  background: linear-gradient(90deg, var(--arc-cyan), var(--arc-green), var(--arc-purple), var(--arc-yellow));
   border-radius: 0;
 }
 
@@ -48,7 +48,8 @@
   font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--bento-orange);
+  color: var(--arc-cyan);
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
 }
 
 .lc-dashboard-hero--arcade .lc-dashboard-title {
@@ -84,13 +85,13 @@
   display: inline-flex;
   align-items: center;
   padding: 5px 12px;
-  border: 2px solid var(--bento-ink);
+  border: 1px solid rgba(255, 230, 0, 0.35);
   border-radius: var(--radius-pill);
-  background: linear-gradient(180deg, var(--bento-yellow) 0%, #fff6cc 100%);
-  color: var(--bento-ink);
+  background: rgba(255, 230, 0, 0.07);
+  color: var(--arc-yellow);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
-  box-shadow: 3px 3px 0 rgba(10, 10, 10, 0.14);
+  box-shadow: 0 0 10px rgba(255, 230, 0, 0.15);
 }
 
 .lc-dashboard-stats--arcade {
@@ -102,10 +103,10 @@
   position: relative;
   min-width: 96px;
   padding: 22px 18px 14px;
-  border: 3px solid var(--bento-ink);
+  border: 1px solid rgba(0, 212, 255, 0.2);
   border-radius: var(--lc-radius);
-  box-shadow: 5px 5px 0 rgba(10, 10, 10, 0.14);
-  background: #fff;
+  box-shadow: 0 0 14px rgba(0, 212, 255, 0.12);
+  background: rgba(13, 13, 31, 0.95);
 }
 
 .lc-dashboard-stats--arcade .lc-stat-card--arcade-a::before {
@@ -129,33 +130,37 @@
   transform: translateX(-50%);
   font-size: 13px;
   line-height: 1;
-  opacity: 0.88;
+  opacity: 0.6;
   pointer-events: none;
+  color: var(--arc-cyan);
 }
 
 .lc-dashboard-stats--arcade .lc-stat-card--accent {
-  background: linear-gradient(165deg, var(--bento-yellow) 0%, #fff 60%);
-  border-color: var(--bento-ink);
+  background: rgba(255, 230, 0, 0.06);
+  border-color: rgba(255, 230, 0, 0.3);
+  box-shadow: 0 0 16px rgba(255, 230, 0, 0.12);
 }
 
 .lc-dashboard-stats--arcade .lc-stat-value {
   font-family: var(--font-display);
   font-size: 1.65rem;
   letter-spacing: 0.02em;
+  color: var(--bento-ink);
 }
 
 .lc-dashboard-stats--arcade .lc-stat-label {
   font-size: 10px;
   letter-spacing: 0.1em;
+  color: var(--gm-text-secondary);
 }
 
-/* Нижние блоки на аркадном дашборде — чуть контрастнее рамки */
+/* Нижние блоки */
 .dashboard-page--arcade.dashboard-page--lc .continue-track-hint-inner {
-  border-width: 2px;
-  border-color: var(--bento-ink);
-  box-shadow: 6px 6px 0 rgba(10, 10, 10, 0.08);
+  border-width: 1px;
+  border-color: rgba(0, 212, 255, 0.2);
+  box-shadow: 0 0 16px rgba(0, 212, 255, 0.1);
 }
 
 .dashboard-page--arcade.dashboard-page--lc .lc-dashboard-below {
-  border-top: 2px dashed rgba(18, 18, 18, 0.2);
+  border-top: 1px dashed rgba(0, 212, 255, 0.12);
 }

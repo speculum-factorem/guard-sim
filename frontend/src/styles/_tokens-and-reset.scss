@@ -1,76 +1,94 @@
 /* ═══════════════════════════════════════════════════════════════════
-   GuardSim — токены (neo-bento): тёплый фон, контрастные карточки, мягче тени
+   GuardSim — Arcade Dark Theme Tokens
+   Palette: deep navy bg · neon cyan · neon green · electric yellow · purple
    ═══════════════════════════════════════════════════════════════════ */
 
 :root {
-  --ui-primary: #2563ff;
-  --ui-purple: #6b5cff;
-  --ui-dark-purple: #1e1b4b;
-  --ui-yellow: #ffd84d;
-  --ui-green: #22c55e;
-  --ui-black: #0f0f0f;
-  --ui-dark-gray: #1f2937;
-  --ui-gray: #6b7280;
-  --ui-light-gray: #f3f4f6;
-  --ui-bg: #f4f1eb;
-  --ui-white: #ffffff;
-  --ui-border: #e8e4dc;
-  --gradient-primary: linear-gradient(135deg, #2563ff 0%, #6b5cff 100%);
-  --gradient-blob: radial-gradient(circle at 28% 38%, rgba(255, 90, 31, 0.35), transparent 58%),
-    radial-gradient(circle at 72% 62%, rgba(95, 212, 168, 0.38), transparent 55%),
-    radial-gradient(circle at 50% 80%, rgba(212, 184, 252, 0.28), transparent 50%);
+  /* ── Core arcade neon palette ── */
+  --arc-cyan:       #00d4ff;
+  --arc-cyan-deep:  #00afd4;
+  --arc-green:      #3dffa0;
+  --arc-yellow:     #ffe600;
+  --arc-purple:     #9d4eff;
+  --arc-pink:       #ff2d78;
+
+  /* ── UI tokens (kept for compatibility) ── */
+  --ui-primary:      #00d4ff;
+  --ui-purple:       #9d4eff;
+  --ui-dark-purple:  #0a0a16;
+  --ui-yellow:       #ffe600;
+  --ui-green:        #3dffa0;
+  --ui-black:        #dde4f0;        /* primary text */
+  --ui-dark-gray:    #b8c8e0;        /* secondary text */
+  --ui-gray:         #6b7c9a;        /* muted */
+  --ui-light-gray:   #12122a;        /* surface variant */
+  --ui-bg:           #07080f;        /* app background */
+  --ui-white:        #0d0d1f;        /* card surface */
+  --ui-border:       rgba(0, 212, 255, 0.14);
+
+  --gradient-primary: linear-gradient(135deg, #00d4ff 0%, #9d4eff 100%);
+  --gradient-blob:
+    radial-gradient(circle at 28% 38%, rgba(0, 212, 255, 0.12), transparent 58%),
+    radial-gradient(circle at 72% 62%, rgba(61, 255, 160, 0.09), transparent 55%),
+    radial-gradient(circle at 50% 80%, rgba(157, 78, 255, 0.09), transparent 50%);
+
   --font-display: "Anton", "Bebas Neue", Impact, system-ui, sans-serif;
-  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --shadow-card: 0 12px 40px rgba(15, 15, 15, 0.06);
-  --shadow-card-hover: 0 18px 48px rgba(15, 15, 15, 0.09);
-  --radius-pill: 999px;
-  --radius-card: 22px;
-  --radius-sm: 14px;
-  --radius-input: 14px;
-  --transition-ui: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-out-back: cubic-bezier(0.34, 1.2, 0.64, 1);
+  --font-body:    "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:    ui-monospace, "SF Mono", "Menlo", Monaco, Consolas, monospace;
 
-  /* Устаревшие псевдонимы — остальной CSS использует прежние имена */
-  --gm-blue: var(--ui-primary);
-  --gm-blue-hover: #1d4ed8;
-  --gm-blue-light: #e8edff;
-  --gm-surface: var(--ui-white);
-  --gm-bg: var(--ui-bg);
-  --gm-text: var(--ui-black);
+  --shadow-card:       0 4px 24px rgba(0, 0, 0, 0.65);
+  --shadow-card-hover: 0 8px 40px rgba(0, 0, 0, 0.8);
+
+  --radius-pill:  999px;
+  --radius-card:  12px;
+  --radius-sm:    8px;
+  --radius-input: 8px;
+
+  --transition-ui:  0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out-back:  cubic-bezier(0.34, 1.2, 0.64, 1);
+
+  /* ── Legacy aliases ── */
+  --gm-blue:           var(--ui-primary);
+  --gm-blue-hover:     #00afd4;
+  --gm-blue-light:     rgba(0, 212, 255, 0.1);
+  --gm-surface:        var(--ui-white);
+  --gm-bg:             var(--ui-bg);
+  --gm-text:           var(--ui-black);
   --gm-text-secondary: var(--ui-gray);
-  --gm-border: var(--ui-border);
-  --gm-shadow: var(--shadow-card);
-  --gm-shadow-hover: var(--shadow-card-hover);
-  --gm-radius: var(--radius-pill);
-  --gm-radius-sm: var(--radius-sm);
+  --gm-border:         var(--ui-border);
+  --gm-shadow:         var(--shadow-card);
+  --gm-shadow-hover:   var(--shadow-card-hover);
+  --gm-radius:         var(--radius-pill);
+  --gm-radius-sm:      var(--radius-sm);
 
-  /* Bento / neo-brutalism — обновлённая палитра */
-  --bento-orange: #ff5a1f;
-  --bento-orange-deep: #e84610;
-  --bento-yellow: #ffe566;
-  --bento-mint: #5fd4a8;
-  --bento-lilac: #d4b8fc;
-  --bento-ink: #121212;
-  --bento-border: 2px solid var(--bento-ink);
-  --bento-radius: 16px;
-  --bento-radius-lg: 24px;
+  /* ── Arcade bento palette (replaces old bento warm tones) ── */
+  --bento-orange:      #00d4ff;         /* primary action = neon cyan */
+  --bento-orange-deep: #00afd4;
+  --bento-yellow:      #ffe600;         /* score / XP */
+  --bento-mint:        #3dffa0;         /* success / done */
+  --bento-lilac:       #9d4eff;         /* secondary accent */
+  --bento-ink:         #dde4f0;         /* main text (light on dark) */
+  --bento-border:      1px solid rgba(0, 212, 255, 0.2);
+  --bento-radius:      10px;
+  --bento-radius-lg:   14px;
 
-  --surface-app: linear-gradient(165deg, #fffdf9 0%, #f3eee6 38%, #fff8ec 100%);
+  /* ── App surface ── */
+  --surface-app: #07080f;
   --surface-app-mesh:
-    radial-gradient(ellipse 90% 60% at 12% -12%, rgba(255, 90, 31, 0.14), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 88% 8%, rgba(212, 184, 252, 0.18), transparent 50%),
-    radial-gradient(ellipse 80% 45% at 50% 105%, rgba(95, 212, 168, 0.12), transparent 55%),
+    radial-gradient(ellipse 90% 60% at 12% -12%, rgba(0, 212, 255, 0.05), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 88%   8%, rgba(157, 78, 255, 0.05), transparent 50%),
+    radial-gradient(ellipse 80% 45% at 50% 105%, rgba(61, 255, 160, 0.03), transparent 55%),
     var(--surface-app);
 
-  /* Тени: смещение + мягкая глубина */
-  --shadow-bento-xs: 2px 2px 0 rgba(18, 18, 18, 0.82);
-  --shadow-bento-sm: 4px 4px 0 rgba(18, 18, 18, 0.88), 0 10px 32px rgba(0, 0, 0, 0.06);
-  --shadow-bento-md: 6px 6px 0 rgba(18, 18, 18, 0.9), 0 16px 44px rgba(0, 0, 0, 0.07);
-  --shadow-bento-lg: 8px 8px 0 rgba(18, 18, 18, 0.9), 0 22px 56px rgba(0, 0, 0, 0.08);
-  --shadow-bento-xl: 10px 10px 0 rgba(18, 18, 18, 0.9), 0 28px 64px rgba(0, 0, 0, 0.1);
-  --shadow-bento-inset: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  /* ── Neon glow shadows ── */
+  --shadow-bento-xs: 0 0 10px rgba(0, 212, 255, 0.14), 0 2px 6px rgba(0, 0, 0, 0.55);
+  --shadow-bento-sm: 0 0 18px rgba(0, 212, 255, 0.18), 0 4px 14px rgba(0, 0, 0, 0.6);
+  --shadow-bento-md: 0 0 28px rgba(0, 212, 255, 0.22), 0 6px 22px rgba(0, 0, 0, 0.65);
+  --shadow-bento-lg: 0 0 40px rgba(0, 212, 255, 0.28), 0 10px 36px rgba(0, 0, 0, 0.7);
+  --shadow-bento-xl: 0 0 56px rgba(0, 212, 255, 0.34), 0 14px 52px rgba(0, 0, 0, 0.75);
+  --shadow-bento-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 
-  --focus-ring: 0 0 0 3px rgba(255, 90, 31, 0.35);
+  --focus-ring: 0 0 0 3px rgba(0, 212, 255, 0.4);
 }
 
 *,
@@ -97,13 +115,18 @@ body {
   color: var(--gm-text);
   background: var(--surface-app-mesh);
   background-attachment: fixed;
+  /* subtle dot-grid for arcade feel */
+  background-image:
+    radial-gradient(circle, rgba(0, 212, 255, 0.06) 1px, transparent 1px),
+    var(--surface-app-mesh);
+  background-size: 32px 32px, 100% 100%;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: rgba(255, 90, 31, 0.22);
-  color: var(--bento-ink);
+  background: rgba(0, 212, 255, 0.22);
+  color: #fff;
 }
 
 a {
@@ -114,7 +137,7 @@ a {
 }
 
 a:hover {
-  color: var(--bento-orange);
+  color: var(--arc-cyan);
   text-decoration: underline;
 }
 
@@ -127,4 +150,3 @@ a:focus-visible {
 button {
   font-family: inherit;
 }
-

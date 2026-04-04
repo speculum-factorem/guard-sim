@@ -231,7 +231,7 @@
   margin: 0 auto 32px;
   max-width: 540px;
   font-size: 18px;
-  color: var(--ui-dark-gray);
+  color: var(--ui-gray);
   line-height: 1.6;
 }
 
@@ -396,14 +396,14 @@
 }
 
 .btn-primary {
-  background: var(--gradient-primary);
-  color: #fff;
-  box-shadow: 0 4px 20px rgba(37, 99, 255, 0.35);
+  background: linear-gradient(180deg, #00e5ff 0%, var(--arc-cyan) 100%);
+  color: #07080f;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 6px 28px rgba(107, 92, 255, 0.4);
-  filter: brightness(1.02);
+  box-shadow: 0 0 32px rgba(0, 212, 255, 0.6);
+  filter: brightness(1.05);
 }
 
 .btn-primary:disabled {
@@ -413,14 +413,14 @@
 }
 
 .btn-secondary {
-  background: var(--ui-white);
-  color: var(--ui-black);
-  border: 1px solid var(--ui-border);
+  background: rgba(0, 212, 255, 0.05);
+  color: var(--bento-ink);
+  border: 1px solid rgba(0, 212, 255, 0.3);
 }
 
 .btn-secondary:hover {
-  border-color: var(--ui-primary);
-  color: var(--ui-dark-gray);
+  background: rgba(0, 212, 255, 0.1);
+  border-color: rgba(0, 212, 255, 0.6);
 }
 
 .btn-text {
@@ -449,8 +449,8 @@
   background: var(--gm-surface);
   border-radius: var(--radius-card);
   padding: 24px;
-  border: 1px solid var(--gm-border);
-  box-shadow: var(--gm-shadow);
+  border: 1px solid rgba(0, 212, 255, 0.14);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
   transition: box-shadow var(--transition-ui), transform var(--transition-ui), border-color var(--transition-ui);
   display: flex;
   flex-direction: column;
@@ -458,9 +458,9 @@
 }
 
 .card:hover {
-  box-shadow: var(--gm-shadow-hover);
-  border-color: rgba(37, 99, 255, 0.25);
-  transform: scale(1.03);
+  box-shadow: 0 0 28px rgba(0, 212, 255, 0.22), 0 8px 36px rgba(0, 0, 0, 0.7);
+  border-color: rgba(0, 212, 255, 0.4);
+  transform: scale(1.02);
 }
 
 .card-badge {
@@ -478,18 +478,18 @@
 }
 
 .card-badge-email {
-  background: var(--gm-blue-light);
-  color: var(--ui-primary);
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--arc-cyan);
 }
 
 .card-badge-social {
-  background: rgba(34, 197, 94, 0.15);
-  color: #15803d;
+  background: rgba(61, 255, 160, 0.1);
+  color: var(--arc-green);
 }
 
 .card-badge-security {
-  background: rgba(234, 88, 12, 0.14);
-  color: #c2410c;
+  background: rgba(157, 78, 255, 0.12);
+  color: var(--arc-purple);
 }
 
 .card-title {

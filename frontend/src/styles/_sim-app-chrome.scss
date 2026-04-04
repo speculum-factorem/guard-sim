@@ -1,15 +1,15 @@
-/* Шапки симуляций — визуально согласованы с основным .app-bar */
+/* Шапки симуляций — тёмный аркад, в духе основного .app-bar */
 
 .sim-app-bar {
   position: relative;
   z-index: 2;
   box-sizing: border-box;
   padding: 12px clamp(12px, 2.5vw, 28px) 12px;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(20px) saturate(1.15);
-  -webkit-backdrop-filter: blur(20px) saturate(1.15);
-  border-bottom: 2px solid var(--bento-ink);
-  box-shadow: 0 6px 0 rgba(10, 10, 10, 0.06), 0 8px 32px rgba(0, 0, 0, 0.06);
+  background: rgba(7, 8, 15, 0.94);
+  backdrop-filter: blur(18px) saturate(1.08);
+  -webkit-backdrop-filter: blur(18px) saturate(1.08);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.14);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.65), 0 0 16px rgba(0, 212, 255, 0.05);
 }
 
 .sim-app-bar:not(.sim-app-bar--sub)::before {
@@ -18,14 +18,14 @@
   left: 0;
   right: 0;
   top: 0;
-  height: 4px;
+  height: 3px;
   background: linear-gradient(
     90deg,
-    var(--bento-orange) 0%,
-    #ff8c5c 28%,
-    #5fd4a8 55%,
-    #c4b5fd 78%,
-    var(--bento-orange) 100%
+    var(--arc-cyan)   0%,
+    var(--arc-green)  28%,
+    var(--arc-purple) 55%,
+    var(--arc-yellow) 78%,
+    var(--arc-cyan)   100%
   );
   background-size: 220% 100%;
   animation: app-bar-track-marquee 10s linear infinite;
@@ -39,10 +39,9 @@
   }
 }
 
-/* Вторичная полоса (тулбар под основной шапкой): без градиентной дорожки */
 .sim-app-bar.sim-app-bar--sub {
   padding: 10px clamp(12px, 2.5vw, 22px);
-  box-shadow: 0 1px 0 rgba(10, 10, 10, 0.06);
+  box-shadow: 0 1px 0 rgba(0, 212, 255, 0.08);
 }
 
 .sim-app-bar-inner {
@@ -56,14 +55,12 @@
   gap: 12px;
 }
 
-/* Браузер: внутренние полосы без двойных отступов — градиент как у app-bar */
 .browser-chrome-chrome.sim-app-bar {
   padding: 0;
 }
 
-/* Двухколоночный режим миссии: шапка блока условия */
 .mission-lc-tabs.sim-app-bar,
 .mission-lc-head.sim-app-bar {
   padding: 0;
-  box-shadow: 0 1px 0 rgba(10, 10, 10, 0.07);
+  box-shadow: 0 1px 0 rgba(0, 212, 255, 0.1);
 }

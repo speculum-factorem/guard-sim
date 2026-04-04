@@ -1,18 +1,17 @@
-/* Список задач на дашборде — современная карточка + лёгкий аркадный акцент */
+/* Список задач на дашборде — аркадный тёмный стиль */
 
 .dashboard-page--arcade.lc-theme {
-  --task-rainbow: linear-gradient(90deg, #fb923c, #fbbf24, #34d399, #a78bfa);
-  --task-rainbow-strip: linear-gradient(180deg, #fb923c 0%, #fbbf24 32%, #34d399 64%, #a78bfa 100%);
-  --task-surface: #ffffff;
-  --task-surface-muted: #f8f7f4;
-  --task-border: rgba(15, 23, 42, 0.09);
-  --task-border-strong: rgba(15, 23, 42, 0.14);
-  --task-text: #0f172a;
-  --task-muted: #64748b;
-  --task-accent: var(--bento-orange);
-  --task-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
-  --task-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 12px 28px -8px rgba(15, 23, 42, 0.1);
-  --task-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  --task-rainbow: linear-gradient(90deg, var(--arc-cyan), var(--arc-green), var(--arc-purple), var(--arc-yellow));
+  --task-rainbow-strip: linear-gradient(180deg, var(--arc-cyan) 0%, var(--arc-green) 32%, var(--arc-purple) 64%, var(--arc-yellow) 100%);
+  --task-surface: rgba(13, 13, 31, 0.97);
+  --task-surface-muted: rgba(0, 212, 255, 0.02);
+  --task-border: rgba(0, 212, 255, 0.12);
+  --task-border-strong: rgba(0, 212, 255, 0.22);
+  --task-text: #dde4f0;
+  --task-muted: #6b7a99;
+  --task-accent: var(--arc-cyan);
+  --task-shadow-sm: 0 0 10px rgba(0, 212, 255, 0.08);
+  --task-shadow-md: 0 0 28px rgba(0, 212, 255, 0.14), 0 8px 32px rgba(0, 0, 0, 0.6);
   --task-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
@@ -57,20 +56,20 @@
 
 .dashboard-page--arcade.lc-theme .lc-problems-count-pill {
   padding: 8px 14px;
-  border: 1px solid var(--task-border-strong);
+  border: 1px solid rgba(61, 255, 160, 0.3);
   border-radius: 100px;
-  background: linear-gradient(145deg, #ecfdf5 0%, #d1fae5 100%);
-  box-shadow: var(--task-shadow-sm), 3px 3px 0 rgba(16, 185, 129, 0.18);
+  background: rgba(61, 255, 160, 0.07);
+  box-shadow: 0 0 10px rgba(61, 255, 160, 0.12);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: #065f46;
+  color: var(--arc-green);
   transition: transform 0.2s var(--task-ease), box-shadow 0.2s var(--task-ease);
 }
 
 .dashboard-page--arcade.lc-theme .lc-problems-count-pill:hover {
   transform: translateY(-1px);
-  box-shadow: var(--task-shadow-sm), 4px 4px 0 rgba(16, 185, 129, 0.22);
+  box-shadow: 0 0 16px rgba(61, 255, 160, 0.25);
 }
 
 .dashboard-page--arcade.lc-theme .lc-problems-lead {
@@ -85,19 +84,16 @@
 /* Карточка */
 .dashboard-page--arcade.lc-theme .lc-problems-surface {
   position: relative;
-  border: 1px solid var(--task-border);
+  border: 1px solid rgba(0, 212, 255, 0.2);
   border-radius: 20px;
-  box-shadow: var(--task-shadow-md), var(--task-shadow-inset);
+  box-shadow: var(--task-shadow-md);
   background: var(--task-surface);
   overflow: hidden;
   transition: box-shadow 0.35s var(--task-ease);
 }
 
 .dashboard-page--arcade.lc-theme .lc-problems-surface:hover {
-  box-shadow:
-    0 4px 6px -1px rgba(15, 23, 42, 0.05),
-    0 18px 36px -12px rgba(15, 23, 42, 0.12),
-    var(--task-shadow-inset);
+  box-shadow: 0 0 36px rgba(0, 212, 255, 0.18), 0 10px 40px rgba(0, 0, 0, 0.7);
 }
 
 .dashboard-page--arcade.lc-theme .lc-problems-surface::before {
@@ -110,93 +106,76 @@
   z-index: 2;
   border-radius: 20px 20px 0 0;
   background: var(--task-rainbow);
-  opacity: 0.92;
   pointer-events: none;
-}
-
-.dashboard-page--arcade.lc-theme .lc-problems-surface::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  z-index: 1;
 }
 
 /* Панель фильтров */
 .dashboard-page--arcade.lc-theme .lc-toolbar {
   padding: 20px 22px 18px;
   gap: 16px;
-  background: linear-gradient(180deg, #fafaf8 0%, #ffffff 100%);
-  border-bottom: 1px solid var(--task-border);
+  background: rgba(0, 212, 255, 0.03);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
 }
 
 .dashboard-page--arcade.lc-theme .lc-input,
 .dashboard-page--arcade.lc-theme .lc-select {
-  border-width: 1px;
-  border-color: var(--task-border-strong);
+  border: 1px solid rgba(0, 212, 255, 0.22);
   border-radius: 14px;
-  background: #fff;
-  box-shadow: var(--task-shadow-sm), var(--task-shadow-inset);
+  background: rgba(0, 212, 255, 0.04);
+  color: var(--task-text);
   transition:
     border-color 0.2s var(--task-ease),
-    box-shadow 0.2s var(--task-ease),
-    transform 0.2s var(--task-ease);
+    box-shadow 0.2s var(--task-ease);
 }
 
 .dashboard-page--arcade.lc-theme .lc-input:focus,
 .dashboard-page--arcade.lc-theme .lc-select:focus {
-  border-color: rgba(249, 115, 22, 0.55);
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12), var(--task-shadow-sm), var(--task-shadow-inset);
+  border-color: rgba(0, 212, 255, 0.55);
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
 }
 
 .dashboard-page--arcade.lc-theme .lc-search-icon {
-  opacity: 0.45;
+  opacity: 0.4;
   color: var(--task-muted);
 }
 
 .dashboard-page--arcade.lc-theme .lc-chip {
-  border-width: 1px;
-  border-color: var(--task-border-strong);
+  border: 1px solid rgba(0, 212, 255, 0.2);
   border-radius: 999px;
-  background: #fff;
+  background: rgba(0, 212, 255, 0.04);
   font-weight: 600;
   font-size: 13px;
-  box-shadow: var(--task-shadow-sm);
+  color: var(--task-muted);
   transition:
     transform 0.18s var(--task-ease),
     border-color 0.18s var(--task-ease),
-    background 0.18s var(--task-ease),
-    box-shadow 0.18s var(--task-ease);
+    background 0.18s var(--task-ease);
 }
 
 .dashboard-page--arcade.lc-theme .lc-chip:hover {
   transform: translateY(-1px);
-  border-color: rgba(15, 23, 42, 0.2);
-  background: #fffef7;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  border-color: rgba(0, 212, 255, 0.4);
+  background: rgba(0, 212, 255, 0.08);
+  color: var(--task-text);
 }
 
 .dashboard-page--arcade.lc-theme .lc-chip--on {
-  background: linear-gradient(180deg, #ff7a45 0%, var(--bento-orange) 100%);
-  color: #fff;
-  border-color: rgba(15, 23, 42, 0.15);
-  box-shadow: 2px 2px 0 rgba(15, 23, 42, 0.12);
-  transform: translateY(-0.5px);
+  background: rgba(0, 212, 255, 0.12);
+  color: var(--arc-cyan);
+  border-color: rgba(0, 212, 255, 0.45);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
 }
 
 .dashboard-page--arcade.lc-theme .lc-chip--on:hover {
-  filter: brightness(1.03);
-  color: #fff;
-  background: linear-gradient(180deg, #ff7a45 0%, var(--bento-orange) 100%);
+  background: rgba(0, 212, 255, 0.18);
+  color: var(--arc-cyan);
 }
 
 /* Таблица */
 .dashboard-page--arcade.lc-theme .lc-table-wrap {
   scrollbar-width: thin;
-  scrollbar-color: rgba(15, 23, 42, 0.2) transparent;
-  background: var(--task-surface-muted);
+  scrollbar-color: rgba(0, 212, 255, 0.2) transparent;
+  background: transparent;
 }
 
 .dashboard-page--arcade.lc-theme .lc-table-wrap::-webkit-scrollbar {
@@ -204,7 +183,7 @@
 }
 
 .dashboard-page--arcade.lc-theme .lc-table-wrap::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 42, 0.15);
+  background: rgba(0, 212, 255, 0.15);
   border-radius: 8px;
 }
 
@@ -213,9 +192,8 @@
 }
 
 .dashboard-page--arcade.lc-theme .lc-table thead {
-  background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
-  border-bottom: 1px solid var(--task-border-strong);
-  box-shadow: none;
+  background: rgba(0, 212, 255, 0.04);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.12);
 }
 
 .dashboard-page--arcade.lc-theme .lc-table th {
@@ -235,27 +213,27 @@
 }
 
 .dashboard-page--arcade.lc-theme .lc-th-btn:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(0, 212, 255, 0.06);
   color: var(--task-text);
 }
 
 .dashboard-page--arcade.lc-theme .lc-th-sort--active {
   font-size: 11px;
-  color: var(--task-accent);
+  color: var(--arc-cyan);
 }
 
 .dashboard-page--arcade.lc-theme .lc-table td {
   padding: 16px 18px;
-  border-bottom: 1px solid var(--task-border);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.07);
   transition: background 0.15s ease;
 }
 
 .dashboard-page--arcade.lc-theme .lc-table tbody tr:nth-child(odd) td {
-  background: #ffffff;
+  background: transparent;
 }
 
 .dashboard-page--arcade.lc-theme .lc-table tbody tr:nth-child(even) td {
-  background: #fcfcfb;
+  background: rgba(0, 212, 255, 0.02);
 }
 
 .dashboard-page--arcade.lc-theme .lc-td-title {
@@ -263,7 +241,7 @@
 }
 
 .dashboard-page--arcade.lc-theme .lc-tr:hover td {
-  background: #fffbeb !important;
+  background: rgba(0, 212, 255, 0.05) !important;
 }
 
 .dashboard-page--arcade.lc-theme .lc-tr:hover .lc-td-title::after {
@@ -272,17 +250,15 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 5px;
-  border-radius: 0 3px 3px 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
   background: var(--task-rainbow-strip);
   pointer-events: none;
   z-index: 1;
 }
 
 .dashboard-page--arcade.lc-theme .lc-status {
-  border-width: 1px;
   border-radius: 999px;
-  box-shadow: none;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -290,42 +266,40 @@
 }
 
 .dashboard-page--arcade.lc-theme .lc-status--todo {
-  background: #eff6ff;
-  border-color: rgba(59, 130, 246, 0.25);
-  color: #1d4ed8;
+  background: rgba(157, 78, 255, 0.1);
+  border-color: rgba(157, 78, 255, 0.35);
+  color: var(--arc-purple);
 }
 
 .dashboard-page--arcade.lc-theme .lc-status--done {
-  background: #ecfdf5;
-  border-color: rgba(16, 185, 129, 0.28);
-  color: #047857;
+  background: rgba(61, 255, 160, 0.08);
+  border-color: rgba(61, 255, 160, 0.35);
+  color: var(--arc-green);
 }
 
 .dashboard-page--arcade.lc-theme .lc-channel {
-  border-width: 1px;
   border-radius: 8px;
-  box-shadow: none;
   font-weight: 600;
   font-size: 12px;
   padding: 5px 10px;
 }
 
 .dashboard-page--arcade.lc-theme .lc-channel--mail {
-  background: #eff6ff;
-  border-color: rgba(59, 130, 246, 0.2);
-  color: #1e40af;
+  background: rgba(0, 212, 255, 0.08);
+  border-color: rgba(0, 212, 255, 0.3);
+  color: var(--arc-cyan);
 }
 
 .dashboard-page--arcade.lc-theme .lc-channel--social {
-  background: #fdf4ff;
-  border-color: rgba(217, 70, 239, 0.2);
-  color: #86198f;
+  background: rgba(255, 45, 120, 0.08);
+  border-color: rgba(255, 45, 120, 0.3);
+  color: var(--arc-pink);
 }
 
 .dashboard-page--arcade.lc-theme .lc-channel--security {
-  background: #f5f3ff;
-  border-color: rgba(139, 92, 246, 0.22);
-  color: #5b21b6;
+  background: rgba(157, 78, 255, 0.08);
+  border-color: rgba(157, 78, 255, 0.3);
+  color: var(--arc-purple);
 }
 
 .dashboard-page--arcade.lc-theme .lc-title-link {
@@ -340,7 +314,7 @@
 }
 
 .dashboard-page--arcade.lc-theme .lc-title-link:hover {
-  color: var(--task-accent);
+  color: var(--arc-cyan);
 }
 
 .dashboard-page--arcade.lc-theme .lc-title-desc {
@@ -361,11 +335,11 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   text-decoration: none;
-  color: #fff;
-  border: var(--bento-border);
+  color: #07080f;
+  border: 1px solid rgba(0, 212, 255, 0.5);
   border-radius: var(--bento-radius);
-  background: linear-gradient(180deg, #ff6a32 0%, var(--bento-orange) 100%);
-  box-shadow: var(--shadow-bento-sm);
+  background: linear-gradient(180deg, #00e5ff 0%, var(--arc-cyan) 100%);
+  box-shadow: 0 0 14px rgba(0, 212, 255, 0.35);
   transition:
     transform 0.18s var(--task-ease),
     box-shadow 0.18s var(--task-ease),
@@ -374,26 +348,26 @@
 
 .dashboard-page--arcade.lc-theme .lc-btn-solve:hover {
   transform: translateY(-1px);
-  filter: brightness(1.04);
-  box-shadow: var(--shadow-bento-md);
-  color: #fff;
+  filter: brightness(1.06);
+  box-shadow: 0 0 22px rgba(0, 212, 255, 0.55);
+  color: #07080f;
 }
 
 .dashboard-page--arcade.lc-theme .lc-empty {
   margin: 0;
   padding: 48px 24px;
-  border-top: 1px dashed var(--task-border);
+  border-top: 1px dashed rgba(0, 212, 255, 0.12);
   font-size: 15px;
   font-weight: 500;
   color: var(--task-muted);
-  background: linear-gradient(180deg, transparent, rgba(251, 191, 36, 0.04));
+  background: radial-gradient(circle at 50% 0%, rgba(0, 212, 255, 0.04), transparent 60%);
 }
 
 /* Пагинация */
 .dashboard-page--arcade.lc-theme .lc-pager {
   padding: 16px 22px 20px;
-  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-  border-top: 1px solid var(--task-border);
+  background: rgba(0, 212, 255, 0.02);
+  border-top: 1px dashed rgba(0, 212, 255, 0.12);
 }
 
 .dashboard-page--arcade.lc-theme .lc-pager-meta {
@@ -405,11 +379,10 @@
 
 .dashboard-page--arcade.lc-theme .lc-pager-btn,
 .dashboard-page--arcade.lc-theme .lc-pager-page {
-  border-width: 1px;
-  border-color: var(--task-border-strong);
+  border: 1px solid rgba(0, 212, 255, 0.2);
   border-radius: 10px;
-  background: #fff;
-  box-shadow: var(--task-shadow-sm);
+  background: rgba(0, 212, 255, 0.04);
+  color: var(--task-text);
   font-weight: 600;
   transition: transform 0.18s var(--task-ease), box-shadow 0.18s var(--task-ease), background 0.18s ease;
 }
@@ -417,15 +390,15 @@
 .dashboard-page--arcade.lc-theme .lc-pager-btn:hover:not(:disabled),
 .dashboard-page--arcade.lc-theme .lc-pager-page:hover {
   transform: translateY(-1px);
-  background: #fffef8;
-  border-color: rgba(15, 23, 42, 0.18);
+  background: rgba(0, 212, 255, 0.1);
+  border-color: rgba(0, 212, 255, 0.4);
 }
 
 .dashboard-page--arcade.lc-theme .lc-pager-page--current {
-  background: var(--task-text);
-  color: #fff;
-  border-color: var(--task-text);
-  box-shadow: var(--task-shadow-sm);
+  background: var(--arc-cyan);
+  color: #07080f;
+  border-color: var(--arc-cyan);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
 }
 
 @media (max-width: 720px) {
@@ -438,12 +411,12 @@
   }
 
   .dashboard-page--arcade.lc-theme .lc-table tbody tr {
-    border: 1px solid var(--task-border);
+    border: 1px solid rgba(0, 212, 255, 0.12);
     border-radius: 16px;
     margin-bottom: 12px;
     padding: 16px 14px;
-    background: #fff;
-    box-shadow: var(--task-shadow-sm);
+    background: rgba(13, 13, 31, 0.97);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.06);
   }
 
   .dashboard-page--arcade.lc-theme .lc-table tbody tr:last-child {

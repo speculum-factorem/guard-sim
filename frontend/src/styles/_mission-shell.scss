@@ -11,7 +11,7 @@
 .input-kit:focus {
   outline: none;
   border-color: var(--ui-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 255, 0.2);
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.28);
 }
 
 /* Шум в письме, таймер давления, красные флаги */
@@ -35,7 +35,7 @@
 .narrative-noise-body {
   font-size: 13px;
   line-height: 1.5;
-  color: #6b7280;
+  color: var(--ui-gray);
   white-space: pre-wrap;
 }
 
@@ -48,7 +48,7 @@
 }
 
 .pressure-bar-wrap.pressure-expired {
-  border-color: rgba(37, 99, 255, 0.25);
+  border-color: rgba(0, 212, 255, 0.35);
   background: var(--gm-blue-light);
 }
 
@@ -97,11 +97,12 @@
 }
 
 .red-flag-game {
-  border: 1px solid rgba(251, 191, 36, 0.5);
+  border: 1px solid rgba(255, 230, 0, 0.28);
   border-radius: var(--radius-sm);
-  background: rgba(255, 251, 235, 0.95);
+  background: rgba(13, 13, 31, 0.92);
   padding: 14px 16px 16px;
   margin-bottom: 18px;
+  box-shadow: var(--shadow-bento-xs);
 }
 
 .red-flag-instruction {
@@ -141,9 +142,9 @@
 }
 
 .red-flag-chip-on {
-  border-color: #f59e0b;
-  background: #fff7ed;
-  box-shadow: 0 0 0 1px #fbbf24;
+  border-color: var(--arc-yellow);
+  background: rgba(255, 230, 0, 0.1);
+  box-shadow: 0 0 0 1px rgba(255, 230, 0, 0.35);
 }
 
 .red-flag-progress {
@@ -167,7 +168,7 @@
   gap: 12px;
   padding: 12px 16px;
   background: var(--ui-dark-purple);
-  color: var(--ui-white);
+  color: var(--bento-ink);
 }
 
 .mission-window-traffic {
@@ -234,7 +235,7 @@
 
 .mission-brief {
   padding: 20px 22px 18px;
-  background: linear-gradient(180deg, rgba(37, 99, 255, 0.06), transparent 60%);
+  background: linear-gradient(180deg, rgba(0, 212, 255, 0.08), transparent 62%);
   border-bottom: 1px solid var(--gm-border);
 }
 
@@ -245,7 +246,7 @@
   font-weight: 400;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ui-dark-purple);
+  color: var(--arc-cyan);
 }
 
 .mission-brief-text {
@@ -334,14 +335,14 @@
 
 .mission-app-viewport {
   padding: 12px 16px 20px;
-  background: linear-gradient(180deg, #eef1f4 0%, #f7f8f9 48%, #fafafa 100%);
+  background: linear-gradient(180deg, #10121c 0%, #0c0d16 52%, #090a12 100%);
   min-height: 120px;
 
   .ui-frame {
     margin-bottom: 0;
     border-radius: 10px;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.06);
+    border: 1px solid rgba(0, 212, 255, 0.12);
+    box-shadow: var(--shadow-bento-sm);
   }
 
   > .ui-frame-url-compare,
@@ -363,8 +364,8 @@
   grid-template-columns: minmax(280px, 42%) minmax(0, 1fr);
   align-items: stretch;
   min-height: min(68vh, 720px);
-  background: linear-gradient(180deg, #f5f5f4 0%, #fafaf9 55%, #f5f5f4 100%);
-  border: 2px solid var(--bento-ink);
+  background: linear-gradient(180deg, #0c0e18 0%, #0a0b14 50%, #080910 100%);
+  border: 1px solid rgba(0, 212, 255, 0.18);
   border-radius: var(--bento-radius);
   box-shadow: var(--shadow-bento-md);
   overflow: hidden;
@@ -375,10 +376,10 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  border-right: 2px solid var(--bento-ink);
-  background: rgba(255, 255, 255, 0.97);
-  backdrop-filter: blur(12px) saturate(1.05);
-  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+  border-right: 1px solid rgba(0, 212, 255, 0.14);
+  background: rgba(13, 14, 28, 0.88);
+  backdrop-filter: blur(14px) saturate(1.06);
+  -webkit-backdrop-filter: blur(14px) saturate(1.06);
   border-radius: var(--bento-radius) 0 0 var(--bento-radius);
 }
 
@@ -392,7 +393,7 @@
   margin: 0;
   padding: 10px 14px;
   border-bottom: var(--bento-border);
-  background: rgba(255, 90, 31, 0.06);
+  background: rgba(0, 212, 255, 0.06);
   flex-shrink: 0;
 }
 
@@ -400,7 +401,8 @@
   margin: 0;
   font-size: 13px;
   line-height: 1.45;
-  color: #334155;
+  color: var(--bento-ink);
+  opacity: 0.92;
   max-width: min(100%, 52ch);
 }
 
@@ -426,8 +428,8 @@
   font-size: 12px;
   line-height: 1.4;
   color: var(--bento-ink);
-  opacity: 0.8;
-  background: rgba(255, 255, 255, 0.65);
+  opacity: 0.88;
+  background: rgba(10, 11, 22, 0.75);
   border-bottom: var(--bento-border);
   flex-shrink: 0;
 }
@@ -440,7 +442,7 @@
   height: 24px;
   border-radius: var(--bento-radius);
   border: var(--bento-border);
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(13, 14, 31, 0.95);
   color: var(--bento-orange);
   font-size: 13px;
   flex-shrink: 0;
@@ -460,7 +462,7 @@
   gap: 12px;
   padding: 0 10px 0 0;
   border-bottom: var(--bento-border);
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(10, 11, 22, 0.92);
   flex-shrink: 0;
 }
 
@@ -506,11 +508,11 @@
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
   color: var(--bento-ink);
-  opacity: 0.85;
+  opacity: 0.9;
   padding: 10px 14px;
   flex-shrink: 0;
   border-left: var(--bento-border);
-  background: rgba(255, 90, 31, 0.06);
+  background: rgba(0, 212, 255, 0.07);
 }
 
 .mission-lc-tab {
@@ -543,7 +545,7 @@
   min-height: 0;
   overflow-y: auto;
   padding: 16px 18px 22px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, transparent 32%);
+  background: linear-gradient(180deg, rgba(0, 212, 255, 0.05) 0%, transparent 36%);
 }
 
 .mission-lc-block {
@@ -576,7 +578,8 @@
   margin: 0;
   font-size: 14px;
   line-height: 1.55;
-  color: #334155;
+  color: var(--bento-ink);
+  opacity: 0.94;
 }
 
 .mission-lc-narrative {
@@ -586,7 +589,7 @@
   line-height: 1.55;
   white-space: pre-wrap;
   color: var(--bento-ink);
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(18, 20, 36, 0.75);
   border: var(--bento-border);
   border-radius: var(--bento-radius);
   box-shadow: var(--shadow-bento-xs);
@@ -661,9 +664,9 @@
   padding: 8px 11px;
   font-size: 12px;
   line-height: 1.4;
-  color: #64748b;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  color: var(--ui-dark-gray);
+  background: rgba(13, 14, 31, 0.65);
+  border: 1px solid rgba(0, 212, 255, 0.14);
   border-radius: 8px;
 }
 
@@ -676,7 +679,7 @@
 
   .mission-lc-desc {
     border-right: none;
-    border-bottom: 2px solid var(--bento-ink);
+    border-bottom: 1px solid rgba(0, 212, 255, 0.14);
     max-height: min(42vh, 380px);
     border-radius: var(--bento-radius) var(--bento-radius) 0 0;
   }

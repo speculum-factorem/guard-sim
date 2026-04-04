@@ -54,13 +54,13 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--bento-ink);
+  color: var(--arc-green);
   font-variant-numeric: tabular-nums;
   padding: 7px 14px;
-  background: linear-gradient(180deg, #c8f5e0 0%, var(--bento-mint) 100%);
-  border: var(--bento-border);
+  background: rgba(61, 255, 160, 0.08);
+  border: 1px solid rgba(61, 255, 160, 0.3);
   border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-bento-xs);
+  box-shadow: 0 0 10px rgba(61, 255, 160, 0.12);
 }
 
 .lc-problems-lead {
@@ -71,12 +71,12 @@
   color: var(--gm-text-secondary);
 }
 
-/* Карточка списка задач — тот же bento, чуть глубже тень */
+/* Карточка списка задач */
 .lc-problems-surface {
-  background: var(--ui-white);
-  border: var(--bento-border);
+  background: rgba(13, 13, 31, 0.97);
+  border: 1px solid rgba(0, 212, 255, 0.16);
   border-radius: var(--bento-radius-lg);
-  box-shadow: var(--shadow-bento-md), var(--shadow-bento-inset);
+  box-shadow: 0 0 28px rgba(0, 212, 255, 0.1), 0 6px 32px rgba(0, 0, 0, 0.6);
   overflow: hidden;
 }
 
@@ -85,10 +85,8 @@
   flex-direction: column;
   gap: 16px;
   padding: 18px 20px;
-  background:
-    radial-gradient(ellipse 120% 80% at 0% 0%, rgba(37, 99, 255, 0.06) 0%, transparent 55%),
-    linear-gradient(168deg, rgba(255, 219, 88, 0.38) 0%, #fffef8 48%, #fafaf8 100%);
-  border-bottom: var(--bento-border);
+  background: rgba(0, 212, 255, 0.03);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
 }
 
 .lc-toolbar-row {
@@ -150,23 +148,19 @@
 .lc-select {
   font: inherit;
   font-size: 15px;
-  border: 2px solid var(--bento-ink);
+  border: 1px solid rgba(0, 212, 255, 0.2);
   border-radius: var(--radius-pill);
-  background: var(--ui-white);
+  background: rgba(0, 212, 255, 0.04);
+  color: var(--bento-ink);
   padding: 11px 14px;
-  box-shadow:
-    3px 3px 0 rgba(10, 10, 10, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .lc-input:focus,
 .lc-select:focus {
   outline: none;
-  border-color: var(--bento-orange);
-  box-shadow:
-    3px 3px 0 rgba(255, 95, 31, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 212, 255, 0.55);
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
 }
 
 .lc-search-input {
@@ -189,32 +183,31 @@
   font-size: 13px;
   font-weight: 700;
   padding: 8px 16px;
-  border: 2px solid var(--bento-ink);
+  border: 1px solid rgba(0, 212, 255, 0.2);
   border-radius: var(--radius-pill);
-  background: var(--ui-white);
+  background: rgba(0, 212, 255, 0.04);
   cursor: pointer;
-  color: var(--bento-ink);
-  box-shadow: var(--shadow-bento-xs);
-  transition: transform 0.14s ease, background 0.14s ease, color 0.14s ease;
+  color: var(--gm-text-secondary);
+  transition: transform 0.14s ease, background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
 }
 
 .lc-chip:hover {
-  background: var(--bento-yellow);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-bento-xs);
+  background: rgba(0, 212, 255, 0.08);
+  border-color: rgba(0, 212, 255, 0.4);
+  color: var(--bento-ink);
+  transform: translateY(-1px);
 }
 
 .lc-chip--on {
-  background: var(--bento-orange);
-  color: #fff;
-  border-color: var(--bento-ink);
-  box-shadow: var(--shadow-bento-xs);
+  background: rgba(0, 212, 255, 0.12);
+  color: var(--arc-cyan);
+  border-color: rgba(0, 212, 255, 0.5);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
 }
 
 .lc-chip--on:hover {
-  filter: brightness(1.06);
-  background: var(--bento-orange);
-  color: #fff;
+  background: rgba(0, 212, 255, 0.18);
+  color: var(--arc-cyan);
 }
 
 .lc-page-size {
@@ -238,7 +231,7 @@
 }
 
 .lc-table-wrap {
-  background: linear-gradient(180deg, #fafaf8 0%, #fff 12%);
+  background: transparent;
   overflow-x: auto;
 }
 
@@ -251,9 +244,8 @@
 }
 
 .lc-table thead {
-  background: linear-gradient(180deg, #ffe78a 0%, var(--bento-yellow) 100%);
-  border-bottom: var(--bento-border);
-  box-shadow: 0 2px 0 rgba(10, 10, 10, 0.06);
+  background: rgba(0, 212, 255, 0.04);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.12);
 }
 
 .lc-table th {
@@ -287,7 +279,7 @@
 }
 
 .lc-th-btn:hover {
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(0, 212, 255, 0.08);
   color: var(--bento-ink);
 }
 
@@ -300,7 +292,7 @@
 
 .lc-th-sort--active {
   opacity: 1;
-  color: var(--bento-orange);
+  color: var(--arc-cyan);
 }
 
 .lc-th-static {
@@ -331,12 +323,12 @@
 }
 
 .lc-table tbody tr:nth-child(even) td {
-  background: rgba(255, 254, 248, 0.85);
+  background: rgba(0, 212, 255, 0.02);
 }
 
 .lc-table td {
   padding: 15px 16px;
-  border-bottom: 1px solid rgba(10, 10, 10, 0.08);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.07);
   vertical-align: middle;
   transition: background 0.12s ease;
 }
@@ -347,7 +339,7 @@
 }
 
 .lc-tr:hover td {
-  background: rgba(255, 219, 88, 0.28) !important;
+  background: rgba(0, 212, 255, 0.05) !important;
 }
 
 .lc-tr:hover .lc-td-title::after {
@@ -356,9 +348,9 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 4px;
+  width: 3px;
   border-radius: 0 2px 2px 0;
-  background: linear-gradient(180deg, var(--bento-orange) 0%, var(--bento-yellow) 34%, var(--bento-mint) 67%, var(--bento-lilac) 100%);
+  background: linear-gradient(180deg, var(--arc-cyan) 0%, var(--arc-green) 50%, var(--arc-purple) 100%);
   pointer-events: none;
 }
 
@@ -372,22 +364,25 @@
   font-weight: 700;
   padding: 4px 10px;
   border-radius: var(--radius-pill);
-  border: 2px solid var(--bento-ink);
+  border: 1px solid transparent;
 }
 
 .lc-status--todo {
-  background: var(--bento-lilac);
-  color: var(--bento-ink);
+  background: rgba(157, 78, 255, 0.1);
+  border-color: rgba(157, 78, 255, 0.35);
+  color: var(--arc-purple);
 }
 
 .lc-status--done {
-  background: var(--bento-mint);
-  color: #0f3d2c;
+  background: rgba(61, 255, 160, 0.08);
+  border-color: rgba(61, 255, 160, 0.35);
+  color: var(--arc-green);
 }
 
 .lc-status--locked {
-  background: var(--ui-light-gray);
-  color: var(--bento-ink);
+  background: rgba(107, 114, 128, 0.1);
+  border-color: rgba(107, 114, 128, 0.25);
+  color: var(--gm-text-secondary);
   opacity: 0.85;
 }
 
@@ -404,8 +399,8 @@
 }
 
 .lc-title-link:hover {
-  color: var(--bento-orange);
-  border-bottom-color: var(--bento-orange);
+  color: var(--arc-cyan);
+  border-bottom-color: var(--arc-cyan);
 }
 
 .lc-title-locked {
@@ -429,19 +424,25 @@
   font-weight: 700;
   padding: 4px 9px;
   border-radius: var(--bento-radius);
-  border: 2px solid var(--bento-ink);
+  border: 1px solid transparent;
 }
 
 .lc-channel--mail {
-  background: #dbeafe;
+  background: rgba(0, 212, 255, 0.08);
+  border-color: rgba(0, 212, 255, 0.3);
+  color: var(--arc-cyan);
 }
 
 .lc-channel--social {
-  background: #fce7f3;
+  background: rgba(255, 45, 120, 0.08);
+  border-color: rgba(255, 45, 120, 0.3);
+  color: var(--arc-pink);
 }
 
 .lc-channel--security {
-  background: #e9d5ff;
+  background: rgba(157, 78, 255, 0.08);
+  border-color: rgba(157, 78, 255, 0.3);
+  color: var(--arc-purple);
 }
 
 .lc-role {
@@ -466,19 +467,19 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   text-decoration: none;
-  color: #fff;
-  background: linear-gradient(180deg, #ff6a32 0%, var(--bento-orange) 100%);
-  border: var(--bento-border);
+  color: #07080f;
+  background: linear-gradient(180deg, #00e5ff 0%, var(--arc-cyan) 100%);
+  border: 1px solid rgba(0, 212, 255, 0.5);
   border-radius: var(--bento-radius);
-  box-shadow: var(--shadow-bento-sm);
+  box-shadow: 0 0 14px rgba(0, 212, 255, 0.35);
   transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
 }
 
 .lc-btn-solve:hover {
-  filter: brightness(1.04);
+  filter: brightness(1.06);
   transform: translateY(-1px);
-  box-shadow: var(--shadow-bento-md);
-  color: #fff;
+  box-shadow: 0 0 22px rgba(0, 212, 255, 0.55);
+  color: #07080f;
 }
 
 .lc-action-muted {
@@ -493,10 +494,8 @@
   font-size: 15px;
   font-weight: 500;
   color: var(--gm-text-secondary);
-  background:
-    radial-gradient(circle at 50% 0%, rgba(255, 219, 88, 0.15) 0%, transparent 55%),
-    #fffef8;
-  border-top: 2px dashed rgba(10, 10, 10, 0.12);
+  background: radial-gradient(circle at 50% 0%, rgba(0, 212, 255, 0.04) 0%, transparent 55%);
+  border-top: 1px dashed rgba(0, 212, 255, 0.12);
 }
 
 .lc-pager {
@@ -506,8 +505,8 @@
   justify-content: space-between;
   gap: 14px;
   padding: 16px 20px 20px;
-  background: linear-gradient(180deg, #f6f3ea 0%, #eceae4 100%);
-  border-top: 2px dashed rgba(10, 10, 10, 0.18);
+  background: rgba(0, 212, 255, 0.02);
+  border-top: 1px dashed rgba(0, 212, 255, 0.12);
 }
 
 .lc-pager-meta {
@@ -529,20 +528,22 @@
   font-size: 13px;
   font-weight: 700;
   padding: 7px 14px;
-  border: 2px solid var(--bento-ink);
+  border: 1px solid rgba(0, 212, 255, 0.2);
   border-radius: var(--bento-radius);
-  background: var(--ui-white);
+  background: rgba(0, 212, 255, 0.04);
+  color: var(--bento-ink);
   cursor: pointer;
-  box-shadow: var(--shadow-bento-xs);
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
 }
 
 .lc-pager-btn:hover:not(:disabled) {
-  background: var(--bento-yellow);
+  background: rgba(0, 212, 255, 0.1);
+  border-color: rgba(0, 212, 255, 0.4);
   transform: translateY(-1px);
 }
 
 .lc-pager-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
@@ -559,22 +560,24 @@
   font: inherit;
   font-size: 13px;
   font-weight: 700;
-  border: 2px solid var(--bento-ink);
+  border: 1px solid rgba(0, 212, 255, 0.2);
   border-radius: var(--bento-radius);
-  background: var(--ui-white);
+  background: rgba(0, 212, 255, 0.04);
+  color: var(--bento-ink);
   cursor: pointer;
-  box-shadow: var(--shadow-bento-xs);
+  transition: background 0.12s ease, border-color 0.12s ease;
 }
 
 .lc-pager-page:hover {
-  background: var(--bento-yellow);
+  background: rgba(0, 212, 255, 0.1);
+  border-color: rgba(0, 212, 255, 0.4);
 }
 
 .lc-pager-page--current {
-  background: var(--bento-orange);
-  color: #fff;
-  border-color: var(--bento-ink);
-  box-shadow: var(--shadow-bento-xs);
+  background: var(--arc-cyan);
+  color: #07080f;
+  border-color: var(--arc-cyan);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
   transform: translateY(-1px);
 }
 
@@ -586,8 +589,8 @@
 
 .app-footer {
   margin-top: auto;
-  border-top: 1px solid var(--gm-border);
-  background: var(--ui-white);
+  border-top: 1px solid rgba(0, 212, 255, 0.1);
+  background: rgba(7, 8, 15, 0.98);
 }
 
 .app-footer-inner {
@@ -654,7 +657,7 @@
 }
 
 .app-footer-link:hover {
-  color: var(--bento-orange);
+  color: var(--arc-cyan);
 }
 
 .app-footer-copy {
@@ -666,7 +669,7 @@
 @media (max-width: 720px) {
   .lc-problems-surface {
     border-radius: var(--bento-radius);
-    box-shadow: var(--shadow-bento-sm);
+    box-shadow: 0 0 14px rgba(0, 212, 255, 0.08), 0 4px 16px rgba(0, 0, 0, 0.5);
   }
 
   .lc-toolbar {
@@ -702,7 +705,7 @@
 
   .lc-table tbody tr {
     display: block;
-    border-bottom: 2px dashed rgba(10, 10, 10, 0.15);
+    border-bottom: 1px dashed rgba(0, 212, 255, 0.12);
     padding: 14px 12px;
     margin: 0 8px;
   }

@@ -20,11 +20,19 @@ const WIN_LABELS: Record<WinId, { title: string; menu: string; taskbar: string }
 };
 
 const WIN_LAYOUT: Record<WinId, { top: string; left: string; width: string }> = {
-  explorer: { top: "8%", left: "4%", width: "min(440px, 90vw)" },
-  antivirus: { top: "10%", left: "38%", width: "min(380px, 88vw)" },
-  firewall: { top: "12%", left: "52%", width: "min(460px, 92vw)" },
-  console: { top: "44%", left: "6%", width: "min(520px, 94vw)" },
-  taskmgr: { top: "6%", left: "18%", width: "min(560px, 95vw)" },
+  explorer: { top: "10%", left: "12%", width: "min(440px, 90vw)" },
+  antivirus: { top: "12%", left: "40%", width: "min(380px, 88vw)" },
+  firewall: { top: "14%", left: "54%", width: "min(460px, 92vw)" },
+  console: { top: "46%", left: "14%", width: "min(520px, 94vw)" },
+  taskmgr: { top: "8%", left: "24%", width: "min(560px, 95vw)" },
+};
+
+const DOCK_EMOJI: Record<WinId, string> = {
+  explorer: "📁",
+  antivirus: "🛡",
+  firewall: "🧱",
+  console: "⌨",
+  taskmgr: "📊",
 };
 
 const BAD_POPUP_TITLES = [
@@ -143,8 +151,14 @@ const DESKTOP_ICONS: { id: string; label: string; emoji: string; open: WinId }[]
   { id: "i6", label: "Защита", emoji: "🛡", open: "antivirus" },
 ];
 
-function formatClock(d: Date): string {
-  return d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+function formatTopBarClock(d: Date): string {
+  return d.toLocaleString("ru-RU", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function diffClass(d: DesktopVirusCatalogEntry["difficulty"]): string {
@@ -207,10 +221,10 @@ function useWindowManager() {
   };
 }
 
-function Win11CaptionButtons(props: { onClose: () => void; theme?: "light" | "dark" }) {
+function GnomeCaptionButtons(props: { onClose: () => void; theme?: "light" | "dark" }) {
   const { onClose, theme = "light" } = props;
   return (
-    <div className={`dvs-win-caps${theme === "dark" ? " dvs-win-caps--dark" : ""}`}>
+    <div className={`dvs-win-caps dvs-win-caps--yaru${theme === "dark" ? " dvs-win-caps--dark" : ""}`}>
       <button type="button" className="dvs-win-cap dvs-win-cap--min" aria-hidden tabIndex={-1} />
       <button type="button" className="dvs-win-cap dvs-win-cap--max" aria-hidden tabIndex={-1} />
       <button type="button" className="dvs-win-cap dvs-win-cap--close" aria-label="Закрыть" onClick={onClose} />
@@ -218,13 +232,15 @@ function Win11CaptionButtons(props: { onClose: () => void; theme?: "light" | "da
   );
 }
 
-function WindowsStartIcon() {
+/** Сетка «Показать приложения» в духе Ubuntu Dock */
+function UbuntuShowAppsIcon() {
   return (
-    <svg className="dvs-winlogo-svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden>
-      <path
-        fill="currentColor"
-        d="M3 5.5h8.5V12H3V5.5zm10.5 0H22V12h-8.5V5.5zM3 13.5h8.5V22H3v-8.5zm10.5 0H22V22h-8.5v-8.5z"
-      />
+    <svg className="dvs-ubuntu-apps-svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden>
+      {[0, 1, 2].flatMap((row) =>
+        [0, 1, 2].map((col) => (
+          <circle key={`${row}-${col}`} cx={6 + col * 6} cy={6 + row * 6} r="1.85" fill="currentColor" />
+        )),
+      )}
     </svg>
   );
 }
@@ -243,13 +259,15 @@ function DesktopWindowFrame(props: {
   const isTerm = chrome === "terminal";
   return (
     <div
-      className={`dvs-window dvs-window--os${isTerm ? " dvs-window--terminal" : ""}`}
+      className={`dvs-window dvs-window--os dvs-window--ubuntu${isTerm ? " dvs-window--terminal" : ""}`}
       style={{ top: L.top, left: L.left, width: L.width, zIndex: z }}
       onPointerDown={onPointerDown}
     >
-      <div className={`dvs-win-titlebar${isTerm ? " dvs-win-titlebar--terminal" : ""}`}>
+      <div
+        className={`dvs-win-titlebar${isTerm ? " dvs-win-titlebar--terminal dvs-win-titlebar--ubuntu-term" : " dvs-win-titlebar--ubuntu"}`}
+      >
         <span className="dvs-win-title">{WIN_LABELS[winId].title}</span>
-        <Win11CaptionButtons onClose={onClose} theme={isTerm ? "dark" : "light"} />
+        <GnomeCaptionButtons onClose={onClose} theme={isTerm ? "dark" : "light"} />
       </div>
       <div className={`dvs-win-body${isTerm ? " dvs-win-body--terminal" : ""}`}>{children}</div>
     </div>
@@ -534,6 +552,11 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
     setStartOpen(false);
   };
 
+  const activateFromDock = (id: WinId) => {
+    if (!shell.open[id]) shell.openWindow(id);
+    shell.bringToFront(id);
+  };
+
   const wormEntries = WORM_VFS[wormPath];
   const wormParent = wormPath.includes("/") ? wormPath.slice(0, wormPath.lastIndexOf("/")) : null;
   const casualParent = casualPath.includes("/") ? casualPath.slice(0, casualPath.lastIndexOf("/")) : null;
@@ -632,7 +655,7 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
           </div>
         </div>
 
-        {/* Окна из Пуск */}
+        {/* Окна (док и меню приложений) */}
         {shell.open.explorer ? (
           <DesktopWindowFrame
             winId="explorer"
@@ -1098,7 +1121,7 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
               >
                 <div className="dvs-win-titlebar">
                   <span className="dvs-win-title">{pop.title}</span>
-                  <Win11CaptionButtons onClose={() => closeP1Popup(pop.id)} />
+                  <GnomeCaptionButtons onClose={() => closeP1Popup(pop.id)} />
                 </div>
                 <div className="dvs-win-body dvs-win-body--compact">
                   <p>Подозрительное окно (симуляция).</p>
@@ -1113,45 +1136,60 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
           </div>
         ) : null}
 
-        <footer className="dvs-taskbar" role="presentation">
-          <div className="dvs-taskbar-start-cluster" ref={startRef}>
-            <button
-              type="button"
-              className={`dvs-start-btn${startOpen ? " dvs-start-btn--open" : ""}`}
-              aria-expanded={startOpen}
-              aria-haspopup="menu"
-              aria-label="Пуск"
-              onClick={() => setStartOpen((o) => !o)}
-            >
-              <WindowsStartIcon />
-            </button>
-            {startOpen ? (
-              <div className="dvs-start-menu" role="menu">
-                <div className="dvs-start-menu-title">Утилиты</div>
-                {(WIN_IDS as readonly WinId[]).map((id) => (
-                  <button key={id} type="button" className="dvs-start-item" role="menuitem" onClick={() => openFromStart(id)}>
-                    {WIN_LABELS[id].menu}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
-          <div className="dvs-taskbar-apps">
-            {(WIN_IDS as readonly WinId[]).filter((id) => shell.open[id]).map((id) => (
-              <button key={id} type="button" className="dvs-task-pill" onClick={() => shell.bringToFront(id)}>
-                {WIN_LABELS[id].taskbar}
-              </button>
-            ))}
-          </div>
-          <div className="dvs-tray" aria-hidden>
+        <header className="dvs-ubuntu-topbar" role="presentation">
+          <span className="dvs-ubuntu-activities">Действия</span>
+          <time className="dvs-ubuntu-topbar-clock" dateTime={clock.toISOString()}>
+            {formatTopBarClock(clock)}
+          </time>
+          <div className="dvs-ubuntu-topbar-tray" aria-hidden>
             <span className="dvs-tray-icon dvs-tray-icon--wifi" title="" />
             <span className="dvs-tray-icon dvs-tray-icon--vol" title="" />
             <span className="dvs-tray-icon dvs-tray-icon--bat" title="" />
+            <span className="dvs-tray-icon dvs-tray-icon--power" title="" />
           </div>
-          <time className="dvs-taskbar-clock" dateTime={clock.toISOString()}>
-            {formatClock(clock)}
-          </time>
-        </footer>
+        </header>
+
+        <div className="dvs-ubuntu-panel" ref={startRef}>
+          <nav className="dvs-ubuntu-dock" aria-label="Док">
+            {(WIN_IDS as readonly WinId[]).map((id) => (
+              <button
+                key={id}
+                type="button"
+                className={`dvs-dock-btn${shell.open[id] ? " dvs-dock-btn--running" : ""}`}
+                title={WIN_LABELS[id].title}
+                onClick={() => activateFromDock(id)}
+              >
+                <span className="dvs-dock-btn-ico" aria-hidden>
+                  {DOCK_EMOJI[id]}
+                </span>
+              </button>
+            ))}
+            <div className="dvs-dock-grow" aria-hidden />
+            <button
+              type="button"
+              className={`dvs-dock-btn dvs-dock-btn--apps${startOpen ? " dvs-dock-btn--apps-open" : ""}`}
+              aria-expanded={startOpen}
+              aria-haspopup="menu"
+              aria-label="Показать приложения"
+              onClick={() => setStartOpen((o) => !o)}
+            >
+              <UbuntuShowAppsIcon />
+            </button>
+          </nav>
+          {startOpen ? (
+            <div className="dvs-ubuntu-flyout" role="menu">
+              <div className="dvs-ubuntu-flyout-title">Приложения</div>
+              {(WIN_IDS as readonly WinId[]).map((id) => (
+                <button key={id} type="button" className="dvs-ubuntu-flyout-item" role="menuitem" onClick={() => openFromStart(id)}>
+                  <span className="dvs-ubuntu-flyout-ico" aria-hidden>
+                    {DOCK_EMOJI[id]}
+                  </span>
+                  {WIN_LABELS[id].menu}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
       </div>
       {phase !== "playing" ? <ResultOverlay phase={phase} /> : null}
     </div>

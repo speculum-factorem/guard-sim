@@ -1,13 +1,20 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   Desktop virus simulation — faux OS desktop inside GuardSim shell
+   Desktop virus simulation — Windows 11–style chrome (light apps, dark taskbar)
    ═══════════════════════════════════════════════════════════════════════ */
 
-$dc: #00d4ff;
-$dg: #3dffa0;
-$dr: #ff3b30;
-$dy: #ffe600;
-$panel: rgba(12, 14, 28, 0.94);
-$border: rgba(0, 212, 255, 0.22);
+$dc: #0067c0;
+$dc-hover: #1975c7;
+$dg: #107c10;
+$dr: #c42b1c;
+$dy: #ca5010;
+$os-text: #1a1a1a;
+$os-text-dim: #5c5c5c;
+$os-border: #e5e5e5;
+$os-titlebar-top: #f8fafc;
+$os-titlebar-bot: #eef3f9;
+$os-titlebar-border: #dee4ec;
+$taskbar-bg: rgba(32, 32, 32, 0.92);
+$taskbar-border: rgba(255, 255, 255, 0.08);
 
 .main.main--desktop-virus > .dvs-root {
   flex: 1 1 auto;
@@ -19,6 +26,7 @@ $border: rgba(0, 212, 255, 0.22);
 .dvs-root {
   position: relative;
   z-index: 1;
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* ─── Select screen ─────────────────────────────────────────────────────── */
@@ -81,7 +89,7 @@ $border: rgba(0, 212, 255, 0.22);
   text-align: left;
   padding: 18px 18px 16px;
   border-radius: var(--bento-radius-lg, 14px);
-  border: 1px solid $border;
+  border: 1px solid rgba(0, 103, 192, 0.22);
   background: linear-gradient(145deg, rgba(13, 16, 32, 0.98), rgba(8, 10, 22, 0.99));
   color: var(--bento-ink, #dde4f0);
   cursor: pointer;
@@ -198,16 +206,16 @@ $border: rgba(0, 212, 255, 0.22);
 
 .dvs-game-title {
   margin: 0 0 6px;
-  font-size: 18px;
-  font-weight: 800;
-  color: #fff;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--bento-ink, #e8ecf4);
 }
 
 .dvs-game-goal {
   margin: 0;
   font-size: 13px;
   line-height: 1.45;
-  color: var(--ui-dark-gray, #b8c8e0);
+  color: var(--ui-dark-gray, #a8b4c8);
   max-width: 70ch;
 }
 
@@ -215,14 +223,15 @@ $border: rgba(0, 212, 255, 0.22);
   flex-shrink: 0;
   font-size: 13px;
   font-weight: 600;
-  color: $dc;
+  color: #8ab4f8;
   text-decoration: none;
   padding: 8px 14px;
-  border: 1px solid rgba($dc, 0.35);
-  border-radius: var(--bento-radius, 10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
 
   &:hover {
-    background: rgba($dc, 0.08);
+    background: rgba(255, 255, 255, 0.08);
   }
 }
 
@@ -232,10 +241,13 @@ $border: rgba(0, 212, 255, 0.22);
   min-height: 280px;
   height: calc(100dvh - var(--dvs-chrome-h, 160px));
   max-height: calc(100dvh - var(--dvs-chrome-h, 160px));
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
-  border: 1px solid rgba($dc, 0.18);
-  box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.35);
+  border: 1px solid #1e1e1e;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 12px 48px rgba(0, 0, 0, 0.45);
+  background: #000;
 }
 
 .dvs-wallpaper {
@@ -244,56 +256,58 @@ $border: rgba(0, 212, 255, 0.22);
   transition: opacity 0.4s ease;
 }
 
+/* Обои в духе стоковых Windows (мягкие «bloom») */
 .dvs-wallpaper--default {
   background:
-    radial-gradient(ellipse 80% 60% at 20% 20%, rgba(0, 212, 255, 0.09), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 85% 70%, rgba(157, 78, 255, 0.08), transparent 50%),
-    linear-gradient(168deg, #0c1022 0%, #070a14 48%, #0a1528 100%);
+    radial-gradient(ellipse 120% 90% at 15% 20%, rgba(0, 120, 212, 0.45), transparent 55%),
+    radial-gradient(ellipse 100% 80% at 85% 30%, rgba(100, 180, 255, 0.35), transparent 50%),
+    radial-gradient(ellipse 80% 70% at 50% 100%, rgba(0, 80, 180, 0.25), transparent 45%),
+    linear-gradient(165deg, #0a1628 0%, #1a3a6e 38%, #0d2848 100%);
 }
 
 .dvs-wallpaper--aurora {
   background:
-    radial-gradient(ellipse 100% 80% at 10% 0%, rgba(0, 255, 200, 0.15), transparent 50%),
-    radial-gradient(ellipse 80% 60% at 90% 30%, rgba(120, 80, 255, 0.18), transparent 55%),
-    radial-gradient(ellipse 60% 50% at 40% 100%, rgba(255, 0, 180, 0.08), transparent 45%),
-    linear-gradient(165deg, #061018 0%, #0a1430 40%, #12082a 100%);
+    radial-gradient(ellipse 100% 70% at 20% 10%, rgba(180, 100, 255, 0.35), transparent 50%),
+    radial-gradient(ellipse 90% 60% at 80% 40%, rgba(0, 200, 255, 0.3), transparent 52%),
+    radial-gradient(ellipse 70% 50% at 45% 90%, rgba(0, 100, 200, 0.35), transparent 48%),
+    linear-gradient(160deg, #12082a 0%, #1a2060 45%, #081830 100%);
 }
 
 .dvs-wallpaper--magma {
   background:
-    radial-gradient(circle at 75% 85%, rgba(255, 90, 40, 0.22), transparent 42%),
-    radial-gradient(circle at 20% 60%, rgba(255, 200, 60, 0.1), transparent 40%),
-    linear-gradient(180deg, #1a0808 0%, #2d1018 45%, #0d0508 100%);
+    radial-gradient(ellipse 90% 60% at 70% 85%, rgba(255, 100, 40, 0.5), transparent 45%),
+    radial-gradient(ellipse 70% 50% at 15% 40%, rgba(255, 180, 60, 0.2), transparent 50%),
+    linear-gradient(175deg, #1a0a08 0%, #3d1510 50%, #120605 100%);
 }
 
 .dvs-wallpaper--ocean {
   background:
-    radial-gradient(ellipse 120% 70% at 50% 120%, rgba(0, 180, 220, 0.2), transparent 50%),
-    radial-gradient(ellipse 50% 40% at 15% 20%, rgba(0, 100, 180, 0.12), transparent 50%),
-    linear-gradient(175deg, #031a28 0%, #062238 50%, #041018 100%);
+    radial-gradient(ellipse 110% 80% at 50% 100%, rgba(0, 160, 200, 0.45), transparent 48%),
+    radial-gradient(ellipse 60% 45% at 10% 25%, rgba(0, 90, 140, 0.35), transparent 50%),
+    linear-gradient(180deg, #031c28 0%, #064a62 55%, #021820 100%);
 }
 
 .dvs-wallpaper--neon-grid {
   background:
-    linear-gradient(rgba(0, 212, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 212, 255, 0.04) 1px, transparent 1px),
-    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(157, 78, 255, 0.2), transparent 55%),
-    linear-gradient(145deg, #0a0618 0%, #120a28 100%);
-  background-size: 24px 24px, 24px 24px, 100% 100%, 100% 100%;
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    radial-gradient(ellipse 85% 55% at 50% 0%, rgba(0, 120, 215, 0.4), transparent 55%),
+    linear-gradient(145deg, #0c1220 0%, #1a2840 100%);
+  background-size: 32px 32px, 32px 32px, 100% 100%, 100% 100%;
 }
 
 .dvs-wallpaper--forest {
   background:
-    radial-gradient(ellipse 90% 60% at 50% 100%, rgba(40, 120, 60, 0.25), transparent 55%),
-    radial-gradient(ellipse 50% 40% at 10% 30%, rgba(20, 80, 50, 0.15), transparent 50%),
-    linear-gradient(168deg, #050f0a 0%, #0a1810 50%, #030806 100%);
+    radial-gradient(ellipse 100% 65% at 50% 100%, rgba(40, 140, 80, 0.5), transparent 50%),
+    radial-gradient(ellipse 55% 45% at 12% 28%, rgba(30, 90, 50, 0.35), transparent 50%),
+    linear-gradient(168deg, #061208 0%, #0f2818 48%, #040a06 100%);
 }
 
 .dvs-wallpaper--sunset {
   background:
-    radial-gradient(ellipse 100% 55% at 50% 110%, rgba(255, 120, 40, 0.35), transparent 50%),
-    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(255, 60, 120, 0.12), transparent 50%),
-    linear-gradient(185deg, #180828 0%, #301020 40%, #080818 100%);
+    radial-gradient(ellipse 100% 55% at 50% 105%, rgba(255, 140, 60, 0.55), transparent 48%),
+    radial-gradient(ellipse 65% 45% at 85% 22%, rgba(255, 80, 120, 0.25), transparent 50%),
+    linear-gradient(185deg, #1a0c28 0%, #402040 42%, #100818 100%);
 }
 
 /* ─── Иконки рабочего стола ─────────────────────────────────────────────── */
@@ -360,16 +374,16 @@ $border: rgba(0, 212, 255, 0.22);
 .dvs-av-deco {
   padding: 10px 12px;
   margin-bottom: 12px;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.28);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  background: #f5f7fa;
+  border: 1px solid $os-border;
 }
 
 .dvs-av-deco-status {
   margin: 0 0 10px;
   font-size: 12px;
   color: $dg;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .dvs-fw-deco-list {
@@ -384,92 +398,200 @@ $border: rgba(0, 212, 255, 0.22);
   justify-content: space-between;
   gap: 10px;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid $os-border;
   font-size: 12px;
-  color: rgba(220, 230, 245, 0.88);
+  color: $os-text;
 }
 
 .dvs-fw-deco-pill {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 3px 8px;
   border-radius: 4px;
   background: rgba($dg, 0.12);
-  color: $dg;
+  color: #0e6b0e;
 }
 
 .dvs-explorer-deco-note {
   margin: 0 0 10px;
   font-size: 12px;
-  color: var(--ui-gray, #6b7c9a);
+  color: $os-text-dim;
 }
 
-/* ─── Windows ───────────────────────────────────────────────────────────── */
+/* ─── Окна приложений (светлая тема как в Windows 11) ───────────────────── */
 
-.dvs-window {
+.dvs-window--os {
   position: absolute;
   z-index: 2;
-  background: $panel;
-  border: 1px solid $border;
-  border-radius: 8px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
   display: flex;
   flex-direction: column;
   max-height: 78%;
   overflow: hidden;
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.08),
+    0 12px 28px rgba(0, 0, 0, 0.18);
 }
 
-.dvs-window--threat {
+.dvs-window--terminal {
+  border-color: #2a2a2a;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.25),
+    0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.dvs-window--popup.dvs-window--threat {
+  position: absolute;
   z-index: 4;
-  border-color: rgba($dr, 0.45);
-  box-shadow: 0 0 0 1px rgba($dr, 0.15), 0 16px 40px rgba($dr, 0.12);
+  display: flex;
+  flex-direction: column;
+  max-height: 70%;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #b0b0b0;
+  border-radius: 6px;
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.12),
+    0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .dvs-win-titlebar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 10px;
-  background: rgba(0, 0, 0, 0.35);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 0;
+  flex-shrink: 0;
+  min-height: 32px;
+  padding-left: 12px;
+  background: linear-gradient(180deg, $os-titlebar-top 0%, $os-titlebar-bot 100%);
+  border-bottom: 1px solid $os-titlebar-border;
+  border-radius: 8px 8px 0 0;
 }
 
-.dvs-win-titlebar--alert {
-  background: rgba($dr, 0.12);
+.dvs-window--popup .dvs-win-titlebar {
+  min-height: 28px;
+  padding-left: 10px;
+  border-radius: 6px 6px 0 0;
+}
+
+.dvs-win-titlebar--terminal {
+  background: #2d2d2d;
+  border-bottom-color: #1e1e1e;
+  border-radius: 8px 8px 0 0;
 }
 
 .dvs-win-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #e8eef8;
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: $os-text;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.dvs-win-close {
-  width: 28px;
+.dvs-win-titlebar--terminal .dvs-win-title {
+  color: #f3f3f3;
+  font-weight: 500;
+}
+
+.dvs-window--popup.dvs-window--threat .dvs-win-title {
+  font-size: 11px;
+}
+
+/* Кнопки мин / макс / закрыть */
+.dvs-win-caps {
+  display: flex;
+  flex-shrink: 0;
+  align-items: stretch;
+  margin-left: auto;
+  height: 32px;
+}
+
+.dvs-window--popup .dvs-win-caps {
   height: 28px;
-  border: none;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
+}
+
+.dvs-win-caps--dark .dvs-win-cap {
   color: #fff;
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
 
   &:hover {
-    background: rgba($dr, 0.35);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  &.dvs-win-cap--close:hover {
+    background: #e81123;
+    color: #fff;
   }
 }
 
+.dvs-win-cap {
+  width: 46px;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  color: #1a1a1a;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.08s ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.06);
+  }
+
+  &.dvs-win-cap--close:hover {
+    background: #e81123;
+    color: #fff;
+  }
+}
+
+.dvs-window--popup .dvs-win-cap {
+  width: 36px;
+}
+
+.dvs-win-cap--min::after {
+  content: "";
+  display: block;
+  width: 10px;
+  height: 1px;
+  background: currentColor;
+}
+
+.dvs-win-cap--max::after {
+  content: "";
+  display: block;
+  width: 9px;
+  height: 9px;
+  border: 1px solid currentColor;
+  box-sizing: border-box;
+}
+
+.dvs-win-cap--close::after {
+  content: "\00d7";
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 300;
+}
+
 .dvs-win-body {
-  padding: 14px 16px 16px;
+  flex: 1;
+  min-height: 0;
+  padding: 12px 14px 14px;
   overflow: auto;
   font-size: 13px;
-  line-height: 1.45;
-  color: rgba(220, 230, 245, 0.9);
+  line-height: 1.5;
+  color: $os-text;
+  background: #fff;
+}
+
+.dvs-win-body--terminal {
+  background: #0c0c0c;
+  color: #cccccc;
 }
 
 .dvs-win-body--compact {
@@ -479,27 +601,36 @@ $border: rgba(0, 212, 255, 0.22);
 .dvs-win-hint {
   margin: 0 0 12px;
   font-size: 12px;
-  color: rgba($dc, 0.9);
+  color: $dc;
+}
+
+.dvs-win-body--terminal .dvs-win-hint {
+  color: #7eb8ff;
 }
 
 .dvs-win-hint--small {
   margin: 12px 0 0;
-  color: var(--ui-gray, #6b7c9a);
+  color: $os-text-dim;
+}
+
+.dvs-win-body--terminal .dvs-win-hint--small {
+  color: #888;
 }
 
 .dvs-fake-tree {
   margin: 0;
   padding-left: 18px;
-  color: rgba(220, 230, 245, 0.85);
+  color: $os-text-dim;
 }
 
 .dvs-file-list {
   list-style: none;
   margin: 0 0 12px;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
+  border: 1px solid $os-border;
+  border-radius: 4px;
   overflow: hidden;
+  background: #fff;
 }
 
 .dvs-file-row {
@@ -507,11 +638,11 @@ $border: rgba(0, 212, 255, 0.22);
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: transparent;
-  color: inherit;
+  border-bottom: 1px solid #eee;
+  background: #fff;
+  color: $os-text;
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -521,13 +652,13 @@ $border: rgba(0, 212, 255, 0.22);
   }
 
   &:hover {
-    background: rgba($dc, 0.06);
+    background: #f0f6fc;
   }
 }
 
 .dvs-file-row--selected {
-  background: rgba($dc, 0.14);
-  outline: 1px solid rgba($dc, 0.35);
+  background: #cce4f7;
+  outline: 1px solid rgba($dc, 0.45);
 }
 
 .dvs-file-ico {
@@ -541,21 +672,21 @@ $border: rgba(0, 212, 255, 0.22);
 
 .dvs-notif-card {
   padding: 12px 14px;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  background: #f8f8f8;
+  border: 1px solid $os-border;
   margin-bottom: 14px;
 
   strong {
     display: block;
     margin-bottom: 8px;
-    color: #fff;
+    color: $os-text;
   }
 
   p {
     margin: 0;
     font-size: 13px;
-    color: rgba(220, 230, 245, 0.88);
+    color: $os-text-dim;
   }
 }
 
@@ -574,62 +705,66 @@ $border: rgba(0, 212, 255, 0.22);
   td {
     padding: 8px 10px;
     text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid #eee;
   }
 
   th {
-    color: var(--ui-gray, #6b7c9a);
+    color: $os-text-dim;
     font-weight: 600;
     font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
+    background: #fafafa;
   }
 }
 
 .dvs-tm-hot td {
   color: $dr;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .dvs-tm-heading {
   margin: 0 0 10px;
   font-size: 12px;
-  font-weight: 700;
-  color: rgba($dc, 0.85);
+  font-weight: 600;
+  color: $os-text-dim;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
 }
 
 .dvs-tm-tabs {
   display: flex;
-  gap: 4px;
-  margin-bottom: 12px;
+  gap: 0;
+  margin: -4px -14px 12px;
+  padding: 0 14px;
+  border-bottom: 1px solid $os-border;
 }
 
 .dvs-tm-tab {
-  padding: 6px 14px;
-  border-radius: 6px 6px 0 0;
-  border: 1px solid transparent;
-  border-bottom: none;
-  background: rgba(0, 0, 0, 0.25);
-  color: var(--ui-gray, #6b7c9a);
-  font-size: 12px;
-  font-weight: 600;
+  padding: 8px 16px;
+  margin-bottom: -1px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: $os-text-dim;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
   cursor: pointer;
 
   &:hover {
-    color: rgba(220, 230, 245, 0.9);
+    color: $os-text;
   }
 }
 
 .dvs-tm-tab--on {
-  background: rgba($dc, 0.1);
-  border-color: rgba($dc, 0.25);
-  color: #fff;
+  border-bottom-color: $dc;
+  color: $dc;
+  font-weight: 600;
 }
 
 .dvs-tm-muted {
-  color: var(--ui-gray, #6b7c9a);
+  color: $os-text-dim;
   font-size: 12px;
 }
 
@@ -646,11 +781,11 @@ $border: rgba(0, 212, 255, 0.22);
 .dvs-av-report {
   margin: 0;
   padding: 10px 12px;
-  border-radius: 8px;
-  background: rgba($dr, 0.08);
-  border: 1px solid rgba($dr, 0.25);
+  border-radius: 4px;
+  background: #fff4f0;
+  border: 1px solid #f0c4b8;
   font-size: 13px;
-  color: rgba(220, 230, 245, 0.92);
+  color: $os-text;
 }
 
 .dvs-console-out {
@@ -659,13 +794,13 @@ $border: rgba(0, 212, 255, 0.22);
   overflow-y: auto;
   padding: 10px 12px;
   margin-bottom: 10px;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  font-family: var(--font-mono, monospace);
+  border-radius: 4px;
+  background: #0c0c0c;
+  border: 1px solid #1e1e1e;
+  font-family: "Cascadia Mono", "Consolas", ui-monospace, monospace;
   font-size: 12px;
   line-height: 1.45;
-  color: rgba(200, 220, 245, 0.9);
+  color: #ccc;
 }
 
 .dvs-console-line {
@@ -680,8 +815,8 @@ $border: rgba(0, 212, 255, 0.22);
 }
 
 .dvs-console-prompt {
-  color: $dg;
-  font-family: var(--font-mono, monospace);
+  color: #3dffa0;
+  font-family: "Cascadia Mono", "Consolas", ui-monospace, monospace;
   font-weight: 700;
 }
 
@@ -689,27 +824,27 @@ $border: rgba(0, 212, 255, 0.22);
   flex: 1;
   min-width: 0;
   padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid rgba($dc, 0.25);
-  background: rgba(0, 0, 0, 0.35);
-  color: #fff;
-  font-family: var(--font-mono, monospace);
+  border-radius: 4px;
+  border: 1px solid #3a3a3a;
+  background: #161616;
+  color: #e8e8e8;
+  font-family: "Cascadia Mono", "Consolas", ui-monospace, monospace;
   font-size: 13px;
 
   &::placeholder {
-    color: var(--ui-gray, #6b7c9a);
+    color: #666;
   }
 
   &:focus {
     outline: none;
-    border-color: rgba($dc, 0.5);
+    border-color: $dc;
   }
 }
 
 .dvs-fw-timer {
   margin: 0 0 12px;
   font-size: 13px;
-  color: rgba(220, 230, 245, 0.9);
+  color: $os-text;
 
   strong {
     color: $dy;
@@ -728,7 +863,7 @@ $border: rgba(0, 212, 255, 0.22);
   justify-content: space-between;
   gap: 12px;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid #eee;
 
   code {
     font-size: 12px;
@@ -739,7 +874,7 @@ $border: rgba(0, 212, 255, 0.22);
 .dvs-fw-label {
   display: block;
   font-size: 11px;
-  color: var(--ui-gray, #6b7c9a);
+  color: $os-text-dim;
   margin-top: 2px;
 }
 
@@ -753,11 +888,14 @@ $border: rgba(0, 212, 255, 0.22);
   z-index: 500;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 10px;
-  background: rgba(6, 8, 18, 0.92);
-  border-top: 1px solid rgba($dc, 0.2);
-  backdrop-filter: blur(12px);
+  gap: 6px;
+  padding: 4px 8px 4px 6px;
+  min-height: 44px;
+  box-sizing: border-box;
+  background: $taskbar-bg;
+  border-top: 1px solid $taskbar-border;
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
 }
 
 .dvs-taskbar-start-cluster {
@@ -766,79 +904,89 @@ $border: rgba(0, 212, 255, 0.22);
 }
 
 .dvs-start-btn {
-  width: 36px;
-  height: 34px;
-  border-radius: 6px;
-  border: 1px solid rgba($dc, 0.25);
-  background: rgba($dc, 0.08);
-  color: $dc;
-  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 36px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: #fff;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.12s ease;
 
   &:hover {
-    background: rgba($dc, 0.16);
-    border-color: rgba($dc, 0.45);
+    background: rgba(255, 255, 255, 0.08);
   }
 }
 
 .dvs-start-btn--open {
-  background: rgba($dc, 0.22);
-  border-color: rgba($dc, 0.55);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.dvs-winlogo-svg {
+  display: block;
+  opacity: 0.95;
 }
 
 .dvs-start-menu {
   position: absolute;
-  bottom: calc(100% + 10px);
+  bottom: calc(100% + 8px);
   left: 0;
-  min-width: 220px;
+  min-width: 248px;
   padding: 8px 0;
-  border-radius: 10px;
-  border: 1px solid $border;
-  background: linear-gradient(180deg, rgba(18, 22, 42, 0.98), rgba(10, 12, 24, 0.99));
-  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.55);
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background: #f3f3f3;
+  box-shadow:
+    0 -4px 16px rgba(0, 0, 0, 0.12),
+    0 0 1px rgba(0, 0, 0, 0.08);
 }
 
 .dvs-start-menu-title {
-  padding: 6px 14px 8px;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
+  padding: 6px 16px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: var(--ui-gray, #6b7c9a);
+  color: $os-text-dim;
 }
 
 .dvs-start-item {
   display: block;
   width: 100%;
-  padding: 10px 16px;
+  padding: 10px 18px;
   border: none;
   background: transparent;
-  color: rgba(230, 238, 250, 0.95);
+  color: $os-text;
   font: inherit;
   font-size: 14px;
   text-align: left;
   cursor: pointer;
 
   &:hover {
-    background: rgba($dc, 0.12);
-    color: #fff;
+    background: rgba(0, 0, 0, 0.04);
   }
 }
 
 .dvs-task-pill {
   padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid rgba($dc, 0.2);
-  background: rgba(0, 212, 255, 0.06);
-  color: rgba(220, 230, 245, 0.9);
+  border-radius: 4px;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f3f3f3;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
+  font-family: inherit;
   cursor: pointer;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   &:hover {
-    border-color: rgba($dc, 0.45);
-    background: rgba($dc, 0.12);
+    background: rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -846,15 +994,52 @@ $border: rgba(0, 212, 255, 0.22);
   flex: 1;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
   align-items: center;
+  min-width: 0;
+}
+
+.dvs-tray {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dvs-tray-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+  opacity: 0.9;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.dvs-tray-icon--wifi {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e8e8e8'%3E%3Cpath d='M12 18c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm-4.2-3.2 1.4 1.4c1.8-1.8 4.8-1.8 6.6 0l1.4-1.4c-2.5-2.5-6.5-2.5-9 0zm-3-3 1.4 1.4c3.9-3.9 10.1-3.9 14 0l1.4-1.4c-4.7-4.7-12.3-4.7-17 0zm-3-3 1.4 1.4c6.1-6.1 15.9-6.1 22 0l1.4-1.4c-6.9-6.9-18.1-6.9-25 0z'/%3E%3C/svg%3E");
+}
+
+.dvs-tray-icon--vol {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e8e8e8'%3E%3Cpath d='M3 10v4h4l5 5V5L7 10H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E");
+}
+
+.dvs-tray-icon--bat {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e8e8e8'%3E%3Cpath d='M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4zM13 18h-2v-2h2v2zm0-4h-2V8h2v6z'/%3E%3C/svg%3E");
 }
 
 .dvs-taskbar-clock {
   font-size: 12px;
   font-variant-numeric: tabular-nums;
-  color: rgba(220, 230, 245, 0.85);
-  padding-right: 6px;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 400;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
 }
 
 /* ─── HUD & overlay ─────────────────────────────────────────────────────── */
@@ -871,12 +1056,13 @@ $border: rgba(0, 212, 255, 0.22);
   align-items: center;
   justify-content: center;
   padding: 8px 16px;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba($dc, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #dadada;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
   font-size: 12px;
-  font-weight: 600;
-  color: rgba(220, 230, 245, 0.95);
+  font-weight: 500;
+  color: $os-text;
 }
 
 .dvs-hud-ok {
@@ -895,32 +1081,36 @@ $border: rgba(0, 212, 255, 0.22);
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(3, 5, 12, 0.72);
-  backdrop-filter: blur(6px);
+  background: rgba(30, 30, 30, 0.45);
+  backdrop-filter: blur(4px);
 }
 
 .dvs-overlay-card {
   max-width: 400px;
   width: 100%;
-  padding: 28px 24px;
-  border-radius: 14px;
-  border: 1px solid $border;
-  background: linear-gradient(160deg, rgba(16, 20, 40, 0.98), rgba(8, 10, 22, 0.99));
+  padding: 24px 24px 20px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
   text-align: center;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    0 16px 48px rgba(0, 0, 0, 0.18);
 }
 
 .dvs-result-win {
   margin: 0 0 10px;
-  font-family: var(--font-display, sans-serif);
-  font-size: 28px;
+  font-family: inherit;
+  font-size: 22px;
+  font-weight: 600;
   color: $dg;
 }
 
 .dvs-result-loss {
   margin: 0 0 10px;
-  font-family: var(--font-display, sans-serif);
-  font-size: 28px;
+  font-family: inherit;
+  font-size: 22px;
+  font-weight: 600;
   color: $dr;
 }
 
@@ -928,7 +1118,7 @@ $border: rgba(0, 212, 255, 0.22);
   margin: 0 0 20px;
   font-size: 14px;
   line-height: 1.5;
-  color: var(--ui-dark-gray, #b8c8e0);
+  color: $os-text-dim;
 }
 
 .dvs-overlay-actions {
@@ -942,59 +1132,71 @@ $border: rgba(0, 212, 255, 0.22);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 18px;
-  border-radius: 8px;
+  padding: 8px 16px;
+  border-radius: 4px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.12s, border-color 0.12s;
 }
 
 .dvs-btn--primary {
-  background: rgba($dc, 0.2);
-  border-color: rgba($dc, 0.5);
+  background: $dc;
+  border-color: $dc;
   color: #fff;
 
-  &:hover {
-    background: rgba($dc, 0.32);
+  &:hover:not(:disabled) {
+    background: $dc-hover;
+    border-color: $dc-hover;
   }
 }
 
 .dvs-btn--ghost {
-  background: transparent;
-  border-color: rgba(255, 255, 255, 0.12);
-  color: rgba(220, 230, 245, 0.9);
+  background: #fff;
+  border-color: #c4c4c4;
+  color: $os-text;
 
-  &:hover {
-    border-color: rgba($dc, 0.35);
-    color: #fff;
+  &:hover:not(:disabled) {
+    border-color: #8a8a8a;
+    background: #f5f5f5;
+  }
+}
+
+.dvs-win-body--terminal .dvs-btn--ghost {
+  background: #2a2a2a;
+  border-color: #555;
+  color: #eee;
+
+  &:hover:not(:disabled) {
+    background: #3a3a3a;
   }
 }
 
 .dvs-btn--danger {
-  background: rgba($dr, 0.15);
-  border-color: rgba($dr, 0.45);
-  color: #ff7a73;
+  background: #fff;
+  border-color: $dr;
+  color: $dr;
 
   &:hover:not(:disabled) {
-    background: rgba($dr, 0.28);
+    background: #fde8e6;
   }
 
   &:disabled {
-    opacity: 0.4;
+    opacity: 0.45;
     cursor: not-allowed;
   }
 }
 
 .dvs-btn--small {
-  padding: 5px 10px;
-  font-size: 11px;
-  font-weight: 600;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .dvs-btn--blocked {
-  border-color: rgba($dr, 0.5) !important;
+  border-color: $dr !important;
   color: $dr !important;
+  background: #fff4f2 !important;
 }

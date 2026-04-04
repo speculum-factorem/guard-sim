@@ -207,28 +207,51 @@ function useWindowManager() {
   };
 }
 
+function Win11CaptionButtons(props: { onClose: () => void; theme?: "light" | "dark" }) {
+  const { onClose, theme = "light" } = props;
+  return (
+    <div className={`dvs-win-caps${theme === "dark" ? " dvs-win-caps--dark" : ""}`}>
+      <button type="button" className="dvs-win-cap dvs-win-cap--min" aria-hidden tabIndex={-1} />
+      <button type="button" className="dvs-win-cap dvs-win-cap--max" aria-hidden tabIndex={-1} />
+      <button type="button" className="dvs-win-cap dvs-win-cap--close" aria-label="Закрыть" onClick={onClose} />
+    </div>
+  );
+}
+
+function WindowsStartIcon() {
+  return (
+    <svg className="dvs-winlogo-svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden>
+      <path
+        fill="currentColor"
+        d="M3 5.5h8.5V12H3V5.5zm10.5 0H22V12h-8.5V5.5zM3 13.5h8.5V22H3v-8.5zm10.5 0H22V22h-8.5v-8.5z"
+      />
+    </svg>
+  );
+}
+
 function DesktopWindowFrame(props: {
   winId: WinId;
   z: number;
   onClose: () => void;
   onPointerDown: () => void;
   children: ReactNode;
+  /** Светлое окно приложения или тёмная консоль как в Windows Terminal */
+  chrome?: "app" | "terminal";
 }) {
-  const { winId, z, onClose, onPointerDown, children } = props;
+  const { winId, z, onClose, onPointerDown, children, chrome = "app" } = props;
   const L = WIN_LAYOUT[winId];
+  const isTerm = chrome === "terminal";
   return (
     <div
-      className="dvs-window"
+      className={`dvs-window dvs-window--os${isTerm ? " dvs-window--terminal" : ""}`}
       style={{ top: L.top, left: L.left, width: L.width, zIndex: z }}
       onPointerDown={onPointerDown}
     >
-      <div className="dvs-win-titlebar">
+      <div className={`dvs-win-titlebar${isTerm ? " dvs-win-titlebar--terminal" : ""}`}>
         <span className="dvs-win-title">{WIN_LABELS[winId].title}</span>
-        <button type="button" className="dvs-win-close" aria-label="Закрыть" onClick={onClose}>
-          ×
-        </button>
+        <Win11CaptionButtons onClose={onClose} theme={isTerm ? "dark" : "light"} />
       </div>
-      <div className="dvs-win-body">{children}</div>
+      <div className={`dvs-win-body${isTerm ? " dvs-win-body--terminal" : ""}`}>{children}</div>
     </div>
   );
 }
@@ -307,6 +330,15 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
   const [rhKilled, setRhKilled] = useState(false);
   const [rhAv, setRhAv] = useState(false);
   const [rhConsole, setRhConsole] = useState(false);
+  /** Синхронно для submitConsole — избегаем гонки после клика «Удалить остатки» и сразу Enter */
+  const rhKilledRef = useRef(false);
+  const rhAvRef = useRef(false);
+  useEffect(() => {
+    rhKilledRef.current = rhKilled;
+  }, [rhKilled]);
+  useEffect(() => {
+    rhAvRef.current = rhAv;
+  }, [rhAv]);
 
   /* ── Уровень 5: ботнет ── */
   const [nbBlocked, setNbBlocked] = useState<Set<string>>(() => new Set());
@@ -335,6 +367,8 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
     setRhKilled(false);
     setRhAv(false);
     setRhConsole(false);
+    rhKilledRef.current = false;
+    rhAvRef.current = false;
     setNbBlocked(new Set());
     setNbLeft(90);
     setTmTab("proc");
@@ -473,12 +507,13 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
     }
 
     if (virusId === "resource_hog" && phase === "playing") {
-      if (raw.trim().toLowerCase() === "purge-miner-traces") {
-        if (!rhKilled) {
+      const cmd = raw.replace(/\s+/g, " ").trim().toLowerCase();
+      if (cmd === "purge-miner-traces") {
+        if (!rhKilledRef.current) {
           appendConsole("Сначала завершите процесс mshelper (копия) в диспетчере задач.");
           return;
         }
-        if (!rhAv) {
+        if (!rhAvRef.current) {
           appendConsole("Сначала удалите остатки угрозы в антивирусе.");
           return;
         }
@@ -491,7 +526,7 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
     }
 
     appendConsole(`Команда не используется в этом сценарии: ${raw}`);
-  }, [appendConsole, consoleInput, phase, rhAv, rhKilled, virusId, wormFileGone]);
+  }, [appendConsole, consoleInput, phase, virusId, wormFileGone]);
 
   const openFromStart = (id: WinId) => {
     shell.openWindow(id);
@@ -541,9 +576,13 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
     if (virusId !== "resource_hog" || phase !== "playing") return;
     const row = TM_PROC_MINER.find((r) => r.id === id);
     if (!row) return;
-    if (row.malware) setRhKilled(true);
-    else setPhase("lost");
+    if (row.malware === true) {
+      setRhKilled(true);
+      rhKilledRef.current = true;
+    } else setPhase("lost");
   };
+
+  const minerRowsForUi = rhKilled ? TM_PROC_MINER.filter((r) => r.id !== "bad") : TM_PROC_MINER;
 
   const toggleNbBlock = (ip: string) => {
     if (virusId !== "network_bot" || phase !== "playing") return;
@@ -759,7 +798,10 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
                   type="button"
                   className="dvs-btn dvs-btn--primary"
                   disabled={!rhKilled || rhAv}
-                  onClick={() => setRhAv(true)}
+                  onClick={() => {
+                    rhAvRef.current = true;
+                    setRhAv(true);
+                  }}
                 >
                   Удалить остатки угрозы
                 </button>
@@ -832,6 +874,7 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
             z={shell.zIndexFor("console")}
             onClose={() => shell.closeWindow("console")}
             onPointerDown={() => shell.bringToFront("console")}
+            chrome="terminal"
           >
             <div className="dvs-console-out" role="log">
               {consoleLines.map((ln, i) => (
@@ -897,7 +940,7 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {TM_PROC_MINER.map((r) => (
+                  {minerRowsForUi.map((r) => (
                     <tr key={r.id} className={r.cpu > 50 ? "dvs-tm-hot" : ""}>
                       <td>{r.name}</td>
                       <td>{r.cpu.toFixed(1)}</td>
@@ -1001,7 +1044,7 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {TM_PROC_MINER.map((r) => (
+                    {minerRowsForUi.map((r) => (
                       <tr key={`rn-${r.id}`}>
                         <td>{r.name}</td>
                         <td>{r.net.toFixed(2)}</td>
@@ -1053,11 +1096,9 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
                 className="dvs-window dvs-window--popup dvs-window--threat"
                 style={{ top: `${pop.top}%`, left: `${pop.left}%`, width: "min(280px, 82vw)", zIndex: pop.z }}
               >
-                <div className="dvs-win-titlebar dvs-win-titlebar--alert">
+                <div className="dvs-win-titlebar">
                   <span className="dvs-win-title">{pop.title}</span>
-                  <button type="button" className="dvs-win-close" aria-label="Закрыть" onClick={() => closeP1Popup(pop.id)}>
-                    ×
-                  </button>
+                  <Win11CaptionButtons onClose={() => closeP1Popup(pop.id)} />
                 </div>
                 <div className="dvs-win-body dvs-win-body--compact">
                   <p>Подозрительное окно (симуляция).</p>
@@ -1082,7 +1123,7 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
               aria-label="Пуск"
               onClick={() => setStartOpen((o) => !o)}
             >
-              ⧉
+              <WindowsStartIcon />
             </button>
             {startOpen ? (
               <div className="dvs-start-menu" role="menu">
@@ -1101,6 +1142,11 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
                 {WIN_LABELS[id].taskbar}
               </button>
             ))}
+          </div>
+          <div className="dvs-tray" aria-hidden>
+            <span className="dvs-tray-icon dvs-tray-icon--wifi" title="" />
+            <span className="dvs-tray-icon dvs-tray-icon--vol" title="" />
+            <span className="dvs-tray-icon dvs-tray-icon--bat" title="" />
           </div>
           <time className="dvs-taskbar-clock" dateTime={clock.toISOString()}>
             {formatClock(clock)}

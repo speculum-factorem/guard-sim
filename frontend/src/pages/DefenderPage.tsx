@@ -8,6 +8,8 @@ import { Link } from "react-router-dom";
 type NodeId = "inet" | "fw" | "web01" | "app01" | "db01" | "dc01";
 type NodeStatus = "clean" | "scanning" | "compromised" | "isolated" | "defended";
 type Phase = "select" | "briefing" | "playing" | "won" | "lost";
+type TermLineType = "input" | "output" | "error" | "info" | "system";
+interface TermLine { id: number; type: TermLineType; text: string }
 
 interface NodeState {
   status: NodeStatus;
@@ -341,6 +343,16 @@ export function DefenderPage() {
   const [scoreFloats, setScoreFloats] = useState<{ id: number; text: string; ok: boolean }[]>([]);
   const [threatLevel, setThreatLevel] = useState(0);
   const [alertFlash, setAlertFlash] = useState(false);
+  const [termLines, setTermLines] = useState<TermLine[]>([]);
+  const [termInput, setTermInput] = useState("");
+  const [termHistoryCmds, setTermHistoryCmds] = useState<string[]>([]);
+  const [_termHistoryIdx, setTermHistoryIdx] = useState(-1);
+  const termOutputRef = useRef<HTMLDivElement>(null);
+  const termInputRef = useRef<HTMLInputElement>(null);
+
+  const pushTerm = useCallback((text: string, type: TermLineType = "output") => {
+    setTermLines((prev) => [...prev.slice(-299), { id: Date.now() + Math.random(), type, text }]);
+  }, []);
 
   const addLog = useCallback((sev: Log["sev"], msg: string) => {
     setLogs((prev) => [...prev.slice(-199), mkLog(sev, msg)]);
@@ -430,6 +442,7 @@ export function DefenderPage() {
             for (const msg of arrLogs) {
               addLog(arrLogs.indexOf(msg) === 0 ? "warn" : "crit", msg);
             }
+            pushTerm(`[ALERT] Атакующий переместился на ${NODE_DEFS[nextNodeId].label}  -30`, "error");
 
             setThreatLevel((t) => Math.min(100, t + 20));
             flashAlert();
@@ -490,6 +503,15 @@ export function DefenderPage() {
     setThreatLevel(15);
     setScoreFloats([]);
     setAlertFlash(false);
+    setTermLines([
+      { id: 1, type: "system", text: `SOC TERMINAL v2.1 — ${sc.name}` },
+      { id: 2, type: "system", text: `Атака типа «${sc.attackType}» активна. Действуй быстро.` },
+      { id: 3, type: "info",   text: "Введи 'help' для списка команд. Tab — автодополнение узлов." },
+      { id: 4, type: "info",   text: `Цель атакующего: ${NODE_DEFS[sc.loseNode].label}` },
+    ]);
+    setTermInput("");
+    setTermHistoryCmds([]);
+    setTermHistoryIdx(-1);
     setPhase("playing");
   }, []);
 
@@ -497,8 +519,11 @@ export function DefenderPage() {
   const actIsolate = useCallback((nodeId: NodeId) => {
     setNodes((prev) => {
       const n = prev[nodeId];
-      if (n.cdIsolate > 0 || n.status === "isolated") return prev;
+      if (n.cdIsolate > 0) { pushTerm(`[ERR] ${NODE_DEFS[nodeId].label}: isolate на перезарядке (${n.cdIsolate}с)`, "error"); return prev; }
+      if (n.status === "isolated") { pushTerm(`[WARN] ${NODE_DEFS[nodeId].label}: уже изолирован`, "error"); return prev; }
+      if (nodeId === "inet") { pushTerm(`[ERR] Нельзя изолировать внешний интернет`, "error"); return prev; }
       addLog("info", `Изоляция ${NODE_DEFS[nodeId].label}: узел отключён от сети`);
+      pushTerm(`[OK] ${NODE_DEFS[nodeId].label} изолирован — входящие/исходящие соединения разорваны  +120`, "output");
       addFloat("+120", true);
       setScore((s) => s + 120);
       setThreatLevel((t) => Math.max(0, t - 15));
@@ -507,13 +532,15 @@ export function DefenderPage() {
         [nodeId]: { ...n, status: "isolated", attacker: false, cdIsolate: 20 },
       };
     });
-  }, [addLog, addFloat]);
+  }, [addLog, addFloat, pushTerm]);
 
   const actKillProc = useCallback((nodeId: NodeId) => {
     setNodes((prev) => {
       const n = prev[nodeId];
-      if (n.cdKill > 0 || !n.attacker) return prev;
+      if (n.cdKill > 0) { pushTerm(`[ERR] kill: команда на перезарядке (${n.cdKill}с)`, "error"); return prev; }
+      if (!n.attacker) { pushTerm(`[WARN] kill: атакующего нет на ${NODE_DEFS[nodeId].label}`, "error"); return prev; }
       addLog("warn", `Завершение процессов на ${NODE_DEFS[nodeId].label} — атакующий выбит`);
+      pushTerm(`[OK] Процессы на ${NODE_DEFS[nodeId].label} завершены — атакующий отброшен назад  +60`, "output");
       addFloat("+60", true);
       setScore((s) => s + 60);
       // Push attacker back one step
@@ -532,23 +559,29 @@ export function DefenderPage() {
       }
       return prev;
     });
-  }, [addLog, addFloat, scenario]);
+  }, [addLog, addFloat, pushTerm, scenario]);
 
   const actBlockIp = useCallback(() => {
-    if (blockCd > 0 || ipBlocked) return;
+    if (blockCd > 0) { pushTerm(`[ERR] block: правило на перезарядке (${blockCd}с)`, "error"); return; }
+    if (ipBlocked) { pushTerm("[WARN] block: IP 203.45.178.92 уже заблокирован", "error"); return; }
     setIpBlocked(true);
     setBlockCd(18);
     addLog("info", "Firewall rule добавлено — IP 203.45.178.92 заблокирован. +2 сек/шаг");
+    pushTerm("[OK] iptables -A INPUT -s 203.45.178.92 -j DROP — правило активно  +40", "output");
     addFloat("+40", true);
     setScore((s) => s + 40);
     setThreatLevel((t) => Math.max(0, t - 10));
-  }, [blockCd, ipBlocked, addLog, addFloat]);
+  }, [blockCd, ipBlocked, addLog, addFloat, pushTerm]);
 
   const actPatch = useCallback((nodeId: NodeId) => {
     setNodes((prev) => {
       const n = prev[nodeId];
-      if (n.cdPatch > 0 || n.attacker || n.status === "clean" || n.status === "defended") return prev;
+      if (n.cdPatch > 0) { pushTerm(`[ERR] patch: на перезарядке (${n.cdPatch}с)`, "error"); return prev; }
+      if (n.attacker) { pushTerm(`[ERR] patch: нельзя патчить узел пока атакующий активен — сначала kill`, "error"); return prev; }
+      if (n.status === "clean" || n.status === "defended") { pushTerm(`[WARN] patch: ${NODE_DEFS[nodeId].label} не требует патча (статус: ${STATUS_LABEL[n.status]})`, "error"); return prev; }
+      if (n.status === "isolated") { pushTerm(`[WARN] patch: ${NODE_DEFS[nodeId].label} изолирован — снять изоляцию перед патчем невозможно в бою`, "error"); return prev; }
       addLog("info", `Патч применён на ${NODE_DEFS[nodeId].label} — уязвимость устранена`);
+      pushTerm(`[OK] ${NODE_DEFS[nodeId].label}: патч установлен — узел защищён  +100`, "output");
       addFloat("+100", true);
       setScore((s) => s + 100);
       return {
@@ -556,26 +589,156 @@ export function DefenderPage() {
         [nodeId]: { ...n, status: "defended", cdPatch: 25 },
       };
     });
-  }, [addLog, addFloat]);
+  }, [addLog, addFloat, pushTerm]);
 
   const actCheckLogs = useCallback((nodeId: NodeId) => {
     if (!scenario) return;
     const logs_ = scenario.arrivalLogs[nodeId] ?? [];
     if (logs_.length === 0) {
       addLog("info", `${NODE_DEFS[nodeId].label}: подозрительной активности не обнаружено`);
+      pushTerm(`[SCAN] ${NODE_DEFS[nodeId].label}: IoC не обнаружено  +10`, "output");
     } else {
       addLog("warn", `Анализ ${NODE_DEFS[nodeId].label} — обнаружены индикаторы компрометации:`);
-      for (const l of logs_) addLog("crit", `  › ${l}`);
+      pushTerm(`[SCAN] ${NODE_DEFS[nodeId].label} — найдены индикаторы компрометации:`, "info");
+      for (const l of logs_) { addLog("crit", `  › ${l}`); pushTerm(`  ⚠ ${l}`, "error"); }
+      pushTerm(`  +10`, "output");
     }
     addFloat("+10", true);
     setScore((s) => s + 10);
-  }, [scenario, addLog, addFloat]);
+  }, [scenario, addLog, addFloat, pushTerm]);
+
+  const processCommand = useCallback((raw: string) => {
+    const line = raw.trim();
+    if (!line) return;
+    pushTerm(`soc@defender:~$ ${line}`, "input");
+    const parts = line.toLowerCase().split(/\s+/);
+    const cmd = parts[0] ?? "";
+    const argRaw = parts[1];
+    const arg = argRaw as NodeId | undefined;
+
+    const needNode = (): NodeId | null => {
+      if (!arg || !(ALL_NODE_IDS as string[]).includes(arg)) {
+        pushTerm(`Ошибка: укажи узел. Доступные: ${ALL_NODE_IDS.join("  ")}`, "error");
+        return null;
+      }
+      return arg as NodeId;
+    };
+
+    switch (cmd) {
+      case "help": {
+        pushTerm("Доступные команды:", "info");
+        pushTerm("  isolate <node>   — изолировать узел от сети           [КД 20с]");
+        pushTerm("  kill <node>      — завершить вредоносный процесс      [КД 14с]");
+        pushTerm("  block            — заблокировать IP атакующего        [КД 18с]");
+        pushTerm("  patch <node>     — применить патч безопасности        [КД 25с]");
+        pushTerm("  logs <node>      — просмотреть логи / IoC узла");
+        pushTerm("  status           — состояние всех узлов сети");
+        pushTerm("  abort            — прервать миссию");
+        pushTerm("  clear            — очистить терминал");
+        break;
+      }
+      case "status": {
+        pushTerm("━━ Статус сети ━━━━━━━━━━━━━━━━━━━━━━━━━━━━", "info");
+        for (const id of ALL_NODE_IDS) {
+          const n = nodes[id];
+          const def = NODE_DEFS[id];
+          const atk = n.attacker ? "  ☠ АТАКУЮЩИЙ" : "";
+          pushTerm(`  ${def.label.padEnd(10)} [${STATUS_LABEL[n.status]}]${atk}`);
+        }
+        break;
+      }
+      case "isolate":
+      case "iso": {
+        const id = needNode(); if (!id) break;
+        actIsolate(id);
+        break;
+      }
+      case "kill":
+      case "killproc": {
+        const id = needNode(); if (!id) break;
+        actKillProc(id);
+        break;
+      }
+      case "block":
+      case "blockip": {
+        actBlockIp();
+        break;
+      }
+      case "patch": {
+        const id = needNode(); if (!id) break;
+        actPatch(id);
+        break;
+      }
+      case "logs":
+      case "scan":
+      case "check": {
+        const id = needNode(); if (!id) break;
+        actCheckLogs(id);
+        break;
+      }
+      case "clear": {
+        setTermLines([]);
+        return;
+      }
+      case "abort": {
+        setPhase("select");
+        break;
+      }
+      default:
+        pushTerm(`Команда не найдена: ${cmd}. Введи 'help' для списка.`, "error");
+    }
+  }, [nodes, pushTerm, actIsolate, actKillProc, actBlockIp, actPatch, actCheckLogs]);
+
+  const handleTermKey = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      const val = termInput.trim();
+      if (val) {
+        setTermHistoryCmds((h) => [val, ...h].slice(0, 50));
+        setTermHistoryIdx(-1);
+        processCommand(val);
+      }
+      setTermInput("");
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setTermHistoryIdx((i) => {
+        const next = Math.min(i + 1, termHistoryCmds.length - 1);
+        setTermInput(termHistoryCmds[next] ?? "");
+        return next;
+      });
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setTermHistoryIdx((i) => {
+        const next = Math.max(i - 1, -1);
+        setTermInput(next === -1 ? "" : termHistoryCmds[next] ?? "");
+        return next;
+      });
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      // Autocomplete node ids
+      if (termInput) {
+        const lastWord = termInput.split(" ").pop() ?? "";
+        const match = ALL_NODE_IDS.find((id) => id.startsWith(lastWord) && id !== lastWord);
+        if (match) {
+          setTermInput(termInput.slice(0, termInput.lastIndexOf(lastWord)) + match);
+        }
+      }
+    }
+  }, [termInput, termHistoryCmds, processCommand]);
+
+  // Auto-scroll terminal output
+  useEffect(() => {
+    if (termOutputRef.current) {
+      termOutputRef.current.scrollTop = termOutputRef.current.scrollHeight;
+    }
+  }, [termLines.length]);
 
   const triggerWin = useCallback(() => {
     addLog("info", "ВСЕ АТАКУЮЩИЕ ВЫБИТЫ — Инцидент локализован");
+    pushTerm("━━ МИССИЯ ВЫПОЛНЕНА ━━━━━━━━━━━━━━━━━━━━━━", "system");
+    pushTerm("Все атакующие нейтрализованы. Инфраструктура защищена.", "system");
     setScore((s) => s + elapsed > 0 ? s + Math.floor(300 / Math.max(elapsed, 1) * 60) : s);
     setPhase("won");
-  }, [addLog, elapsed]);
+  }, [addLog, pushTerm, elapsed]);
 
   // Manual win check (all critical nodes protected)
   useEffect(() => {
@@ -760,8 +923,6 @@ export function DefenderPage() {
 
   if (phase !== "playing" || !scenario) return null;
 
-  const selNode = selectedNode ? nodes[selectedNode] : null;
-  const selDef = selectedNode ? NODE_DEFS[selectedNode] : null;
   const attackerNode = scenario.attackPath[attackerIdx] ?? "inet";
 
   return (
@@ -833,111 +994,77 @@ export function DefenderPage() {
 
       {/* ── Main content ── */}
       <div className="defender-main">
-        {/* Network map */}
+        {/* Network map — click node to paste id into terminal */}
         <div className="defender-map-wrap">
-          <NetworkSvg nodes={nodes} selectedNode={selectedNode} onSelect={setSelectedNode} />
+          <NetworkSvg
+            nodes={nodes}
+            selectedNode={selectedNode}
+            onSelect={(id) => {
+              setSelectedNode(id);
+              // Paste node id at end of current input (after command word if present)
+              setTermInput((prev) => {
+                const parts = prev.trim().split(/\s+/);
+                if (parts.length <= 1) return `${parts[0] ?? ""} ${id}`.trim();
+                parts[parts.length - 1] = id;
+                return parts.join(" ");
+              });
+              termInputRef.current?.focus();
+            }}
+          />
         </div>
 
         {/* Log panel */}
         <LogPanel logs={logs} />
       </div>
 
-      {/* ── Action panel ── */}
-      <div className="defender-action-panel">
-        {selectedNode && selNode && selDef ? (
-          <>
-            <div className="def-action-node-info">
-              <span className="def-action-node-name">{selDef.label}</span>
-              <span className="def-action-node-sub">{selDef.sub}</span>
-              <span
-                className="def-action-node-status"
-                style={{ color: nodeColor(selNode) }}
-              >
-                [{STATUS_LABEL[selNode.status]}]
-              </span>
-              {selNode.attacker && (
-                <span className="def-action-node-attacker">☠ АТАКУЮЩИЙ ЗДЕСЬ</span>
-              )}
-            </div>
-
-            <div className="def-action-buttons">
-              <button
-                type="button"
-                className="def-action-btn"
-                disabled={selNode.cdIsolate > 0 || selNode.status === "isolated" || selectedNode === "inet"}
-                onClick={() => actIsolate(selectedNode)}
-                title="Отключить узел от сети"
-              >
-                <span className="def-action-btn-icon">⊘</span>
-                <span className="def-action-btn-label">ИЗОЛИРОВАТЬ</span>
-                {selNode.cdIsolate > 0 && <span className="def-action-btn-cd">{selNode.cdIsolate}с</span>}
-              </button>
-
-              <button
-                type="button"
-                className="def-action-btn def-action-btn--orange"
-                disabled={selNode.cdKill > 0 || !selNode.attacker}
-                onClick={() => actKillProc(selectedNode)}
-                title="Завершить вредоносный процесс"
-              >
-                <span className="def-action-btn-icon">⚡</span>
-                <span className="def-action-btn-label">KILL PROCESS</span>
-                {selNode.cdKill > 0 && <span className="def-action-btn-cd">{selNode.cdKill}с</span>}
-              </button>
-
-              <button
-                type="button"
-                className="def-action-btn def-action-btn--cyan"
-                disabled={blockCd > 0 || ipBlocked}
-                onClick={() => actBlockIp()}
-                title="Добавить правило блокировки IP"
-              >
-                <span className="def-action-btn-icon">🛡</span>
-                <span className="def-action-btn-label">BLOCK IP</span>
-                {blockCd > 0 && <span className="def-action-btn-cd">{blockCd}с</span>}
-                {ipBlocked && <span className="def-action-btn-cd">ACTIVE</span>}
-              </button>
-
-              <button
-                type="button"
-                className="def-action-btn def-action-btn--green"
-                disabled={
-                  selNode.cdPatch > 0 ||
-                  selNode.attacker ||
-                  selNode.status === "clean" ||
-                  selNode.status === "defended" ||
-                  selNode.status === "isolated"
-                }
-                onClick={() => actPatch(selectedNode)}
-                title="Применить патч безопасности"
-              >
-                <span className="def-action-btn-icon">⚙</span>
-                <span className="def-action-btn-label">ПРИМЕНИТЬ ПАТЧ</span>
-                {selNode.cdPatch > 0 && <span className="def-action-btn-cd">{selNode.cdPatch}с</span>}
-              </button>
-
-              <button
-                type="button"
-                className="def-action-btn def-action-btn--info"
-                onClick={() => actCheckLogs(selectedNode)}
-                title="Анализ логов узла"
-              >
-                <span className="def-action-btn-icon">🔍</span>
-                <span className="def-action-btn-label">АНАЛИЗ ЛОГОВ</span>
-              </button>
-            </div>
-          </>
-        ) : (
-          <div className="def-action-hint">
-            <span className="def-action-hint-ico" aria-hidden>↑</span>
-            Выбери узел на карте для выполнения действий
+      {/* ── SOC Terminal ── */}
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+      <div
+        className="def-terminal"
+        onClick={() => termInputRef.current?.focus()}
+        role="region"
+        aria-label="SOC Terminal"
+      >
+        <div className="def-terminal-header">
+          <div className="def-terminal-header-dots">
+            <span className="def-dot def-dot--r" />
+            <span className="def-dot def-dot--y" />
+            <span className="def-dot def-dot--g" />
           </div>
-        )}
+          <span className="def-terminal-title">SOC TERMINAL</span>
+          <span className="def-terminal-hint">help · Tab-автодополнение · ↑↓ история</span>
+          <button
+            type="button"
+            className="def-terminal-abort"
+            onClick={(e) => { e.stopPropagation(); setPhase("select"); }}
+          >
+            ✕ abort
+          </button>
+        </div>
 
-        <button type="button" className="def-abort-btn btn btn-text"
-          onClick={() => setPhase("select")}>
-          ✕ Прервать миссию
-        </button>
+        <div className="def-terminal-output" ref={termOutputRef}>
+          {termLines.map((l) => (
+            <div key={l.id} className={`def-terminal-line def-terminal-line--${l.type}`}>
+              {l.text}
+            </div>
+          ))}
+        </div>
+
+        <div className="def-terminal-input-row">
+          <span className="def-terminal-prompt">soc@defender:~$</span>
+          <input
+            ref={termInputRef}
+            className="def-terminal-input"
+            value={termInput}
+            onChange={(e) => setTermInput(e.target.value)}
+            onKeyDown={handleTermKey}
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
+            aria-label="Ввод команды"
+          />
+          <span className="def-terminal-cursor" aria-hidden />
+        </div>
       </div>
     </div>
   );

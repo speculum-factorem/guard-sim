@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { DASHBOARD_TASKS_HREF } from "../navigationConstants";
 
 export function AppFooter() {
   return (
@@ -18,7 +19,10 @@ export function AppFooter() {
           <Link to="/challenges" className="app-footer-link">
             Челленджи
           </Link>
-          <Link to="/dashboard#tasks" className="app-footer-link">
+          <Link to="/account" className="app-footer-link">
+            Профиль
+          </Link>
+          <Link to={DASHBOARD_TASKS_HREF} className="app-footer-link">
             Задачи
           </Link>
         </nav>

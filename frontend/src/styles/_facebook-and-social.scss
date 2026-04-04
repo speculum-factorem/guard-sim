@@ -7,8 +7,8 @@
 
 .sim-fb-topbar {
   background: #1877f2;
-  padding: 0 16px;
-  border-bottom: 1px solid #29487d;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .sim-fb-topbar-inner {
@@ -101,8 +101,8 @@
   display: flex;
   max-width: 1100px;
   margin: 0 auto;
-  padding: 16px 12px 24px;
-  gap: 12px;
+  padding: 12px 10px 18px;
+  gap: 10px;
   align-items: flex-start;
 }
 
@@ -143,7 +143,7 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .sim-fb-card {
@@ -233,6 +233,354 @@
 .sim-fb-post-actions {
   border-top: 1px solid #e4e6eb;
   padding-top: 6px;
+}
+
+.sim-fb-light-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 10px 16px 6px;
+  border-top: 1px solid #e4e6eb;
+  font-size: 13px;
+}
+
+.sim-fb-like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: #65676b;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.sim-fb-like-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.sim-fb-like-btn--on {
+  color: #e41e3f;
+}
+
+.sim-fb-like-ico {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.sim-fb-like-meta {
+  color: #65676b;
+  font-size: 13px;
+}
+
+.sim-fb-comment-btn {
+  border: none;
+  background: transparent;
+  color: #65676b;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.sim-fb-comment-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.sim-fb-toast--comment {
+  max-width: min(460px, calc(100% - 24px));
+}
+
+.sim-fb-context-strip {
+  margin: 0 0 8px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #475569;
+}
+
+.sim-fb-context-strip--sidebar {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #64748b;
+}
+
+.sim-fb-search-miss {
+  margin: 0 0 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #991b1b;
+}
+
+.sim-fb-search-mark {
+  background: rgba(24, 119, 242, 0.25);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.sim-fb-placeholder-block {
+  padding: 16px;
+  border-radius: 8px;
+  background: #e4e6eb;
+  color: #65676b;
+  font-size: 14px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.sim-fb-placeholder-block--watch {
+  background: #050505;
+  color: #e4e6eb;
+}
+
+.sim-fb-fake-video {
+  height: 120px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #333 0%, #111 100%);
+  margin-bottom: 10px;
+}
+
+.sim-fb-placeholder-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sim-fb-placeholder-tile {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: #e4e6eb;
+  border: 1px solid #ccd0d5;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  color: #65676b;
+  transition: background 0.15s ease;
+}
+
+.sim-fb-placeholder-tile:hover {
+  background: #f0f2f5;
+}
+
+.sim-fb-account-menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sim-fb-account-item {
+  border: 1px solid #ccd0d5;
+  background: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sim-fb-account-item:hover {
+  background: #f0f2f5;
+}
+
+.sim-fb-skeleton-hint {
+  display: block;
+  font-size: 11px;
+  color: #65676b;
+  margin-top: 8px;
+  text-align: left;
+}
+
+.sim-fb-skeleton-panel,
+.sim-fb-comment-panel {
+  position: absolute;
+  z-index: 41;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(380px, calc(100% - 28px));
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.12);
+}
+
+.sim-fb-skeleton-panel-title {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.sim-fb-skeleton-panel-text {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #65676b;
+}
+
+.sim-fb-comment-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ccd0d5;
+  border-radius: 8px;
+  padding: 10px;
+  font: inherit;
+  font-size: 14px;
+  margin-bottom: 12px;
+  resize: vertical;
+}
+
+.sim-fb-comment-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sim-fb-friends-list {
+  margin-bottom: 12px;
+  border: 1px solid #e4e6eb;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.sim-fb-friend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e4e6eb;
+}
+
+.sim-fb-friend-row:last-child {
+  border-bottom: none;
+}
+
+.sim-fb-friend-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #050505;
+}
+
+.sim-fb-friend-sub {
+  font-size: 12px;
+  color: #65676b;
+  margin-top: 2px;
+}
+
+.sim-fb-follow {
+  flex-shrink: 0;
+  border: 1px solid #ccd0d5;
+  background: #e4e6eb;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #050505;
+}
+
+.sim-fb-follow:hover {
+  filter: brightness(0.97);
+}
+
+.sim-fb-follow--on {
+  background: #1877f2;
+  border-color: #1877f2;
+  color: #fff;
+}
+
+.sim-fb-saved-list {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+  border: 1px solid #e4e6eb;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.sim-fb-saved-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 1px solid #e4e6eb;
+  background: #fff;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.sim-fb-saved-list li:last-child .sim-fb-saved-item {
+  border-bottom: none;
+}
+
+.sim-fb-saved-item:hover {
+  background: #f0f2f5;
+}
+
+.sim-fb-saved-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #050505;
+}
+
+.sim-fb-saved-meta {
+  font-size: 12px;
+  color: #65676b;
+}
+
+.sim-fb-fake-video-play {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.sim-fb-fake-video-play:focus-visible {
+  outline: 2px solid #1877f2;
+  outline-offset: 2px;
+}
+
+.sim-fb-fake-video-play-ico {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
 }
 
 .sim-fb-action-btn {

@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
+import { DASHBOARD_TASKS_HREF } from "../navigationConstants";
 import { careerTitle } from "../careerLabels";
 import { StepSimulation } from "../components/simulation/StepSimulation";
 import { fetchScenario, startSession, submitAnswer } from "../api";
+import { missionBriefText, stepAnalysisText } from "../missionText";
 import type {
   AnswerResponse,
   CareerSnapshot,
@@ -42,25 +44,6 @@ function missionWindowLabel(step: StepPublic): string {
       return "Окно браузера";
     default:
       return "Задание";
-  }
-}
-
-function missionBriefText(step: StepPublic): string {
-  const raw = step.situationBrief?.trim();
-  if (raw) {
-    return raw;
-  }
-  switch (step.uiKind) {
-    case "EMAIL_CLIENT":
-      return "Вы смотрите входящее письмо в почтовом клиенте. Ниже — то, что видно на экране: тема, отправитель и действия.";
-    case "SOCIAL_NOTIFICATION":
-      return "Открыта лента соцсети. Ниже — пост и элементы, как в мобильном или веб-интерфейсе.";
-    case "DESK_TICKET":
-      return "Открыт тикет в системе информационной безопасности. Ниже — описание и интерактивные элементы.";
-    case "MINI_URL_COMPARE":
-      return "Нужно оценить адреса так, как в браузере перед переходом. Ниже — два варианта и подсказки.";
-    default:
-      return "Прочитайте условие и выберите действие.";
   }
 }
 
@@ -270,12 +253,45 @@ export function SimulationPage() {
   const [redFlagSelectionIds, setRedFlagSelectionIds] = useState<string[]>([]);
 
   const pendingAfterConsequenceRef = useRef<AnswerResponse | null>(null);
+  const feedbackBannerRef = useRef<HTMLDivElement>(null);
+  const continueStepRef = useRef<HTMLButtonElement>(null);
+  const consequenceAckRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setViewedInvestigationIds([]);
     setLastInvestigationRepDelta(null);
     setRedFlagSelectionIds([]);
   }, [step?.id]);
+
+  useEffect(() => {
+    if (!consequenceModal) {
+      return;
+    }
+    const id = window.setTimeout(() => consequenceAckRef.current?.focus(), 50);
+    return () => clearTimeout(id);
+  }, [consequenceModal]);
+
+  useEffect(() => {
+    if (!feedback || !pendingNext) {
+      return;
+    }
+    const id = window.requestAnimationFrame(() => {
+      feedbackBannerRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      continueStepRef.current?.focus();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [feedback, pendingNext]);
+
+  useEffect(() => {
+    if (!feedback || pendingNext) {
+      return;
+    }
+    const id = window.requestAnimationFrame(() => {
+      feedbackBannerRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      feedbackBannerRef.current?.focus();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [feedback, pendingNext]);
 
   useEffect(() => {
     if (!scenarioId) {
@@ -418,7 +434,7 @@ export function SimulationPage() {
     return (
       <div className="lc-theme sim-page-lc">
         <div className="error-banner">{error}</div>
-        <Link to="/dashboard#tasks" className="btn btn-text">
+        <Link to={DASHBOARD_TASKS_HREF} className="btn btn-text">
           ← К задачам
         </Link>
       </div>
@@ -429,14 +445,26 @@ export function SimulationPage() {
     <div className="lc-theme sim-page-lc">
       {detail ? (
         <nav className="lc-breadcrumb" aria-label="Навигация по задачам">
-          <Link to="/dashboard#tasks">Задачи</Link>
+          <Link to={DASHBOARD_TASKS_HREF}>Задачи</Link>
           <span className="lc-breadcrumb-sep" aria-hidden>
             /
           </span>
-          <span className="lc-breadcrumb-current">{detail.title}</span>
+          <span className="lc-breadcrumb-current" title={detail.title}>
+            {detail.title}
+          </span>
+          {step && !completed ? (
+            <>
+              <span className="lc-breadcrumb-sep" aria-hidden>
+                /
+              </span>
+              <span className="lc-breadcrumb-step">
+                Шаг {stepIndex + 1} из {totalSteps}
+              </span>
+            </>
+          ) : null}
         </nav>
       ) : (
-        <Link to="/dashboard#tasks" className="btn btn-text" style={{ marginBottom: 16, display: "inline-flex" }}>
+        <Link to={DASHBOARD_TASKS_HREF} className="btn btn-text sim-back-to-tasks" style={{ marginBottom: 16, display: "inline-flex" }}>
           ← К задачам
         </Link>
       )}
@@ -447,7 +475,7 @@ export function SimulationPage() {
           <div className="consequence-dialog">
             <h2 id="consequence-title">Последствия</h2>
             <p className="consequence-text">{consequenceModal}</p>
-            <button type="button" className="btn btn-primary" onClick={onConsequenceAck}>
+            <button ref={consequenceAckRef} type="button" className="btn btn-primary" onClick={onConsequenceAck}>
               Далее к разбору
             </button>
           </div>
@@ -489,7 +517,14 @@ export function SimulationPage() {
       ) : null}
 
       {!detail || !sessionId || (!completed && !step) ? (
-        <div className="skeleton" aria-busy />
+        <div className="sim-loading-panel" aria-busy="true" aria-live="polite">
+          <div className="sim-loading-skeleton sim-loading-skeleton--crumb" />
+          <div className="sim-loading-skeleton sim-loading-skeleton--title" />
+          <div className="sim-loading-skeleton-grid">
+            <div className="sim-loading-skeleton sim-loading-skeleton--col" />
+            <div className="sim-loading-skeleton sim-loading-skeleton--col sim-loading-skeleton--col-wide" />
+          </div>
+        </div>
       ) : null}
 
       {detail && sessionId ? (
@@ -526,7 +561,7 @@ export function SimulationPage() {
                 Вы набрали <strong>{score}</strong> баллов. Доверие клиентов:{" "}
                 <strong>{careerHud?.reputation ?? "—"}%</strong>.
               </p>
-              <Link to="/dashboard#tasks" className="btn btn-primary">
+              <Link to={DASHBOARD_TASKS_HREF} className="btn btn-primary">
                 К списку задач
               </Link>
             </div>
@@ -548,17 +583,21 @@ export function SimulationPage() {
                           Шаг {stepIndex + 1} / {totalSteps}
                         </span>
                       </div>
+                      <p className="mission-lc-scroll-hint">
+                        <span className="mission-lc-scroll-hint-ico" aria-hidden>
+                          ↕
+                        </span>
+                        Прокрутите блок, чтобы увидеть весь текст условия
+                      </p>
                       <div className="mission-lc-scroll">
                         <section className="mission-lc-block">
                           <h2 className="mission-lc-h2">Ситуация</h2>
                           <p className="mission-lc-text">{missionBriefText(step)}</p>
                         </section>
-                        {step.narrative.trim().length > 0 ? (
-                          <section className="mission-lc-block">
-                            <h3 className="mission-lc-h3">Материал для анализа</h3>
-                            <div className="mission-lc-narrative">{step.narrative}</div>
-                          </section>
-                        ) : null}
+                        <section className="mission-lc-block">
+                          <h3 className="mission-lc-h3">Материал для анализа</h3>
+                          <div className="mission-lc-narrative">{stepAnalysisText(step)}</div>
+                        </section>
 
                         {step.pressureSeconds != null && step.pressureSeconds > 0 ? (
                           <PressureTimer
@@ -625,12 +664,17 @@ export function SimulationPage() {
               </MissionWindow>
 
               {feedback ? (
-                <div className={`feedback ${feedback.ok ? "ok" : "bad"}`} role="status">
+                <div
+                  ref={feedbackBannerRef}
+                  tabIndex={-1}
+                  className={`feedback sim-feedback-banner ${feedback.ok ? "ok" : "bad"}`}
+                  role="status"
+                >
                   <strong>Разбор: </strong>
                   {feedback.text}
                   {pendingNext ? (
-                    <div style={{ marginTop: 16 }}>
-                      <button type="button" className="btn btn-primary" onClick={onContinue}>
+                    <div className="sim-feedback-continue">
+                      <button ref={continueStepRef} type="button" className="btn btn-primary" onClick={onContinue}>
                         Далее
                       </button>
                     </div>

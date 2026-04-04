@@ -256,6 +256,17 @@
   border: 2px solid var(--bento-ink);
 }
 
+/* Split layout: одна панель с условием и симуляцией — без зелёного фона и тяжёлой рамки bento */
+.mission-app-viewport--lc {
+  background: transparent !important;
+}
+
+.mission-app-viewport--lc > .ui-frame {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 16px rgba(15, 23, 42, 0.06) !important;
+}
+
 /* Поля и мини-игры */
 .input-kit {
   border: 2px solid var(--bento-ink);
@@ -364,6 +375,16 @@
 .app-nav-pill--primary:hover {
   background: linear-gradient(180deg, #ff7a45 0%, var(--bento-orange-deep) 100%);
   color: var(--ui-white);
+}
+
+.app-nav-pill--active:not(.app-nav-pill--primary) {
+  background: var(--bento-yellow);
+  border-color: var(--bento-ink);
+  box-shadow: var(--shadow-bento-sm);
+}
+
+.app-nav-pill--primary.app-nav-pill--active {
+  box-shadow: var(--shadow-bento-md), 0 0 0 3px rgba(254, 240, 138, 0.95);
 }
 
 .main--bento {

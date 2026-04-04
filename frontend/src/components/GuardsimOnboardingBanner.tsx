@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { DASHBOARD_TASKS_HREF } from "../navigationConstants";
 import { dismissOnboarding, isOnboardingDismissed } from "../onboardingStorage";
 
 export function GuardsimOnboardingBanner() {
@@ -30,7 +31,7 @@ export function GuardsimOnboardingBanner() {
               сервер): обновляется, когда в списке пройденных появляются новые сценарии.
             </li>
             <li>
-              Фильтры в списке <Link to="/dashboard#tasks">задач</Link> можно сохранить — они запоминаются на этом
+              Фильтры в списке <Link to={DASHBOARD_TASKS_HREF}>задач</Link> можно сохранить — они запоминаются на этом
               устройстве.
             </li>
           </ul>

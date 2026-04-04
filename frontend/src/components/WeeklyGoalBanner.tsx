@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
+import { DASHBOARD_TASKS_HREF } from "../navigationConstants";
 import { syncWeeklyGoal } from "../weeklyGoalStorage";
 import type { PlayerState } from "../types";
 
@@ -43,7 +44,7 @@ export function WeeklyGoalBanner({ player }: { player: PlayerState }) {
             <div className="weekly-goal-bar-fill" style={{ width: `${pct}%` }} />
           </div>
         </div>
-        <Link to="/dashboard#tasks" className="btn btn-secondary weekly-goal-banner-link">
+        <Link to={DASHBOARD_TASKS_HREF} className="btn btn-secondary weekly-goal-banner-link">
           К задачам
         </Link>
       </div>

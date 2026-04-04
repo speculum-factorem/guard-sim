@@ -9,11 +9,11 @@
 .sim-gmail-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 12px 8px 8px;
+  gap: 10px;
+  padding: 6px 10px 6px 6px;
   background: var(--gm-surface);
   border-bottom: 1px solid #e8eaed;
-  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.08);
+  box-shadow: 0 1px 0 rgba(60, 64, 67, 0.05);
 }
 
 .sim-gmail-icon-btn {
@@ -195,6 +195,51 @@
   padding-left: 10px;
 }
 
+.sim-gmail-list-empty {
+  margin: 0;
+  padding: 12px;
+  font-size: 12px;
+  color: var(--gm-text-secondary);
+  line-height: 1.4;
+}
+
+.sim-gmail-list-row-wrap {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.sim-gmail-star-btn {
+  flex-shrink: 0;
+  width: 34px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  color: #5f6368;
+  padding: 0;
+}
+
+.sim-gmail-star-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.sim-gmail-star-btn--on {
+  color: #f59e0b;
+}
+
+.sim-gmail-list-row-wrap .sim-gmail-list-row {
+  border-bottom: none;
+}
+
+.sim-email-secondary-actions {
+  padding: 8px 18px 16px;
+}
+
+.sim-email-secondary-read .email-meta {
+  border-bottom: 1px solid var(--gm-border);
+}
+
 .sim-gmail-list-from {
   font-size: 13px;
   font-weight: 700;
@@ -306,11 +351,228 @@
   justify-content: center;
 }
 
+.sim-email-headers-more {
+  margin-top: 4px;
+  padding: 0;
+  border: 1px dashed var(--gm-border);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.sim-email-headers-more-summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gm-text-secondary);
+}
+
+.sim-email-headers-more-summary::-webkit-details-marker {
+  display: none;
+}
+
+.sim-email-headers-more-summary::before {
+  content: "▸ ";
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.sim-email-headers-more[open] .sim-email-headers-more-summary::before {
+  transform: rotate(90deg);
+}
+
+.sim-email-headers-grid {
+  padding: 0 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sim-email-hdr-row {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 8px;
+  font-size: 12px;
+  align-items: baseline;
+}
+
+.sim-email-hdr-label {
+  color: var(--gm-text-secondary);
+  font-weight: 600;
+}
+
+.sim-email-hdr-value {
+  font-family: ui-monospace, monospace;
+  word-break: break-all;
+}
+
+.sim-email-hdr-value--warn {
+  color: #b45309;
+  font-weight: 600;
+  text-decoration: underline dotted;
+}
+
+.sim-email-hdr-value--muted {
+  color: var(--gm-text-secondary);
+  opacity: 0.9;
+}
+
+.sim-email-attachments-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 18px 14px;
+}
+
+.sim-email-attach-decoy,
+.sim-email-attach-real {
+  border: 1px solid var(--gm-border);
+  border-radius: var(--radius-sm);
+  background: var(--ui-bg);
+}
+
+.sim-email-attach-summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.sim-email-attach-summary::-webkit-details-marker {
+  display: none;
+}
+
+.sim-email-attach-summary::before {
+  content: "▸ ";
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.sim-email-attach-real[open] .sim-email-attach-summary::before,
+.sim-email-attach-decoy[open] .sim-email-attach-summary::before {
+  content: "▾ ";
+}
+
+.sim-email-attach-meta {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--gm-text-secondary);
+}
+
+.sim-email-attach-note,
+.sim-email-attach-hint {
+  margin: 0;
+  padding: 0 12px 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--gm-text-secondary);
+}
+
+.sim-email-attach-hint {
+  padding-top: 4px;
+}
+
+.sim-email-attachment--in-details {
+  margin: 0 12px 12px;
+  padding: 10px 12px;
+}
+
 .hotspot-row-orphan {
   padding: 12px 18px 18px;
 }
 
 .sim-browser-content {
-  padding: 16px 20px 20px;
+  padding: 12px 16px 16px;
+}
+
+.sim-email-drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sim-email-drawer-link {
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--gm-text);
+}
+
+.sim-email-drawer-link:hover {
+  background: rgba(26, 115, 232, 0.08);
+}
+
+.sim-email-drawer-link--active {
+  background: var(--gm-blue-light);
+  color: var(--ui-primary);
+  font-weight: 600;
+}
+
+.sim-email-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.sim-email-form-row span {
+  color: var(--gm-text-secondary);
+  font-weight: 600;
+}
+
+.sim-email-form-input,
+.sim-email-form-textarea {
+  border: 1px solid var(--gm-border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sim-email-form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.sim-email-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.sim-email-apps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.sim-email-app-tile {
+  border: 1px solid var(--gm-border);
+  border-radius: var(--radius-sm);
+  padding: 14px 8px;
+  background: var(--ui-bg);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sim-email-app-tile:hover {
+  border-color: var(--ui-primary);
+  background: var(--gm-blue-light);
 }
 

@@ -185,15 +185,14 @@ export function ScenarioProblemTable(props: { items: ScenarioSummary[]; complete
       <header className="lc-problems-head">
         <div className="lc-problems-head-row">
           <h2 className="section-heading lc-problems-title" id="tasks-heading">
-            Задачи
+            Все задачи
           </h2>
           <span className="lc-problems-count-pill" aria-live="polite">
             {tasksLabel(sorted.length)}
           </span>
         </div>
         <p className="page-subtitle lc-problems-lead">
-          Поиск, канал, прогресс и сортировка запоминаются в браузере. Используйте «Только непройденные», чтобы убрать
-          пройденные из списка.
+          Фильтры и сортировка сохраняются локально. Отметьте «Только непройденные», чтобы скрыть решённые.
         </p>
       </header>
 

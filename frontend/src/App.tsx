@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import { AccountPage } from "./pages/AccountPage";
 import { ChallengesPage } from "./pages/ChallengesPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LandingGate } from "./pages/LandingGate";
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/account" element={<AccountPage />} />
         <Route path="/challenges" element={<ChallengesPage />} />
         <Route path="/play/:scenarioId" element={<SimulationPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

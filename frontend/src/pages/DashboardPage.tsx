@@ -43,34 +43,68 @@ export function DashboardPage() {
 
   const quickStartId = useMemo(() => firstOpenScenarioId(columns), [columns]);
 
+  const progressStats = useMemo(() => {
+    if (!items || !player) {
+      return null;
+    }
+    const total = items.length;
+    const solved = player.completedScenarioIds.filter((id) => items.some((s) => s.id === id)).length;
+    const pct = total === 0 ? 0 : Math.round((solved / total) * 100);
+    return { total, solved, pct };
+  }, [items, player]);
+
   return (
-    <div className="dashboard-page">
-      <header className="dashboard-header">
-        <h1 className="page-title dashboard-title">Дашборд</h1>
-        <p className="page-subtitle dashboard-subtitle">
-          Репутация, достижения и список учебных сценариев.
-          {quickStartId ? (
-            <>
-              {" "}
-              Быстрый старт: откройте первый доступный сценарий из списка ниже.
-            </>
+    <div className="dashboard-page dashboard-page--lc lc-theme">
+      <div className="lc-dashboard-shell">
+        <header className="lc-dashboard-hero">
+          <div className="lc-dashboard-hero-main">
+            <h1 className="lc-dashboard-title">Каталог задач</h1>
+            <p className="lc-dashboard-lead">
+              Интерактивные сценарии в духе реальных инцидентов. Фильтры и сортировка сохраняются в браузере.
+              {quickStartId ? (
+                <>
+                  {" "}
+                  Начните с первой доступной задачи в таблице ниже.
+                </>
+              ) : null}
+            </p>
+          </div>
+          {progressStats ? (
+            <ul className="lc-dashboard-stats" aria-label="Сводка по прогрессу">
+              <li className="lc-stat-card">
+                <span className="lc-stat-value">{progressStats.solved}</span>
+                <span className="lc-stat-label">Решено</span>
+              </li>
+              <li className="lc-stat-card">
+                <span className="lc-stat-value">{progressStats.total}</span>
+                <span className="lc-stat-label">Всего</span>
+              </li>
+              <li className="lc-stat-card lc-stat-card--accent">
+                <span className="lc-stat-value">{progressStats.pct}%</span>
+                <span className="lc-stat-label">Прогресс</span>
+              </li>
+            </ul>
           ) : null}
-        </p>
-      </header>
+        </header>
 
-      <GuardsimOnboardingBanner />
+        {error ? <div className="error-banner lc-dashboard-error">{error}</div> : null}
 
-      {error ? <div className="error-banner">{error}</div> : null}
+        {items && player ? <ContinueTrackHint items={items} player={player} /> : null}
 
-      {items && player ? <ContinueTrackHint items={items} player={player} /> : null}
+        {items === null && !error ? (
+          <div className="skeleton lc-dashboard-table-skeleton" aria-busy />
+        ) : null}
 
-      {player ? <WeeklyGoalBanner player={player} /> : null}
+        {items ? (
+          <WorkdeskMonitor items={items} completedIds={player?.completedScenarioIds ?? []} />
+        ) : null}
 
-      {player ? <CareerAchievementsPanel player={player} /> : null}
-
-      {items === null && !error ? <div className="skeleton dashboard-skeleton" aria-busy /> : null}
-
-      {items ? <WorkdeskMonitor items={items} completedIds={player?.completedScenarioIds ?? []} /> : null}
+        <div className="lc-dashboard-below">
+          {player ? <WeeklyGoalBanner player={player} /> : null}
+          {player ? <CareerAchievementsPanel player={player} /> : null}
+          <GuardsimOnboardingBanner />
+        </div>
+      </div>
     </div>
   );
 }

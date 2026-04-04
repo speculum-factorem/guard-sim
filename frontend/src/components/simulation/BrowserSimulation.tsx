@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { StepPublic } from "../../types";
 import { NarrativeNoiseBlock } from "./NarrativeNoiseBlock";
 import { OrphanHotspotRow } from "./OrphanHotspotRow";
+import { mockBrowserBookmarks } from "./simMockData";
+import { urlCharDiffPair } from "./simMicroUiHelpers";
 
 /** Текст в адресной строке браузера: подпись задачи или запасной нейтральный URL. */
 function omniboxDisplay(caption: string): string {
@@ -11,10 +13,6 @@ function omniboxDisplay(caption: string): string {
     return t || "https://guardsim.local/verify";
   }
   return `${t.slice(0, 69)}…`;
-}
-
-function flashNav(active: string | null, key: string): string {
-  return active === key ? "sim-interactive-flash" : "";
 }
 
 export function BrowserSimulation(props: {
@@ -35,22 +33,86 @@ export function BrowserSimulation(props: {
       : g.caption
     : "Сравнение URL";
 
-  const [omnibox, setOmnibox] = useState(() => omniboxDisplay(g.caption));
+  const pages = useMemo(
+    () => [omniboxDisplay(g.caption), g.leftUrl, g.rightUrl],
+    [g.caption, g.leftUrl, g.rightUrl],
+  );
+
+  const [omnibox, setOmnibox] = useState(() => pages[0] ?? omniboxDisplay(g.caption));
+  const [histIdx, setHistIdx] = useState(0);
   const [activeTab, setActiveTab] = useState<0 | 1>(0);
-  const [navFlash, setNavFlash] = useState<string | null>(null);
+  const [reloading, setReloading] = useState(false);
+  const [chromeMenuOpen, setChromeMenuOpen] = useState(false);
+  const [omniboxPulse, setOmniboxPulse] = useState(false);
+  const [tabToast, setTabToast] = useState<string | null>(null);
+  const omniboxRef = useRef<HTMLInputElement>(null);
+
+  const urlDiff = useMemo(() => urlCharDiffPair(g.leftUrl, g.rightUrl), [g.leftUrl, g.rightUrl]);
+  const bookmarks = useMemo(
+    () => mockBrowserBookmarks(g.leftUrl, g.rightUrl, g.caption),
+    [g.leftUrl, g.rightUrl, g.caption],
+  );
 
   useEffect(() => {
-    setOmnibox(omniboxDisplay(g.caption));
+    const first = pages[0] ?? omniboxDisplay(g.caption);
+    setOmnibox(first);
+    setHistIdx(0);
     setActiveTab(0);
-  }, [step.id, g.caption]);
+    setChromeMenuOpen(false);
+    setOmniboxPulse(true);
+    setReloading(false);
+    const endPulse = window.setTimeout(() => setOmniboxPulse(false), 2400);
+    const raf = window.requestAnimationFrame(() => {
+      omniboxRef.current?.focus({ preventScroll: true });
+    });
+    return () => {
+      clearTimeout(endPulse);
+      cancelAnimationFrame(raf);
+    };
+  }, [step.id, pages, g.caption]);
 
-  const pulseNav = useCallback((key: string) => {
-    setNavFlash(key);
-    window.setTimeout(() => setNavFlash(null), 220);
+  useEffect(() => {
+    if (!tabToast) {
+      return;
+    }
+    const t = window.setTimeout(() => setTabToast(null), 2000);
+    return () => clearTimeout(t);
+  }, [tabToast]);
+
+  const goBack = useCallback(() => {
+    setHistIdx((i) => {
+      const next = Math.max(0, i - 1);
+      setOmnibox(pages[next] ?? "");
+      return next;
+    });
+  }, [pages]);
+
+  const goForward = useCallback(() => {
+    setHistIdx((i) => {
+      const next = Math.min(pages.length - 1, i + 1);
+      setOmnibox(pages[next] ?? "");
+      return next;
+    });
+  }, [pages]);
+
+  const runReload = useCallback(() => {
+    setReloading(true);
+    window.setTimeout(() => setReloading(false), 750);
+  }, []);
+
+  const onNewTab = useCallback(() => {
+    setActiveTab(1);
+    setTabToast("Открыта вторая вкладка — задание на первой.");
+  }, []);
+
+  const closeFirstTab = useCallback(() => {
+    setActiveTab(1);
+    setTabToast("Вкладка с заданием закрыта в симуляции — переключитесь обратно через список вкладок.");
   }, []);
 
   return (
     <div className="ui-frame ui-frame-url-compare sim-browser-layout sim-chrome-root">
+      {tabToast ? <div className="sim-mini-toast">{tabToast}</div> : null}
       <div className="browser-chrome-chrome" aria-hidden>
         <div className="browser-chrome-titlebar">
           <span className="browser-chrome-dot browser-chrome-dot-r" />
@@ -58,23 +120,27 @@ export function BrowserSimulation(props: {
           <span className="browser-chrome-dot browser-chrome-dot-g" />
         </div>
         <div className="browser-chrome-tabstrip" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 0}
+          <div
             className={
               activeTab === 0
-                ? "browser-tab-slot browser-tab-slot-active"
-                : "browser-tab-slot browser-tab-slot-inactive"
+                ? "browser-tab-row browser-tab-row-active"
+                : "browser-tab-row browser-tab-row-inactive"
             }
-            onClick={() => setActiveTab(0)}
           >
-            <span className="browser-tab-favicon" aria-hidden />
-            <span className="browser-tab-title">{tabTitle}</span>
-            <span className="browser-tab-close" aria-hidden>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 0}
+              className="browser-tab-main"
+              onClick={() => setActiveTab(0)}
+            >
+              <span className="browser-tab-favicon" aria-hidden />
+              <span className="browser-tab-title">{tabTitle}</span>
+            </button>
+            <button type="button" className="browser-tab-close-btn" title="Закрыть вкладку" onClick={closeFirstTab}>
               ×
-            </span>
-          </button>
+            </button>
+          </div>
           <button
             type="button"
             role="tab"
@@ -89,63 +155,147 @@ export function BrowserSimulation(props: {
             <span className="browser-tab-favicon browser-tab-favicon-dim" aria-hidden />
             <span className="browser-tab-title">Новая вкладка</span>
           </button>
-          <button
-            type="button"
-            className="browser-tab-new"
-            title="Новая вкладка"
-            onClick={() => pulseNav("newtab")}
-          >
+          <button type="button" className="browser-tab-new" title="Новая вкладка" onClick={onNewTab}>
             +
           </button>
         </div>
-        <div className="browser-chrome-toolbar">
-          <div className="browser-chrome-nav">
-            <button
-              type="button"
-              className={`browser-nav-btn ${flashNav(navFlash, "back")}`}
-              title="Назад"
-              onClick={() => pulseNav("back")}
+        <div className="browser-chrome-toolbar-wrap">
+          <div className="browser-chrome-toolbar">
+            <div className="browser-chrome-nav">
+              <button
+                type="button"
+                className="browser-nav-btn"
+                title="Назад"
+                disabled={histIdx <= 0}
+                onClick={goBack}
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                className="browser-nav-btn"
+                title="Вперёд"
+                disabled={histIdx >= pages.length - 1}
+                onClick={goForward}
+              >
+                →
+              </button>
+              <button
+                type="button"
+                className={`browser-nav-btn browser-nav-reload${reloading ? " sim-browser-reloading" : ""}`}
+                title="Обновить"
+                onClick={runReload}
+              >
+                ↻
+              </button>
+            </div>
+            <label
+              className={`browser-chrome-omnibox sim-chrome-omnibox browser-omnibox-label${
+                omniboxPulse ? " browser-chrome-omnibox--pulse" : ""
+              }`}
             >
-              ←
-            </button>
-            <button
-              type="button"
-              className={`browser-nav-btn ${flashNav(navFlash, "forward")}`}
-              title="Вперёд"
-              onClick={() => pulseNav("forward")}
-            >
-              →
-            </button>
-            <button
-              type="button"
-              className={`browser-nav-btn browser-nav-reload ${flashNav(navFlash, "reload")}`}
-              title="Обновить"
-              onClick={() => pulseNav("reload")}
-            >
-              ↻
-            </button>
+              <span
+                className="browser-chrome-lock browser-chrome-lock--sim"
+                title="Симуляция: замок «HTTPS» здесь декоративный. Подделывают и иконку, и адрес — проверяйте домен посимвольно."
+              >
+                🔒
+              </span>
+              <input
+                ref={omniboxRef}
+                className="browser-chrome-url-input"
+                type="text"
+                value={omnibox}
+                onChange={(e) => setOmnibox(e.target.value)}
+                aria-label="Адресная строка (учебная симуляция, без перехода по сети)"
+              />
+            </label>
+            <div className="browser-chrome-toolbar-end">
+              <button
+                type="button"
+                className="browser-toolbar-ico browser-toolbar-ico-btn"
+                title="Меню Chrome"
+                aria-expanded={chromeMenuOpen}
+                onClick={() => setChromeMenuOpen((v) => !v)}
+              >
+                ⋮
+              </button>
+            </div>
           </div>
-          <label className="browser-chrome-omnibox sim-chrome-omnibox browser-omnibox-label">
-            <span className="browser-chrome-lock" title="Защищённое соединение (симуляция)">
-              🔒
-            </span>
-            <input
-              className="browser-chrome-url-input"
-              type="text"
-              value={omnibox}
-              onChange={(e) => setOmnibox(e.target.value)}
-              aria-label="Адресная строка (учебная симуляция, без перехода по сети)"
-            />
-          </label>
-          <div className="browser-chrome-toolbar-end">
-            <button
-              type="button"
-              className={`browser-toolbar-ico browser-toolbar-ico-btn ${flashNav(navFlash, "menu")}`}
-              title="Меню Chrome"
-              onClick={() => pulseNav("menu")}
-            >
-              ⋮
-            </button>
+          {chromeMenuOpen ? (
+            <>
+              <button
+                type="button"
+                className="sim-sim-backdrop"
+                style={{ zIndex: 44 }}
+                aria-label="Закрыть меню"
+                onClick={() => setChromeMenuOpen(false)}
+              />
+              <div className="browser-chrome-menu-popover" role="menu">
+                <button
+                  type="button"
+                  className="browser-chrome-menu-item"
+                  role="menuitem"
+                  onClick={() => {
+                    setTabToast("История посещений недоступна в симуляции");
+                    setChromeMenuOpen(false);
+                  }}
+                >
+                  История
+                </button>
+                <button
+                  type="button"
+                  className="browser-chrome-menu-item"
+                  role="menuitem"
+                  onClick={() => {
+                    setTabToast("Загрузки: в симуляции пусто");
+                    setChromeMenuOpen(false);
+                  }}
+                >
+                  Загрузки
+                </button>
+                <button
+                  type="button"
+                  className="browser-chrome-menu-item"
+                  role="menuitem"
+                  onClick={() => {
+                    runReload();
+                    setChromeMenuOpen(false);
+                  }}
+                >
+                  Очистить кэш и перезагрузить
+                </button>
+                <button
+                  type="button"
+                  className="browser-chrome-menu-item"
+                  role="menuitem"
+                  onClick={() => {
+                    setTabToast("Настройки Chrome недоступны в симуляции");
+                    setChromeMenuOpen(false);
+                  }}
+                >
+                  Настройки
+                </button>
+              </div>
+            </>
+          ) : null}
+          <div className="browser-chrome-bookmarks" aria-label="Закладки">
+            {bookmarks.map((b) => (
+              <button
+                key={b.label}
+                type="button"
+                className="browser-chrome-bookmark"
+                onClick={() => {
+                  setOmnibox(b.url);
+                  const idx = pages.indexOf(b.url);
+                  if (idx >= 0) {
+                    setHistIdx(idx);
+                  }
+                  setTabToast(`Закладка «${b.label}»: адрес подставлен в строку.`);
+                }}
+              >
+                {b.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -156,6 +306,9 @@ export function BrowserSimulation(props: {
       ) : null}
       <div className="sim-browser-content">
         <p className="url-compare-caption">{g.caption}</p>
+        <p className="url-compare-diff-hint" role="note">
+          Отличия подсвечены; «Назад» / «Вперёд» листают подпись и оба URL.
+        </p>
         {noise}
         <div className="url-compare-grid">
           <button
@@ -165,7 +318,16 @@ export function BrowserSimulation(props: {
             onClick={() => onChoose(g.leftChoiceId)}
           >
             <span className="url-compare-label">Вариант A</span>
-            <code className="url-compare-url">{g.leftUrl}</code>
+            <code className="url-compare-url url-compare-url--diff">
+              {urlDiff.left.map((c, i) => (
+                <span
+                  key={`l-${i}`}
+                  className={c.diff ? "url-diff-char url-diff-char--diff" : "url-diff-char"}
+                >
+                  {c.char === "" ? "\u00a0" : c.char}
+                </span>
+              ))}
+            </code>
           </button>
           <button
             type="button"
@@ -174,7 +336,16 @@ export function BrowserSimulation(props: {
             onClick={() => onChoose(g.rightChoiceId)}
           >
             <span className="url-compare-label">Вариант B</span>
-            <code className="url-compare-url">{g.rightUrl}</code>
+            <code className="url-compare-url url-compare-url--diff">
+              {urlDiff.right.map((c, i) => (
+                <span
+                  key={`r-${i}`}
+                  className={c.diff ? "url-diff-char url-diff-char--diff" : "url-diff-char"}
+                >
+                  {c.char === "" ? "\u00a0" : c.char}
+                </span>
+              ))}
+            </code>
           </button>
         </div>
         <OrphanHotspotRow hotspots={step.hotspots} disabled={disabled} onChoose={onChoose} />

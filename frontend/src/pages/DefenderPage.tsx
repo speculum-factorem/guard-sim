@@ -393,8 +393,8 @@ export function DefenderPage() {
 
             if (nextIdx >= sc.attackPath.length) return prevNodes;
 
-            const curNodeId = sc.attackPath[prevIdx];
-            const nextNodeId = sc.attackPath[nextIdx];
+            const curNodeId = sc.attackPath[prevIdx] as NodeId;
+            const nextNodeId = sc.attackPath[nextIdx] as NodeId;
             const nextNode = prevNodes[nextNodeId];
 
             // Blocked by isolation

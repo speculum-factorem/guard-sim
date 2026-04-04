@@ -36,4 +36,10 @@ enum class StepUiKind {
 
     /** Экран согласия OAuth (Microsoft Azure AD-стиль) */
     OAUTH_APPROVAL,
+
+    /** Учебный снимок отчёта VirusTotal (URL + сводка детектов) */
+    VIRUSTOTAL_LOOKUP,
+
+    /** Экран смартфона: лента SMS и входящий звонок «поддержки» на фоне бомбинга */
+    MOBILE_PHONE_INCIDENT,
 }

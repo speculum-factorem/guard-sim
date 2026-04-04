@@ -13,6 +13,10 @@ import com.guardsim.dto.NetShieldRowDto
 import com.guardsim.dto.SerpPickGameDto
 import com.guardsim.dto.SerpResultDto
 import com.guardsim.dto.UrlCompareGameDto
+import com.guardsim.dto.PhoneCallOverlayDto
+import com.guardsim.dto.PhoneIncidentGameDto
+import com.guardsim.dto.PhoneSmsLineDto
+import com.guardsim.dto.VirusTotalGameDto
 import com.guardsim.scenario.ScenarioHubChannel
 import com.guardsim.scenario.ScenarioRegistry
 import com.guardsim.scenario.ScenarioType
@@ -23,6 +27,8 @@ import com.guardsim.scenario.internal.InternalRedFlagGame
 import com.guardsim.scenario.internal.InternalNetShieldGame
 import com.guardsim.scenario.internal.InternalSerpPickGame
 import com.guardsim.scenario.internal.InternalUrlCompareGame
+import com.guardsim.scenario.internal.InternalPhoneIncidentGame
+import com.guardsim.scenario.internal.InternalVirusTotalGame
 import org.springframework.stereotype.Service
 
 @Service
@@ -71,6 +77,8 @@ class ScenarioService(
         val urlGame = step.urlCompareGame?.let { g -> toUrlCompareDto(g) }
         val serpGame = step.serpPickGame?.let { toSerpPickDto(it) }
         val netGame = step.netShieldGame?.let { toNetShieldDto(it) }
+        val vtGame = step.virusTotalGame?.let { toVirusTotalDto(it) }
+        val phoneGame = step.phoneIncidentGame?.let { toPhoneIncidentDto(it) }
         val redGame = step.redFlagGame?.let { toRedFlagDto(it) }
         return StepPublicDto(
             id = step.id,
@@ -85,6 +93,8 @@ class ScenarioService(
             urlCompareGame = urlGame,
             serpPickGame = serpGame,
             netShieldGame = netGame,
+            virusTotalGame = vtGame,
+            phoneIncidentGame = phoneGame,
             narrativeNoise = step.narrativeNoise,
             pressureSeconds = step.pressureSeconds,
             redFlagGame = redGame,
@@ -142,6 +152,30 @@ class ScenarioService(
                     choiceId = row.choiceId,
                 )
             },
+        )
+
+    private fun toVirusTotalDto(g: InternalVirusTotalGame): VirusTotalGameDto =
+        VirusTotalGameDto(
+            scannedUrl = g.scannedUrl,
+            enginesFlagged = g.enginesFlagged,
+            enginesTotal = g.enginesTotal,
+            permalinkStub = g.permalinkStub,
+            verdictHeadline = g.verdictHeadline,
+        )
+
+    private fun toPhoneIncidentDto(g: InternalPhoneIncidentGame): PhoneIncidentGameDto =
+        PhoneIncidentGameDto(
+            statusBarTime = g.statusBarTime,
+            networkLabel = g.networkLabel,
+            screenTitle = g.screenTitle,
+            smsLines = g.smsLines.map { s ->
+                PhoneSmsLineDto(sender = s.sender, text = s.text, time = s.time)
+            },
+            callOverlay = PhoneCallOverlayDto(
+                callerLabel = g.callOverlay.callerLabel,
+                callerSubtitle = g.callOverlay.callerSubtitle,
+                numberDisplay = g.callOverlay.numberDisplay,
+            ),
         )
 
     fun findChoice(scenario: InternalScenario, stepId: String, choiceId: String): InternalChoice? {

@@ -61,6 +61,22 @@ export const CHALLENGE_TRACKS: ChallengeTrackDef[] = [
     accent: "lilac",
   },
   {
+    id: "smokescreen-vishing",
+    title: "Шум и vishing",
+    description:
+      "SMS-бомбинг как отвлекающий фон и входящий звонок «антифрода» — только официальное приложение или номер, который вы набрали сами.",
+    scenarioIds: ["sms-bomber-phishing-smokescreen"],
+    accent: "lilac",
+  },
+  {
+    id: "malware-endpoints",
+    title: "Вредоносы и эндпоинты",
+    description:
+      "Проверка ссылки на VPN через VirusTotal, короткая цепочка против винлокера и реагирование на RAT — три разных типа действий.",
+    scenarioIds: ["vpn-colleague-virustotal-clean", "winlocker-safe-mode-cleanup", "rat-incident-response"],
+    accent: "mint",
+  },
+  {
     id: "search-and-perimeter",
     title: "Поиск и периметр",
     description:

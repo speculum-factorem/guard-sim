@@ -13,6 +13,10 @@ import com.guardsim.scenario.internal.InternalNetShieldRow
 import com.guardsim.scenario.internal.InternalSerpPickGame
 import com.guardsim.scenario.internal.InternalSerpResult
 import com.guardsim.scenario.internal.InternalUrlCompareGame
+import com.guardsim.scenario.internal.InternalPhoneCallOverlay
+import com.guardsim.scenario.internal.InternalPhoneIncidentGame
+import com.guardsim.scenario.internal.InternalPhoneSmsLine
+import com.guardsim.scenario.internal.InternalVirusTotalGame
 import com.guardsim.scenario.internal.StepUiKind
 import org.springframework.stereotype.Component
 
@@ -33,6 +37,10 @@ class ScenarioRegistry {
                 oauthConsentTrap(),
                 searchBankOfficialSerp(),
                 perimeterDdosNetShield(),
+                vpnColleagueVirustotalClean(),
+                winlockerSafeModeCleanup(),
+                ratIncidentResponse(),
+                smsBomberPhishingSmokescreen(),
             )
             val legacy = listOf(
                 phishingEmail(),
@@ -3138,6 +3146,567 @@ echo "[INFO] Maintenance complete. $(date)" """.trimIndent(),
                     ),
                     investigationBonusThreshold = 1,
                     pressureSeconds = 85,
+                ),
+            ),
+        )
+
+        /** Коллега прислал ссылку на VPN; сначала VirusTotal, затем осознанный переход (учебный «чистый» кейс). */
+        fun vpnColleagueVirustotalClean(): InternalScenario = InternalScenario(
+            id = "vpn-colleague-virustotal-clean",
+            title = "Ссылка на VPN от коллеги",
+            type = ScenarioType.SOCIAL,
+            description = "В чате делятся «выгодной» ссылкой на подписку VPN. Сначала проверяете репутацию в VirusTotal — учебный отчёт без детектов, затем решаете, переходить ли.",
+            attackTypeLabel = "Репутация ссылки / легитимная покупка после проверки",
+            hubChannel = ScenarioHubChannel.SECURITY,
+            steps = listOf(
+                InternalStep(
+                    id = "vcv-1",
+                    situationBrief = """
+                        Рабочий мессенджер. Коллега из соседнего отдела прислал сообщение: нашли дешёвый корпоративный VPN
+                        по партнёрской ссылке «для команды». Ссылка незнакомая, но отправитель — реальный человек.
+                    """.trimIndent(),
+                    narrative = """
+                        Привет, взял подписку тут для удалёнки — работает стабильно, скидка по коду OFFICE.
+
+                        https://partner-office-vpn.guardsim.example/order?ref=team
+
+                        Если что, это не реклама в смысле спама — просто делюсь.
+                    """.trimIndent(),
+                    narrativeNoise = "Канал #infra-random · вчера 14:02",
+                    choices = listOf(
+                        InternalChoice(
+                            id = "vcv-1-a",
+                            label = "Сразу перейду по ссылке — пишет свой человек",
+                            correct = false,
+                            explanationWhenChosen = "Даже от коллеги ссылку стоит сначала проверить на репутацию (VirusTotal URL scan, записи WHOIS) и сверить с политикой закупок ПО. Аккаунт коллеги тоже могут взломать.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Ссылка могла вести на поддельную кассу или троянизированный инсталлятор. В реальности — изолировать машину и менять пароли, если уже кликнули.",
+                        ),
+                        InternalChoice(
+                            id = "vcv-1-b",
+                            label = "Сначала проверю URL в VirusTotal / репутации, не переходя по ссылке из чата",
+                            correct = true,
+                            explanationWhenChosen = "Правильно: отдельная проверка URL до клика снижает риск. Затем можно сравнить с белым списком поставщиков и политикой ИБ.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "vcv-1-c",
+                            label = "Перешлю ссылку всему отделу — пусть каждый решит сам",
+                            correct = false,
+                            explanationWhenChosen = "Массовая пересылка непроверенной ссылки увеличивает поверхность атаки. Сначала проверка, потом — при необходимости — одобренное сообщение без активной ссылки или через IT.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.CHAT_MESSENGER,
+                    simChatTitle = "Команда · Инфраструктура",
+                    simChatSenderLabel = "Коллега · отдел эксплуатации",
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "vcv-1-pol",
+                            title = "Политика закупок",
+                            body = "Любое VPN и шифрование трафика на рабочих ПК согласуются с ИБ и закупкой. «Личные» ссылки обходят учёт лицензий.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "vcv-1-link",
+                            label = "Открыть ссылку partner-office-vpn.guardsim.example",
+                            choiceId = "vcv-1-a",
+                            variant = "LINK",
+                        ),
+                        InternalHotspot(
+                            id = "vcv-1-vt",
+                            label = "Сначала проверить URL в VirusTotal",
+                            choiceId = "vcv-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "vcv-1-fwd",
+                            label = "Переслать ссылку отделу",
+                            choiceId = "vcv-1-c",
+                            variant = "SHARE",
+                        ),
+                    ),
+                    pressureSeconds = 55,
+                ),
+                InternalStep(
+                    id = "vcv-2",
+                    situationBrief = """
+                        Вы вставили адрес в учебный интерфейс VirusTotal (в жизни — virustotal.com, раздел URL).
+                        Ниже — условный отчёт: движки не находят вредоноса по этому URL на момент проверки.
+                    """.trimIndent(),
+                    narrative = """
+                        Отчёт готов. Сверьте число срабатываний и по возможности откройте сайт только если политика компании
+                        разрешает такую покупку и вы уверены в домене.
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "vcv-2-a",
+                            label = "Раз детектов нет — открою ссылку в новой вкладке и оформлю только на HTTPS, без скачивания «ускорителей»",
+                            correct = true,
+                            explanationWhenChosen = "После чистого отчёта разумно перейти осознанно: новая вкладка, проверка сертификата и URL, никаких сторонних exe. Итоговая покупка всё равно должна соответствовать регламенту закупок.",
+                            scoreDelta = 5,
+                        ),
+                        InternalChoice(
+                            id = "vcv-2-b",
+                            label = "VirusTotal ничего не нашёл — значит, можно скачать любой предложенный установщик и запустить от администратора",
+                            correct = false,
+                            explanationWhenChosen = "URL без детектов не гарантирует честный инсталлятор и отсутствие обхода на следующем шаге. Не запускайте бинарники в обход ИБ и политики.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Установщик оказался подкинутым со страницы — получена точка закрепления. Нужен инцидент и переустановка образа.",
+                        ),
+                        InternalChoice(
+                            id = "vcv-2-c",
+                            label = "Не открою никогда — если ссылка не из IT, она всегда вредоносная",
+                            correct = false,
+                            explanationWhenChosen = "Паранойя лучше кликов вслепую, но после проверки и согласования с политикой легитимная покупка возможна. Важно процедуры, а не абсолютный запрет.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.VIRUSTOTAL_LOOKUP,
+                    virusTotalGame = InternalVirusTotalGame(
+                        scannedUrl = "https://partner-office-vpn.guardsim.example/order?ref=team",
+                        enginesFlagged = 0,
+                        enginesTotal = 72,
+                        permalinkStub = "guardsim-edu · analysis/u/guardsim-vpn-url",
+                        verdictHeadline = "По данным учебного снимка: вредоносных срабатываний по URL не обнаружено.",
+                    ),
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "vcv-2-lim",
+                            title = "Ограничения сканера",
+                            body = "Скан URL в VirusTotal не заменяет анализ файла, поведения сайта и политики компании. Фишинг и drive-by могут проявиться позже.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "vcv-2-open",
+                            label = "Открыть ссылку осторожно (HTTPS, без лишних загрузок)",
+                            choiceId = "vcv-2-a",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "vcv-2-run",
+                            label = "Скачать и запустить любой установщик со страницы",
+                            choiceId = "vcv-2-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "vcv-2-never",
+                            label = "Никогда не открывать",
+                            choiceId = "vcv-2-c",
+                            variant = "ACTION",
+                        ),
+                    ),
+                    pressureSeconds = 50,
+                ),
+            ),
+        )
+
+        /** Винлокер: безопасный режим, удаление файла и записи автозагрузки — короткая цепочка. */
+        fun winlockerSafeModeCleanup(): InternalScenario = InternalScenario(
+            id = "winlocker-safe-mode-cleanup",
+            title = "Винлокер: безопасный режим и чистка",
+            type = ScenarioType.EMAIL,
+            description = "Три коротких шага: экран блокировки с требованием оплаты, работа в безопасном режиме, удаление исполняемого файла и ключа автозапуска в реестре.",
+            attackTypeLabel = "Винлокер / блокировка рабочего стола",
+            hubChannel = ScenarioHubChannel.SECURITY,
+            steps = listOf(
+                InternalStep(
+                    id = "wlc-1",
+                    situationBrief = "На экране монитора полноэкранное окно с требованием перевода и таймером. Система якобы «зашифрована».",
+                    narrative = """
+                        Сообщение перекрывает рабочий стол, горячие клавиши диспетчера задач не срабатывают.
+                        Что сделать в первую очередь на заражённой учебной станции?
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "wlc-1-a",
+                            label = "Оплатить по указанным реквизитам, чтобы быстро вернуть работу",
+                            correct = false,
+                            explanationWhenChosen = "Оплата мошенникам не гарантирует разблокировку и финансирует преступников. Стандартный ответ — не платить, изолировать ПК и следовать процедуре восстановления.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Средства ушли, блокировка осталась. ПК всё равно нужно чистить по регламенту ИБ.",
+                        ),
+                        InternalChoice(
+                            id = "wlc-1-b",
+                            label = "Принудительно перезагрузить ПК и войти в безопасный режим (минимальная конфигурация) для ручной чистки",
+                            correct = true,
+                            explanationWhenChosen = "Верно: безопасный режим отключает лишний автозапуск и облегчает удаление вредоносного процесса/файла. Далее — по инструкции ИБ или проверенному чек-листу.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "wlc-1-c",
+                            label = "Несколько раз нажать Alt+F4 и надеяться, что окно закроется",
+                            correct = false,
+                            explanationWhenChosen = "Современные винлокеры перехватывают ввод; «закрыть окно» редко помогает. Нужен перезапуск в безопасном режиме или загрузочный носитель.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.DESK_TICKET,
+                    emailSubject = "Инцидент: полноэкранная блокировка рабочей станции",
+                    emailFrom = "Портал ИБ · очередь: эндпоинты",
+                    hotspots = listOf(
+                        InternalHotspot(id = "wlc-1-pay", label = "Оплатить выкуп", choiceId = "wlc-1-a", variant = "ACTION"),
+                        InternalHotspot(id = "wlc-1-safe", label = "Перезагрузка в безопасный режим", choiceId = "wlc-1-b", variant = "ACTION"),
+                        InternalHotspot(id = "wlc-1-altf4", label = "Закрыть окно Alt+F4", choiceId = "wlc-1-c", variant = "ACTION"),
+                    ),
+                    pressureSeconds = 45,
+                ),
+                InternalStep(
+                    id = "wlc-2",
+                    situationBrief = "Вы в безопасном режиме. В автозагрузке обнаружен подозрительный исполняемый файл.",
+                    narrative = """
+                        Путь: C:\Users\Public\Music\WinSecGuard.exe
+                        Размер небольшой, цифровой подписи нет, дата изменения — сегодня ночью.
+
+                        Какой шаг следующий?
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "wlc-2-a",
+                            label = "Удалить WinSecGuard.exe и очистить корзину; затем полное сканирование антивирусом",
+                            correct = true,
+                            explanationWhenChosen = "Удаление известного бинарника винлокера — ключевой шаг. Корзину очищают, чтобы файл не восстановился случайно; затем — проверка всей системы.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "wlc-2-b",
+                            label = "Переименовать файл в .bak и оставить на диске «на всякий случай»",
+                            correct = false,
+                            explanationWhenChosen = "Переименование не устраняет угрозу: файл остаётся исполняемым или может быть снова запущен. Удаление и сканирование надёжнее.",
+                            scoreDelta = 0,
+                        ),
+                        InternalChoice(
+                            id = "wlc-2-c",
+                            label = "Сразу выйти из безопасного режима в обычную Windows без удаления файла",
+                            correct = false,
+                            explanationWhenChosen = "В обычной загрузке винлокер снова активируется. Сначала удаление и автозапуск, потом нормальный режим.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Блокировка вернулась сразу после входа. Повторная чистка с нуля.",
+                        ),
+                    ),
+                    uiKind = StepUiKind.DESK_TICKET,
+                    emailSubject = "Безопасный режим: найден WinSecGuard.exe",
+                    emailFrom = "Портал ИБ · эндпоинты",
+                    hotspots = listOf(
+                        InternalHotspot(id = "wlc-2-del", label = "Удалить файл и просканировать систему", choiceId = "wlc-2-a", variant = "ACTION"),
+                        InternalHotspot(id = "wlc-2-bak", label = "Переименовать в .bak", choiceId = "wlc-2-b", variant = "ACTION"),
+                        InternalHotspot(id = "wlc-2-boot", label = "Выйти в обычный режим без удаления", choiceId = "wlc-2-c", variant = "ACTION"),
+                    ),
+                    pressureSeconds = 40,
+                ),
+                InternalStep(
+                    id = "wlc-3",
+                    situationBrief = "В редакторе реестра (учебно) видна автозагрузка текущего пользователя.",
+                    narrative = """
+                        Раздел: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
+                        Параметр: WinSecMgr → значение указывает на удалённый уже WinSecGuard.exe
+
+                        Что сделать с параметром WinSecMgr?
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "wlc-3-a",
+                            label = "Удалить значение WinSecMgr из Run, перезагрузиться в обычном режиме и снова запустить полное сканирование",
+                            correct = true,
+                            explanationWhenChosen = "Удаление ключа автозапуска предотвращает повторный старт оболочки винлокера. Контрольная перезагрузка и сканирование закрепляют результат.",
+                            scoreDelta = 5,
+                        ),
+                        InternalChoice(
+                            id = "wlc-3-b",
+                            label = "Оставить ключ — файл всё равно уже удалён",
+                            correct = false,
+                            explanationWhenChosen = "Битая запись может мешать загрузке или быть восстановлена другим модулем. Лучше убрать явный автозапуск.",
+                            scoreDelta = 0,
+                        ),
+                        InternalChoice(
+                            id = "wlc-3-c",
+                            label = "Удалить весь раздел Run целиком",
+                            correct = false,
+                            explanationWhenChosen = "Удаление всего раздела Run ломает легитимные программы (драйверы гарнитур, утилиты). Точечно удаляйте только вредоносные значения.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Отвалился ряд штатных автозапусков. Восстановление из бэкапа реестра.",
+                        ),
+                    ),
+                    uiKind = StepUiKind.DESK_TICKET,
+                    emailSubject = "Реестр: Run · WinSecMgr",
+                    emailFrom = "Портал ИБ · эндпоинты",
+                    hotspots = listOf(
+                        InternalHotspot(id = "wlc-3-delv", label = "Удалить только WinSecMgr", choiceId = "wlc-3-a", variant = "ACTION"),
+                        InternalHotspot(id = "wlc-3-keep", label = "Оставить ключ как есть", choiceId = "wlc-3-b", variant = "ACTION"),
+                        InternalHotspot(id = "wlc-3-wipe", label = "Удалить весь раздел Run", choiceId = "wlc-3-c", variant = "ACTION"),
+                    ),
+                    pressureSeconds = 40,
+                ),
+            ),
+        )
+
+        /** RAT: изоляция хоста, снятие закрепления, контроль учётных данных. */
+        fun ratIncidentResponse(): InternalScenario = InternalScenario(
+            id = "rat-incident-response",
+            title = "RAT на рабочей станции",
+            type = ScenarioType.EMAIL,
+            description = "Подозрение на удалённый троян (RAT): странная активность мыши, исходящие сессии. Короткая цепочка реагирования.",
+            attackTypeLabel = "Remote Access Trojan (RAT)",
+            hubChannel = ScenarioHubChannel.SECURITY,
+            steps = listOf(
+                InternalStep(
+                    id = "rat-1",
+                    situationBrief = """
+                        Пользователь сообщает: курсор иногда двигается сам, в трее мелькает незнакомый значок,
+                        антивирус молчит. Вы дежурный ИБ.
+                    """.trimIndent(),
+                    narrative = """
+                        Первый приоритет при подозрении на активный RAT на корпоративном ПК?
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "rat-1-a",
+                            label = "Немедленно изолировать хост от сети (кабель/Wi‑Fi/VLAN), зафиксировать время и сохранить артефакты для расследования",
+                            correct = true,
+                            explanationWhenChosen = "Изоляция рвёт канал управления атакующего и снижает утечку данных. Далее — образ диска или снятие дампа по регламенту.",
+                            scoreDelta = 5,
+                        ),
+                        InternalChoice(
+                            id = "rat-1-b",
+                            label = "Попросить пользователя «пока поработать как обычно», чтобы поймать злоумышленника",
+                            correct = false,
+                            explanationWhenChosen = "Оставлять скомпрометированный хост в сети опасно: идёт эксфильтрация и lateral movement. Сначала изоляция, потом охота.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "За время «наблюдения» украдены файлы проекта и хэши сессий.",
+                        ),
+                        InternalChoice(
+                            id = "rat-1-c",
+                            label = "Установить ещё один бесплатный «усилитель антивируса» с первого попавшегося сайта",
+                            correct = false,
+                            explanationWhenChosen = "Панические установки с непроверенных сайтов усугубляют компрометацию. Действия по процедуре ИБ и доверенным инструментам.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.DESK_TICKET,
+                    emailSubject = "Алерт: подозрение на удалённый доступ к ПК",
+                    emailFrom = "SOC · очередь: эндпоинты",
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "rat-1-ioc",
+                            title = "Признаки RAT",
+                            body = "Скрытые RDP/TeamViewer-подобные сессии, неизвестные исходящие на нестандартные порты, микрофон/камера без действий пользователя — повод для изоляции.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(id = "rat-1-iso", label = "Изолировать ПК от сети", choiceId = "rat-1-a", variant = "ACTION"),
+                        InternalHotspot(id = "rat-1-wait", label = "Пусть работает как обычно", choiceId = "rat-1-b", variant = "ACTION"),
+                        InternalHotspot(id = "rat-1-crapav", label = "Поставить случайный антивирус с сайта", choiceId = "rat-1-c", variant = "ACTION"),
+                    ),
+                    pressureSeconds = 50,
+                ),
+                InternalStep(
+                    id = "rat-2",
+                    situationBrief = "Хост изолирован. В автозагрузке и планировщике найдена задача, запускающая бинарник из Temp.",
+                    narrative = """
+                        Задача планировщика: «OfficeHealthCheck» → C:\Users\user\AppData\Local\Temp\svch0st.exe
+                        Процесс маскируется под системный.
+
+                        Что выполнить до возврата в прод-сеть?
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "rat-2-a",
+                            label = "Отключить задачу, удалить svch0st.exe, проверить связанные ключи Run/Services и полное сканирование EDR",
+                            correct = true,
+                            explanationWhenChosen = "Снятие закрепления (scheduled task + файл) и контроль смежных точек автозапуска — стандартный шаг против RAT. EDR даёт телеметрию по цепочке.",
+                            scoreDelta = 5,
+                        ),
+                        InternalChoice(
+                            id = "rat-2-b",
+                            label = "Только завершить процесс в диспетчере задач и снова включить сеть",
+                            correct = false,
+                            explanationWhenChosen = "Процесс перезапустится из планировщика или другого persistence. Нужно убрать задачу и файлы, затем проверка.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "RAT восстановился через минуту после включения сети.",
+                        ),
+                        InternalChoice(
+                            id = "rat-2-c",
+                            label = "Переустановить только браузер",
+                            correct = false,
+                            explanationWhenChosen = "Переустановка браузера не устраняет системный RAT и закрепление вне браузера.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.DESK_TICKET,
+                    emailSubject = "Изолированный ПК: OfficeHealthCheck → svch0st.exe",
+                    emailFrom = "SOC · эндпоинты",
+                    hotspots = listOf(
+                        InternalHotspot(id = "rat-2-full", label = "Снять задачу, удалить файл, скан EDR", choiceId = "rat-2-a", variant = "ACTION"),
+                        InternalHotspot(id = "rat-2-kill", label = "Только снять процесс и включить сеть", choiceId = "rat-2-b", variant = "ACTION"),
+                        InternalHotspot(id = "rat-2-browser", label = "Переустановить браузер", choiceId = "rat-2-c", variant = "ACTION"),
+                    ),
+                    pressureSeconds = 45,
+                ),
+                InternalStep(
+                    id = "rat-3",
+                    situationBrief = "Вредоносный модуль удалён, образ снят. Остаётся финальная фаза.",
+                    narrative = """
+                        Учётная запись пользователя использовалась на скомпрометированной машине; возможен перехват токенов/паролей.
+
+                        Какое завершение инцидента наиболее полное?
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "rat-3-a",
+                            label = "Сбросить пароли и сессии для затронутых учёток, проверить MFA, при необходимости пересобрать ПК из доверенного образа; отчёт в ИБ",
+                            correct = true,
+                            explanationWhenChosen = "RAT часто ворует учётные данные. Сброс паролей/сессий и контроль MFA снижают повторный вход. Чистый образ — когда есть сомнения в целостности ОС.",
+                            scoreDelta = 6,
+                        ),
+                        InternalChoice(
+                            id = "rat-3-b",
+                            label = "Поблагодарить пользователя и вернуть тот же ПК в сеть без смены паролей",
+                            correct = false,
+                            explanationWhenChosen = "Без ротации секретов атакующий может вернуться теми же ключами. Минимум — принудительная смена пароля и отзыв сессий.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Через украденный токен снова открыт доступ к почте и VPN.",
+                        ),
+                        InternalChoice(
+                            id = "rat-3-c",
+                            label = "Только отключить Wi‑Fi на ноутбуке пользователя навсегда",
+                            correct = false,
+                            explanationWhenChosen = "Это не устраняет компрометацию учёток и не восстанавливает безопасную работу. Нужны процедуры восстановления и контроль доступа.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.DESK_TICKET,
+                    emailSubject = "Закрытие инцидента RAT",
+                    emailFrom = "SOC · эндпоинты",
+                    hotspots = listOf(
+                        InternalHotspot(id = "rat-3-full", label = "Ротация паролей/сессий, MFA, отчёт", choiceId = "rat-3-a", variant = "ACTION"),
+                        InternalHotspot(id = "rat-3-none", label = "Вернуть в сеть как есть", choiceId = "rat-3-b", variant = "ACTION"),
+                        InternalHotspot(id = "rat-3-wifi", label = "Навсегда отключить Wi‑Fi", choiceId = "rat-3-c", variant = "ACTION"),
+                    ),
+                    pressureSeconds = 40,
+                ),
+            ),
+        )
+
+        /** SMS-бомбинг как шум: на фоне — «важный» звонок «антифрода» (vishing под прикрытием). */
+        fun smsBomberPhishingSmokescreen(): InternalScenario = InternalScenario(
+            id = "sms-bomber-phishing-smokescreen",
+            title = "Бомбинг SMS и звонок «поддержки»",
+            type = ScenarioType.SOCIAL,
+            description = "Лента сообщений забита сервисными SMS; поверх — входящий звонок якобы от банка. Учимся не действовать под шумом и верифицировать только через официальный канал.",
+            attackTypeLabel = "SMS-бомбинг + vishing под шумом",
+            hubChannel = ScenarioHubChannel.SECURITY,
+            steps = listOf(
+                InternalStep(
+                    id = "sbp-1",
+                    situationBrief = """
+                        Вечер. На телефон сыплются SMS от доставок, маркетплейсов и «кодов» — классический фон при бомбинге.
+                        В этот момент приходит входящий звонок: голосовая подсказка показывает «Антифрод банка» и красивый номер.
+                        Ниже — учебная имитация экрана телефона: пролистайте ленту и оцените звонок.
+                    """.trimIndent(),
+                    narrative = """
+                        Шум в ленте намеренно отвлекает. Настоящий банк не требует диктовать одноразовые коды по телефону и не просит
+                        установить удалённый доступ под давлением. Спокойный канал — приложение банка или номер с карты/сайта, набранный вами.
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "sbp-1-a",
+                            label = "Сбросить звонок и зайти в банк только через официальное приложение или набрать номер поддержки с карты / с сайта банка",
+                            correct = true,
+                            explanationWhenChosen = "Верно: изолировать спокойную верификацию. Входящий звонок на фоне хаоса — типичный приём; канал вы выбираете сами, а не тот, кто звонит первым.",
+                            scoreDelta = 6,
+                        ),
+                        InternalChoice(
+                            id = "sbp-1-b",
+                            label = "Ответить и продиктовать код из SMS «для отмены блокировки», как просит голос",
+                            correct = false,
+                            explanationWhenChosen = "Коды из SMS — секрет. Их никому не диктуют по телефону, даже если звонящий знает ваше имя. Это почти всегда мошенничество или сцена с подменой номера.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Код использовали для подтверждения перевода или смены номера телефона в банке. Срочно блокируйте карту через приложение и звоните только на официальный номер.",
+                        ),
+                        InternalChoice(
+                            id = "sbp-1-c",
+                            label = "Ответить и установить AnyDesk / TeamViewer «как сказал специалист»",
+                            correct = false,
+                            explanationWhenChosen = "Удалённый доступ под предлогом «антифрода» — путь к полному контролю над устройством. Банки так не работают.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Злоумышленник получил доступ к экрану и сессиям. Нужна изоляция устройства и инцидент в ИБ.",
+                        ),
+                    ),
+                    uiKind = StepUiKind.MOBILE_PHONE_INCIDENT,
+                    phoneIncidentGame = InternalPhoneIncidentGame(
+                        statusBarTime = "21:14",
+                        networkLabel = "LTE · 4G",
+                        screenTitle = "Сообщения",
+                        smsLines = listOf(
+                            InternalPhoneSmsLine("Ozon", "Код 482901. Никому не говорите.", "21:12"),
+                            InternalPhoneSmsLine("CDEK", "Заказ #8832 в пункте выдачи до 20:00", "21:12"),
+                            InternalPhoneSmsLine("Yandex", "Ваш код: 102938", "21:11"),
+                            InternalPhoneSmsLine("Wildberries", "Скидка 15% до полуночи", "21:11"),
+                            InternalPhoneSmsLine("Gosuslugi", "Код подтверждения 556677", "21:10"),
+                            InternalPhoneSmsLine("DPD_RU", "Курьер сегодня 18–22", "21:10"),
+                            InternalPhoneSmsLine("VK", "Код входа 884422", "21:09"),
+                            InternalPhoneSmsLine("SMS_Info", "Ваш пакет задержан. Ссылка: t.ly/fake-pack", "21:09"),
+                            InternalPhoneSmsLine("BankAlert", "НЕ ДЕЙСТВУЙТЕ: ждите звонок антифрода", "21:08"),
+                            InternalPhoneSmsLine("Lamoda", "Верните товар в течение 14 дней", "21:08"),
+                            InternalPhoneSmsLine("Uber", "Поездка завершена. Чек в приложении", "21:07"),
+                            InternalPhoneSmsLine("Steam", "Код Steam Guard: R5K9L", "21:06"),
+                            InternalPhoneSmsLine("2GIS", "Код для входа 337744", "21:05"),
+                        ),
+                        callOverlay = InternalPhoneCallOverlay(
+                            callerLabel = "Антифрод",
+                            callerSubtitle = "мобильный банк · срочно",
+                            numberDisplay = "+7 (495) 123-45-67",
+                        ),
+                    ),
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "sbp-1-smoke",
+                            title = "Зачем шум",
+                            body = "Бомбинг SMS перегружает внимание и мешает отличить фишинговое «BankAlert» от реальных уведомлений. Звонок в пик шума усиливает давление.",
+                        ),
+                        InternalInvestigationPanel(
+                            id = "sbp-1-vish",
+                            title = "Vishing",
+                            body = "Номер на экране можно подделать (spoofing). Единственный безопасный исходящий контакт с банком — тот, что вы берёте из приложения или с оборота карты.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "sbp-1-drop-app",
+                            label = "Сбросить звонок → банк через приложение / номер с карты",
+                            choiceId = "sbp-1-a",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "sbp-1-dictate",
+                            label = "Ответить и продиктовать код из SMS",
+                            choiceId = "sbp-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "sbp-1-remote",
+                            label = "Ответить и поставить AnyDesk по инструкции",
+                            choiceId = "sbp-1-c",
+                            variant = "ACTION",
+                        ),
+                    ),
+                    pressureSeconds = 75,
                 ),
             ),
         )

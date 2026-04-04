@@ -56,6 +56,34 @@ data class NetShieldGameDto(
     val rows: List<NetShieldRowDto>,
 )
 
+data class VirusTotalGameDto(
+    val scannedUrl: String,
+    val enginesFlagged: Int,
+    val enginesTotal: Int,
+    val permalinkStub: String,
+    val verdictHeadline: String,
+)
+
+data class PhoneSmsLineDto(
+    val sender: String,
+    val text: String,
+    val time: String,
+)
+
+data class PhoneCallOverlayDto(
+    val callerLabel: String,
+    val callerSubtitle: String,
+    val numberDisplay: String,
+)
+
+data class PhoneIncidentGameDto(
+    val statusBarTime: String,
+    val networkLabel: String,
+    val screenTitle: String,
+    val smsLines: List<PhoneSmsLineDto>,
+    val callOverlay: PhoneCallOverlayDto,
+)
+
 /** Без поля «правильный» — клиент не знает, какие из фрагментов опасны. */
 data class RedFlagCandidatePublicDto(
     val id: String,
@@ -81,6 +109,8 @@ data class StepPublicDto(
     val urlCompareGame: UrlCompareGameDto?,
     val serpPickGame: SerpPickGameDto?,
     val netShieldGame: NetShieldGameDto?,
+    val virusTotalGame: VirusTotalGameDto?,
+    val phoneIncidentGame: PhoneIncidentGameDto?,
     val narrativeNoise: String?,
     val pressureSeconds: Int?,
     val redFlagGame: RedFlagGameDto?,

@@ -30,7 +30,9 @@ export type StepUiKind =
   | "CALENDAR_INVITE"
   | "EXTENSION_STORE"
   | "TERMINAL_SESSION"
-  | "OAUTH_APPROVAL";
+  | "OAUTH_APPROVAL"
+  | "VIRUSTOTAL_LOOKUP"
+  | "MOBILE_PHONE_INCIDENT";
 
 export interface InvestigationPanel {
   id: string;
@@ -79,6 +81,34 @@ export interface NetShieldGame {
   rows: NetShieldRow[];
 }
 
+export interface VirusTotalGame {
+  scannedUrl: string;
+  enginesFlagged: number;
+  enginesTotal: number;
+  permalinkStub: string;
+  verdictHeadline: string;
+}
+
+export interface PhoneSmsLine {
+  sender: string;
+  text: string;
+  time: string;
+}
+
+export interface PhoneCallOverlay {
+  callerLabel: string;
+  callerSubtitle: string;
+  numberDisplay: string;
+}
+
+export interface PhoneIncidentGame {
+  statusBarTime: string;
+  networkLabel: string;
+  screenTitle: string;
+  smsLines: PhoneSmsLine[];
+  callOverlay: PhoneCallOverlay;
+}
+
 export interface RedFlagCandidatePublic {
   id: string;
   label: string;
@@ -103,6 +133,8 @@ export interface StepPublic {
   urlCompareGame: UrlCompareGame | null;
   serpPickGame: SerpPickGame | null;
   netShieldGame: NetShieldGame | null;
+  virusTotalGame: VirusTotalGame | null;
+  phoneIncidentGame: PhoneIncidentGame | null;
   /** Лишний текст в письме — «шум» */
   narrativeNoise: string | null;
   /** Секунды для мягкого таймера давления (без санкций при нуле) */

@@ -73,6 +73,10 @@ function missionWindowLabel(step: StepPublic): string {
       return "Поисковая выдача";
     case "NET_SHIELD_CONSOLE":
       return "Консоль периметра";
+    case "VIRUSTOTAL_LOOKUP":
+      return "Проверка URL (VirusTotal)";
+    case "MOBILE_PHONE_INCIDENT":
+      return "Смартфон";
     case "CHAT_MESSENGER":
       return "Мессенджер";
     case "CALENDAR_INVITE":

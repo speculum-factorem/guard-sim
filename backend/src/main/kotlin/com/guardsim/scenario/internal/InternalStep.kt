@@ -14,6 +14,8 @@ data class InternalStep(
     val urlCompareGame: InternalUrlCompareGame? = null,
     val serpPickGame: InternalSerpPickGame? = null,
     val netShieldGame: InternalNetShieldGame? = null,
+    val virusTotalGame: InternalVirusTotalGame? = null,
+    val phoneIncidentGame: InternalPhoneIncidentGame? = null,
     /** Лишний текст (подпись, юр. мелкий шрифт) — имитация «шума» в письме */
     val narrativeNoise: String? = null,
     /** Секунды на шаг: клиент показывает таймер; без санкций при нуле (см. интерфейс) */

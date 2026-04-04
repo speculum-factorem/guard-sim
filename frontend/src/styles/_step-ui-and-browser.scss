@@ -1320,3 +1320,521 @@ button.browser-tab-slot {
   margin-top: 10px;
 }
 
+/* ── VirusTotal (учебный снимок, VIRUSTOTAL_LOOKUP) ───────────────────────── */
+.ui-frame-vt-lookup {
+  padding: 0;
+  background: #0f172a;
+  color: #e2e8f0;
+  overflow: hidden;
+}
+
+.sim-vt-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.sim-vt-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.sim-vt-head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sim-vt-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.sim-vt-sub {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.sim-vt-body {
+  padding: 14px 16px 16px;
+}
+
+.sim-vt-url-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.sim-vt-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+}
+
+.sim-vt-url {
+  font-size: 12px;
+  word-break: break-all;
+  line-height: 1.45;
+  color: #7dd3fc;
+  background: rgba(30, 41, 59, 0.8);
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.sim-vt-permalink {
+  font-size: 11px;
+  color: #64748b;
+  font-family: ui-monospace, monospace;
+}
+
+.sim-vt-scanning {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 12px;
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.sim-vt-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(125, 211, 252, 0.25);
+  border-top-color: #38bdf8;
+  border-radius: 50%;
+  animation: sim-vt-spin 0.7s linear infinite;
+}
+
+@keyframes sim-vt-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sim-vt-verdict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  margin-bottom: 12px;
+}
+
+.sim-vt-verdict--clean {
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.sim-vt-verdict--bad {
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+.sim-vt-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 3px solid rgba(34, 197, 94, 0.65);
+  flex-shrink: 0;
+}
+
+.sim-vt-verdict--bad .sim-vt-ring {
+  border-color: rgba(248, 113, 113, 0.65);
+}
+
+.sim-vt-ring-num {
+  font-size: 15px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.sim-vt-ring-cap {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
+.sim-vt-verdict-text {
+  margin: 0;
+  flex: 1;
+  min-width: 200px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #e2e8f0;
+}
+
+.sim-vt-footnote {
+  margin: 0 0 12px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.sim-vt-wait-actions {
+  margin: 0;
+  font-size: 12px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.ui-frame-vt-lookup .hotspot-row,
+.ui-frame-vt-lookup .choice-list-fallback {
+  margin-top: 4px;
+}
+
+/* ── Смартфон: SMS + входящий звонок (MOBILE_PHONE_INCIDENT) ──────────────── */
+.ui-frame-phone-incident {
+  padding: 16px 14px 18px;
+  background: linear-gradient(165deg, #1a1d2e 0%, #0f1118 55%, #12151f 100%);
+}
+
+.sim-phone-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.sim-phone-device {
+  width: 100%;
+  max-width: 340px;
+}
+
+.sim-phone-bezel {
+  position: relative;
+  padding: 11px;
+  border-radius: 44px;
+  background: linear-gradient(145deg, #2a2d3a 0%, #0a0a0c 40%, #1f222c 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 24px 48px rgba(0, 0, 0, 0.45);
+}
+
+.sim-phone-notch {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 96px;
+  height: 26px;
+  background: #0a0a0c;
+  border-radius: 0 0 16px 16px;
+  z-index: 5;
+}
+
+.sim-phone-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 520px;
+  border-radius: 34px;
+  overflow: hidden;
+  background: #f2f2f7;
+}
+
+.sim-phone-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px 4px;
+  padding-top: 36px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #1c1c1e;
+}
+
+.sim-phone-status-icons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sim-phone-sig,
+.sim-phone-wifi,
+.sim-phone-batt {
+  display: inline-block;
+  background: #1c1c1e;
+  border-radius: 2px;
+  opacity: 0.85;
+}
+
+.sim-phone-sig {
+  width: 16px;
+  height: 10px;
+  clip-path: polygon(0 100%, 100% 100%, 100% 0, 0 40%);
+}
+
+.sim-phone-wifi {
+  width: 14px;
+  height: 10px;
+  border-radius: 50% 50% 0 0;
+  background: transparent;
+  border: 2px solid #1c1c1e;
+  border-bottom: none;
+}
+
+.sim-phone-batt {
+  width: 22px;
+  height: 11px;
+  border-radius: 3px;
+  border: 2px solid #1c1c1e;
+  background: linear-gradient(90deg, #34c759 0%, #34c759 70%, transparent 70%);
+}
+
+.sim-phone-net-banner {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: #636366;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.sim-phone-msgs-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 4px 16px 8px;
+  border-bottom: 1px solid rgba(60, 60, 67, 0.12);
+}
+
+.sim-phone-msgs-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #1c1c1e;
+}
+
+.sim-phone-msgs-edit {
+  font-size: 15px;
+  color: #007aff;
+  font-weight: 500;
+}
+
+.sim-phone-sms-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 10px 120px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sim-phone-sms-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: flex-start;
+}
+
+.sim-phone-sms-avatar {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8e8e93, #636366);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sim-phone-sms-main {
+  flex: 1;
+  min-width: 0;
+  background: #e5e5ea;
+  border-radius: 16px;
+  padding: 8px 11px 9px;
+}
+
+.sim-phone-sms-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.sim-phone-sms-sender {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1c1c1e;
+}
+
+.sim-phone-sms-time {
+  font-size: 11px;
+  color: #8e8e93;
+  flex-shrink: 0;
+}
+
+.sim-phone-sms-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.35;
+  color: #1c1c1e;
+  word-break: break-word;
+}
+
+.sim-phone-call-layer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 12px 10px 18px;
+  pointer-events: none;
+}
+
+.sim-phone-call-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(5px);
+}
+
+.sim-phone-call-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 300px;
+  padding: 18px 16px 16px;
+  border-radius: 28px;
+  background: rgba(28, 28, 30, 0.94);
+  color: #f2f2f7;
+  text-align: center;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+}
+
+.sim-phone-call-card--pulse {
+  animation: sim-phone-call-pulse 1.8s ease-in-out 2;
+}
+
+@keyframes sim-phone-call-pulse {
+  0%,
+  100% {
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 20px 50px rgba(52, 199, 89, 0.15);
+    transform: scale(1.02);
+  }
+}
+
+.sim-phone-call-hint {
+  margin: 0 0 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #8e8e93;
+}
+
+.sim-phone-call-avatar {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #48484a, #2c2c2e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #aeaeb2;
+}
+
+.sim-phone-call-name {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.sim-phone-call-sub {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: #ff9f0a;
+  font-weight: 600;
+}
+
+.sim-phone-call-num {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.sim-phone-call-warn {
+  margin: 0 0 12px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #aeaeb2;
+}
+
+.sim-phone-call-fake-btns {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 52px;
+}
+
+.sim-phone-decline-ico,
+.sim-phone-answer-ico {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+}
+
+.sim-phone-decline-ico {
+  background: linear-gradient(180deg, #ff453a, #d70015);
+  box-shadow: 0 4px 12px rgba(215, 0, 21, 0.35);
+}
+
+.sim-phone-answer-ico {
+  background: linear-gradient(180deg, #34c759, #248a3d);
+  box-shadow: 0 4px 12px rgba(52, 199, 89, 0.35);
+}
+
+.ui-frame-phone-incident .hotspot-row {
+  width: 100%;
+  max-width: 520px;
+  margin-top: 4px;
+}
+
+.ui-frame-phone-incident .choice-list-fallback {
+  width: 100%;
+  max-width: 520px;
+}
+

@@ -8,10 +8,12 @@ import { ExtensionStoreSimulation } from "./ExtensionStoreSimulation";
 import { GenericWorkspaceSimulation } from "./GenericWorkspaceSimulation";
 import { NetShieldSimulation } from "./NetShieldSimulation";
 import { OAuthApprovalSimulation } from "./OAuthApprovalSimulation";
+import { PhoneIncidentSimulation } from "./PhoneIncidentSimulation";
 import { SearchSerpSimulation } from "./SearchSerpSimulation";
 import { SocialFeedSimulation } from "./SocialFeedSimulation";
 import { TerminalSessionSimulation } from "./TerminalSessionSimulation";
 import { TicketSimulation } from "./TicketSimulation";
+import { VirusTotalSimulation } from "./VirusTotalSimulation";
 
 export function StepSimulation(props: {
   step: StepPublic;
@@ -150,6 +152,38 @@ export function StepSimulation(props: {
           step={step}
           disabled={disabled}
           onChoose={onChoose}
+          childrenFooter={childrenFooter}
+          splitLayout={splitLayout}
+        />
+      );
+    case "VIRUSTOTAL_LOOKUP":
+      if (step.virusTotalGame) {
+        return (
+          <VirusTotalSimulation step={step} disabled={disabled} onChoose={onChoose} childrenFooter={childrenFooter} />
+        );
+      }
+      return (
+        <GenericWorkspaceSimulation
+          step={step}
+          disabled={disabled}
+          onChoose={onChoose}
+          choiceButtons={genericChoices}
+          childrenFooter={childrenFooter}
+          splitLayout={splitLayout}
+        />
+      );
+    case "MOBILE_PHONE_INCIDENT":
+      if (step.phoneIncidentGame) {
+        return (
+          <PhoneIncidentSimulation step={step} disabled={disabled} onChoose={onChoose} childrenFooter={childrenFooter} />
+        );
+      }
+      return (
+        <GenericWorkspaceSimulation
+          step={step}
+          disabled={disabled}
+          onChoose={onChoose}
+          choiceButtons={genericChoices}
           childrenFooter={childrenFooter}
           splitLayout={splitLayout}
         />

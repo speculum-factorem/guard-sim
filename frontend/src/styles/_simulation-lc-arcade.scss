@@ -469,3 +469,457 @@
   background: rgba(255, 230, 0, 0.22);
   box-shadow: 0 0 0 1px rgba(255, 230, 0, 0.35);
 }
+
+/* ═══ Полное выравнивание с аркадной темой: оверлеи, модалки, вторичный UI ═══ */
+
+.lc-theme .sim-sim-backdrop {
+  background: rgba(5, 6, 12, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.lc-theme .sim-email-compose-modal,
+.lc-theme .sim-modal-panel {
+  background: rgba(13, 14, 31, 0.98);
+  border: 1px solid rgba(0, 212, 255, 0.24);
+  box-shadow: var(--shadow-bento-xl);
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-email-drawer {
+  background: rgba(10, 11, 22, 0.98);
+  border-right-color: rgba(0, 212, 255, 0.2);
+  box-shadow: 8px 0 40px rgba(0, 0, 0, 0.55);
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-email-refresh-overlay {
+  background: rgba(7, 8, 15, 0.78);
+  color: var(--arc-cyan);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.lc-theme .sim-mini-toast {
+  background: rgba(13, 14, 31, 0.96);
+  color: var(--lc-ink);
+  border: 1px solid rgba(0, 212, 255, 0.22);
+  box-shadow: var(--shadow-bento-md);
+}
+
+.lc-theme .consequence-overlay {
+  background: rgba(5, 6, 14, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.lc-theme .consequence-dialog {
+  background: rgba(13, 14, 31, 0.98);
+  border: 1px solid rgba(0, 212, 255, 0.28);
+  box-shadow: var(--shadow-bento-xl);
+}
+
+.lc-theme .consequence-dialog h2 {
+  color: var(--lc-ink);
+}
+
+.lc-theme .consequence-text {
+  color: var(--lc-muted);
+}
+
+.lc-theme .browser-chrome-chrome {
+  background: rgba(8, 9, 18, 0.98);
+}
+
+.lc-theme .browser-chrome-menu-popover {
+  background: rgba(13, 14, 31, 0.98);
+  border: 1px solid rgba(0, 212, 255, 0.22);
+  box-shadow: var(--shadow-bento-md);
+}
+
+.lc-theme .browser-chrome-menu-item {
+  color: var(--lc-ink);
+}
+
+.lc-theme .browser-chrome-menu-item:hover {
+  background: rgba(0, 212, 255, 0.12);
+}
+
+.lc-theme .browser-chrome-toolbar-wrap {
+  background: rgba(10, 11, 22, 0.96);
+}
+
+/* Почта: формы, плитки, мета */
+.lc-theme .sim-email-form-input,
+.lc-theme .sim-email-form-textarea {
+  background: rgba(8, 9, 18, 0.96);
+  border-color: rgba(0, 212, 255, 0.22);
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-email-form-row span {
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-email-app-tile {
+  background: rgba(13, 14, 28, 0.95);
+  color: var(--lc-ink);
+  border-color: rgba(0, 212, 255, 0.2);
+}
+
+.lc-theme .sim-email-app-tile:hover {
+  border-color: var(--arc-cyan);
+  background: rgba(0, 212, 255, 0.12);
+}
+
+.lc-theme .sim-email-drawer-link:hover {
+  background: rgba(0, 212, 255, 0.1);
+}
+
+.lc-theme .sim-email-drawer-link--active {
+  background: rgba(0, 212, 255, 0.14);
+  border-color: rgba(0, 212, 255, 0.5);
+}
+
+.lc-theme .sim-email-attachment {
+  background: rgba(10, 11, 22, 0.92);
+  border-color: rgba(0, 212, 255, 0.18);
+}
+
+.lc-theme .sim-email-attach-decoy,
+.lc-theme .sim-email-attach-real {
+  background: rgba(10, 11, 22, 0.9);
+  border-color: rgba(0, 212, 255, 0.16);
+}
+
+.lc-theme .email-toolbar-dot {
+  background: rgba(0, 212, 255, 0.4);
+}
+
+.lc-theme .email-meta-from,
+.lc-theme .sim-email-from-btn {
+  color: var(--arc-cyan);
+}
+
+.lc-theme .sim-email-inline-link {
+  color: var(--arc-cyan);
+}
+
+.lc-theme .sim-gmail-list-row-wrap {
+  border-bottom-color: rgba(0, 212, 255, 0.1);
+}
+
+.lc-theme .sim-gmail-list-empty {
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-email-reading--list-only {
+  color: var(--lc-muted);
+}
+
+/* Соцсеть: скелетоны, попапы, списки */
+.lc-theme .sim-fb-skeleton-avatar {
+  background: linear-gradient(
+    90deg,
+    rgba(22, 24, 42, 1) 0%,
+    rgba(0, 212, 255, 0.14) 50%,
+    rgba(22, 24, 42, 1) 100%
+  );
+  background-size: 200% 100%;
+}
+
+.lc-theme .sim-fb-skeleton-line {
+  background: rgba(0, 212, 255, 0.12);
+}
+
+.lc-theme .sim-fb-skeleton-hint {
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-fb-account-item {
+  background: rgba(13, 14, 28, 0.95);
+  border-color: rgba(0, 212, 255, 0.2);
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-fb-account-item:hover {
+  background: rgba(0, 212, 255, 0.1);
+}
+
+.lc-theme .sim-fb-skeleton-panel,
+.lc-theme .sim-fb-comment-panel {
+  background: rgba(13, 14, 31, 0.98);
+  border: 1px solid rgba(0, 212, 255, 0.24);
+  box-shadow: var(--shadow-bento-xl);
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-fb-skeleton-panel-title {
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-fb-skeleton-panel-text {
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-fb-comment-textarea {
+  background: rgba(8, 9, 18, 0.96);
+  border-color: rgba(0, 212, 255, 0.22);
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-fb-friends-list {
+  border-color: rgba(0, 212, 255, 0.16);
+  background: rgba(10, 11, 22, 0.94);
+}
+
+.lc-theme .sim-fb-friend-row {
+  border-bottom-color: rgba(0, 212, 255, 0.12);
+}
+
+.lc-theme .sim-fb-friend-name {
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-fb-friend-sub {
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-fb-follow {
+  border-color: rgba(0, 212, 255, 0.25);
+  background: rgba(0, 212, 255, 0.08);
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-fb-follow--on {
+  background: linear-gradient(180deg, #33eeff 0%, var(--arc-cyan) 100%);
+  border-color: rgba(0, 212, 255, 0.55);
+  color: #07080f;
+}
+
+.lc-theme .sim-fb-saved-list {
+  border-color: rgba(0, 212, 255, 0.16);
+  background: rgba(10, 11, 22, 0.94);
+}
+
+.lc-theme .sim-fb-saved-item {
+  background: transparent;
+  border-bottom-color: rgba(0, 212, 255, 0.12);
+}
+
+.lc-theme .sim-fb-saved-item:hover {
+  background: rgba(0, 212, 255, 0.08);
+}
+
+.lc-theme .sim-fb-saved-title {
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-fb-saved-meta {
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-fb-placeholder-tile {
+  background: rgba(0, 212, 255, 0.08);
+  border-color: rgba(0, 212, 255, 0.22);
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-fb-placeholder-tile:hover {
+  background: rgba(0, 212, 255, 0.15);
+}
+
+.lc-theme .sim-fb-action-btn {
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--lc-ink);
+  border: 1px solid rgba(0, 212, 255, 0.22);
+}
+
+.lc-theme .sim-fb-action-btn:hover:not(:disabled) {
+  background: rgba(0, 212, 255, 0.16);
+}
+
+.lc-theme .sim-fb-fake-video-play:focus-visible {
+  outline: 2px solid var(--arc-cyan);
+  outline-offset: 2px;
+}
+
+.lc-theme .sim-fb-fake-video-play-ico {
+  background: rgba(13, 14, 31, 0.94);
+  color: var(--arc-cyan);
+  box-shadow: var(--shadow-bento-md);
+}
+
+.lc-theme .sim-social-search {
+  background: rgba(13, 14, 31, 0.88);
+  color: var(--lc-muted);
+  border: 1px solid rgba(0, 212, 255, 0.16);
+}
+
+.lc-theme .sim-social-card {
+  border-color: rgba(0, 212, 255, 0.18);
+  background: rgba(10, 11, 22, 0.55);
+  box-shadow: var(--shadow-bento-xs);
+}
+
+.lc-theme .sim-social-avatar {
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--arc-cyan);
+  border: 1px solid rgba(0, 212, 255, 0.22);
+}
+
+.lc-theme .sim-social-author {
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-social-card-meta {
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-social-action-btn {
+  background: rgba(13, 14, 28, 0.95);
+  border-color: rgba(0, 212, 255, 0.22);
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-social-action-btn:hover {
+  border-color: var(--arc-cyan);
+  background: rgba(0, 212, 255, 0.1);
+}
+
+.lc-theme .sim-fb-search-mark {
+  background: rgba(0, 212, 255, 0.32);
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-fb-placeholder-block--watch {
+  background: rgba(5, 6, 12, 0.95);
+  color: var(--lc-muted);
+  border: 1px solid rgba(0, 212, 255, 0.12);
+}
+
+/* Тикет */
+.lc-theme .ticket-header:not(.sim-app-bar) {
+  background: rgba(10, 11, 22, 0.96);
+  box-shadow: inset 0 -2px 0 rgba(0, 212, 255, 0.22);
+}
+
+.lc-theme .ticket-body .narrative-frame {
+  background: rgba(8, 9, 18, 0.82);
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-ticket-thread-text,
+.lc-theme .sim-ticket-activity-text {
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-ticket-sla {
+  background: rgba(0, 212, 255, 0.08);
+  border-color: rgba(0, 212, 255, 0.22);
+}
+
+.lc-theme .sim-ticket-activity-who,
+.lc-theme .sim-ticket-activity-when {
+  color: var(--lc-muted);
+}
+
+/* Хотспоты и строки действий */
+.lc-theme .hotspot-row {
+  border-top-color: rgba(0, 212, 255, 0.14);
+}
+
+.lc-theme .hotspot-chip {
+  background: rgba(13, 14, 28, 0.96) !important;
+  border: 1px solid rgba(0, 212, 255, 0.26) !important;
+  color: var(--lc-ink);
+  box-shadow: var(--shadow-bento-xs);
+}
+
+.lc-theme .hotspot-chip:hover:not(:disabled) {
+  border-color: var(--arc-cyan) !important;
+  background: rgba(0, 212, 255, 0.12) !important;
+  box-shadow: var(--shadow-bento-sm);
+}
+
+.lc-theme .hotspot-variant-link {
+  border-color: rgba(0, 212, 255, 0.38);
+  background: rgba(0, 212, 255, 0.08);
+}
+
+.lc-theme .hotspot-variant-from {
+  border-color: rgba(61, 255, 160, 0.45);
+  background: rgba(61, 255, 160, 0.1);
+}
+
+.lc-theme .hotspot-variant-reply {
+  border-color: rgba(255, 230, 0, 0.45);
+  background: rgba(255, 230, 0, 0.08);
+}
+
+.lc-theme .hotspot-variant-attachment {
+  border-color: rgba(255, 230, 0, 0.4);
+  background: rgba(255, 230, 0, 0.06);
+}
+
+.lc-theme .hotspot-variant-action {
+  border-color: rgba(157, 78, 255, 0.45);
+  background: rgba(157, 78, 255, 0.12);
+}
+
+.lc-theme .hotspot-variant-share {
+  border-color: rgba(0, 212, 255, 0.42);
+  background: rgba(0, 212, 255, 0.1);
+}
+
+.lc-theme .social-chrome-top {
+  background: rgba(10, 11, 22, 0.96);
+  border-bottom-color: rgba(0, 212, 255, 0.16);
+  box-shadow: inset 0 -1px 0 rgba(0, 212, 255, 0.12);
+}
+
+/* Сюжетный шум, подписи */
+.lc-theme .narrative-noise {
+  background: rgba(0, 212, 255, 0.05);
+  border-top-color: rgba(0, 212, 255, 0.22);
+}
+
+.lc-theme .narrative-noise-label {
+  color: var(--lc-muted);
+}
+
+.lc-theme .narrative-noise-body {
+  color: var(--lc-muted);
+}
+
+.lc-theme .url-compare-caption {
+  color: var(--lc-ink);
+}
+
+/* Фоллбек-кнопки под симуляцией */
+.lc-theme .choice-list-fallback .choice-btn {
+  background: rgba(13, 14, 28, 0.96);
+  color: var(--lc-ink);
+  border-color: rgba(0, 212, 255, 0.24);
+}
+
+.lc-theme .choice-list-fallback .choice-btn:hover:not(:disabled) {
+  background: rgba(0, 212, 255, 0.12);
+  border-color: var(--arc-cyan);
+  box-shadow: 0 0 18px rgba(0, 212, 255, 0.15);
+}
+
+/* Завершение сценария внутри панели */
+.lc-theme .sim-panel--lc .completed-box {
+  background: rgba(10, 11, 22, 0.92);
+  border-color: rgba(0, 212, 255, 0.2);
+  box-shadow: var(--shadow-bento-sm);
+}
+
+.lc-theme .sim-panel--lc .completed-box h2 {
+  color: var(--lc-ink);
+}
+
+.lc-theme .sim-panel--lc .completed-box p {
+  color: var(--lc-muted);
+}

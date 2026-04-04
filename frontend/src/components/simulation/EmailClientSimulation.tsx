@@ -183,7 +183,7 @@ export function EmailClientSimulation(props: {
               Новое письмо
             </h3>
             <p style={{ margin: "0 0 12px", fontSize: 13, color: "var(--gm-text-secondary)" }}>
-              Поля работают локально; отправка в учебной среде отключена.
+              Черновик сохраняется только в этом окне, отправка почты не выполняется.
             </p>
             <label className="sim-email-form-row">
               <span>Кому</span>
@@ -224,7 +224,7 @@ export function EmailClientSimulation(props: {
                 type="button"
                 className="btn btn-primary"
                 onClick={() => {
-                  showToast("Сохранено в «Черновиках» — отправка в симуляции не выполняется.");
+                  showToast("Сохранено в «Черновиках» — письмо не отправляется.");
                   setComposeOpen(false);
                 }}
               >
@@ -263,11 +263,11 @@ export function EmailClientSimulation(props: {
         <>
           <button type="button" className="sim-sim-backdrop" aria-label="Закрыть" onClick={() => setPanel(null)} />
           <div className="sim-modal-panel" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ margin: "0 0 10px" }}>Справка по симуляции</h3>
+            <h3 style={{ margin: "0 0 10px" }}>Подсказки по письму</h3>
             <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14, lineHeight: 1.5 }}>
-              <li>Проверяйте технические заголовки и несовпадение Reply-To.</li>
-              <li>Замок и имя в «От» легко подделать — смотрите реальный адрес.</li>
-              <li>Ответы, влияющие на оценку, отмечены в условии шага.</li>
+              <li>Сверяйте блок «Откуда ответ» (Reply-To) с тем, что видно в поле «От».</li>
+              <li>Имя и картинка отправителя подделать проще, чем цепочку служебных полей.</li>
+              <li>На баллы влияют только действия из условия задания и кнопки под письмом.</li>
             </ul>
             <button type="button" className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => setPanel(null)}>
               Понятно
@@ -306,7 +306,7 @@ export function EmailClientSimulation(props: {
               Показывать внешние изображения
             </label>
             <p style={{ fontSize: 12, color: "var(--gm-text-secondary)", margin: "12px 0 0" }}>
-              Настройки действуют только в интерфейсе симуляции на этом шаге.
+              Настройки действуют только в этом окне и только на текущем шаге.
             </p>
             <button type="button" className="btn btn-primary" style={{ marginTop: 14 }} onClick={() => setPanel(null)}>
               Готово
@@ -327,7 +327,7 @@ export function EmailClientSimulation(props: {
                   type="button"
                   className="sim-email-app-tile"
                   onClick={() => {
-                    showToast(`${name}: недоступно в симуляции`);
+                    showToast(`${name}: в этом интерфейсе не открывается`);
                     setPanel(null);
                   }}
                 >
@@ -352,7 +352,7 @@ export function EmailClientSimulation(props: {
                 type="button"
                 className="btn"
                 onClick={() => {
-                  showToast("Пересылка: имитация, письмо не уходит");
+                  showToast("Пересылка: письмо не отправляется");
                   setPanel(null);
                 }}
               >
@@ -362,7 +362,7 @@ export function EmailClientSimulation(props: {
                 type="button"
                 className="btn"
                 onClick={() => {
-                  showToast("Печать: превью открыто бы (симуляция)");
+                  showToast("Печать: здесь без предпросмотра");
                   setPanel(null);
                 }}
               >
@@ -372,7 +372,7 @@ export function EmailClientSimulation(props: {
                 type="button"
                 className="btn"
                 onClick={() => {
-                  showToast("Жалоба записана только в симуляции");
+                  showToast("Жалоба отмечена только в этом окне");
                   setPanel(null);
                 }}
               >
@@ -406,7 +406,7 @@ export function EmailClientSimulation(props: {
                 type="button"
                 className="btn btn-primary"
                 onClick={() => {
-                  showToast("Черновик ответа сохранён локально (симуляция).");
+                  showToast("Черновик ответа сохранён только в этом окне.");
                   setPanel(null);
                 }}
               >
@@ -432,7 +432,7 @@ export function EmailClientSimulation(props: {
             value={mailSearch}
             onChange={(e) => setMailSearch(e.target.value)}
             placeholder="Поиск в почте"
-            aria-label="Поиск в почте (учебная симуляция, без запроса на сервер)"
+            aria-label="Поиск по письмам в этом окне"
           />
         </div>
         <div className="sim-gmail-header-actions">
@@ -595,20 +595,20 @@ export function EmailClientSimulation(props: {
                           <button
                             type="button"
                             className="email-meta-value email-meta-from sim-email-from-btn"
-                            title={`Технический адрес отправителя: ${technicalFrom}`}
+                            title={`Адрес в конверте (From): ${technicalFrom}`}
                             disabled={disabled}
                             onClick={() => onChoose(fromHs.choiceId)}
                           >
                             {from}
                           </button>
                         ) : (
-                          <span className="email-meta-value email-meta-from" title={`Технический адрес: ${technicalFrom}`}>
+                          <span className="email-meta-value email-meta-from" title={`Адрес в конверте: ${technicalFrom}`}>
                             {from}
                           </span>
                         )}
                       </div>
                       <details className="sim-email-headers-more">
-                        <summary className="sim-email-headers-more-summary">Технические заголовки</summary>
+                        <summary className="sim-email-headers-more-summary">Служебные поля письма</summary>
                         <div className="sim-email-headers-grid">
                           <div className="sim-email-hdr-row">
                             <span className="sim-email-hdr-label">Reply-To</span>
@@ -627,7 +627,7 @@ export function EmailClientSimulation(props: {
                             <span className="sim-email-hdr-label">Return-Path</span>
                             <span
                               className="sim-email-hdr-value sim-email-hdr-value--muted"
-                              title="Путь возврата при доставке; в учебной симуляции значение условное"
+                              title="Служебный адрес возврата при доставке (условное значение)"
                             >
                               {`<bounces@${technicalFrom.includes("@") ? technicalFrom.split("@")[1] : "mail.local"}>`}
                             </span>
@@ -664,8 +664,8 @@ export function EmailClientSimulation(props: {
                           <span className="sim-email-attach-meta">128 КБ</span>
                         </summary>
                         <p className="sim-email-attach-note">
-                          Учебная подсказка: двойное расширение и запуск вложений из писем — частый вектор атаки. В задании это
-                          вложение не связано с правильным ответом.
+                          Подсказка: файлы с двойным расширением и запуск из письма часто используют в атаках. Это вложение не
+                          связано с верным ответом по заданию.
                         </p>
                       </details>
                       {attachHs ? (
@@ -685,7 +685,7 @@ export function EmailClientSimulation(props: {
                             >
                               {attachHs.label}
                             </button>
-                            <p className="sim-email-attach-hint">Нажмите, если это вложение из условия сценария.</p>
+                            <p className="sim-email-attach-hint">Нажмите, если в задании указано именно это вложение.</p>
                           </div>
                         </details>
                       ) : null}

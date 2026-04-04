@@ -104,7 +104,7 @@ export function TicketSimulation(props: {
             <select
               className="sim-ticket-status-select"
               value={status}
-              title="Смена статуса учебная — на оценку задания не влияет"
+              title="Статус для интерфейса, на оценку не влияет"
               onChange={(e) => setStatus(e.target.value as TicketStatus)}
             >
               {TICKET_STATUSES.map((s) => (
@@ -114,7 +114,7 @@ export function TicketSimulation(props: {
               ))}
             </select>
           </label>
-          <div className="sim-ticket-sla" title="Учебные значения SLA, не влияют на оценку">
+          <div className="sim-ticket-sla" title="Примерное время ответа по регламенту (без влияния на оценку)">
             <span className="sim-ticket-sla-label">SLA первого ответа</span>
             <span className="sim-ticket-sla-value">
               ~{sla.h}ч {sla.m}м
@@ -136,10 +136,10 @@ export function TicketSimulation(props: {
               <select
                 className="sim-ticket-assign-select"
                 value={assignee}
-                title="Назначение учебное"
+                title="Назначение только в этом окне"
                 onChange={(e) => {
                   setAssignee(e.target.value);
-                  setTicketToast(`Исполнитель: ${e.target.value} (симуляция)`);
+                  setTicketToast(`Исполнитель: ${e.target.value}`);
                 }}
               >
                 {ASSIGN.map((a) => (
@@ -149,7 +149,7 @@ export function TicketSimulation(props: {
                 ))}
               </select>
             </label>
-            <button type="button" className="app-nav-pill app-nav-pill--natural" onClick={() => setTicketToast("Ссылка на тикет скопирована (имитация)")}>
+            <button type="button" className="app-nav-pill app-nav-pill--natural" onClick={() => setTicketToast("Ссылка скопирована в буфер (имитация)")}>
               Копировать ссылку
             </button>
             <label className="sim-ticket-assign">
@@ -196,7 +196,7 @@ export function TicketSimulation(props: {
                 rows={2}
                 value={internalNote}
                 onChange={(e) => setInternalNote(e.target.value)}
-                placeholder="Только для симуляции…"
+                placeholder="Заметка видна только вам в этом окне…"
               />
               <button
                 type="button"

@@ -115,6 +115,44 @@
   overflow: hidden;
 }
 
+/* Моковые посты в ленте (не скелетоны) */
+button.sim-fb-mock-post {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border: var(--bento-border);
+  border-radius: var(--bento-radius);
+  background: #fff;
+  box-shadow: var(--shadow-bento-xs);
+  overflow: hidden;
+}
+
+button.sim-fb-mock-post:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-bento-xs), var(--focus-ring);
+}
+
+.sim-fb-mock-post-head {
+  padding: 14px 16px 0;
+}
+
+.sim-fb-mock-avatar {
+  font-size: 15px;
+}
+
+.sim-fb-mock-snippet {
+  margin: 0 16px 16px;
+  padding-top: 4px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--bento-ink);
+  opacity: 0.9;
+}
+
 .sim-fb-skeleton {
   padding: 12px 16px 16px;
 }

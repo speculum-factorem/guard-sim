@@ -77,6 +77,14 @@ class ScenarioService(
             pressureSeconds = step.pressureSeconds,
             redFlagGame = redGame,
             situationBrief = step.situationBrief,
+            simChatTitle = step.simChatTitle,
+            simChatForwardFrom = step.simChatForwardFrom,
+            simChatSenderLabel = step.simChatSenderLabel,
+            simCalendarWhen = step.simCalendarWhen,
+            simCalendarWhere = step.simCalendarWhere,
+            simExtensionName = step.simExtensionName,
+            simExtensionPublisher = step.simExtensionPublisher,
+            simExtensionBlurb = step.simExtensionBlurb,
         )
     }
 

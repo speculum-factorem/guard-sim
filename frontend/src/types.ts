@@ -21,7 +21,10 @@ export type StepUiKind =
   | "EMAIL_CLIENT"
   | "SOCIAL_NOTIFICATION"
   | "DESK_TICKET"
-  | "MINI_URL_COMPARE";
+  | "MINI_URL_COMPARE"
+  | "CHAT_MESSENGER"
+  | "CALENDAR_INVITE"
+  | "EXTENSION_STORE";
 
 export interface InvestigationPanel {
   id: string;
@@ -73,6 +76,17 @@ export interface StepPublic {
   redFlagGame: RedFlagGame | null;
   /** Описание ситуации для игрока (вне «экрана» симуляции) */
   situationBrief?: string | null;
+  /** CHAT_MESSENGER */
+  simChatTitle?: string | null;
+  simChatForwardFrom?: string | null;
+  simChatSenderLabel?: string | null;
+  /** CALENDAR_INVITE */
+  simCalendarWhen?: string | null;
+  simCalendarWhere?: string | null;
+  /** EXTENSION_STORE */
+  simExtensionName?: string | null;
+  simExtensionPublisher?: string | null;
+  simExtensionBlurb?: string | null;
 }
 
 export interface ScenarioDetail {

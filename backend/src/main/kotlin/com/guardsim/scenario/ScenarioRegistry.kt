@@ -33,6 +33,13 @@ class ScenarioRegistry {
                 hrPortalPhish(),
                 itSupportLookalike(),
                 execWireVishing(),
+                messengerForwardedPhish(),
+                calendarFakeTeamsInvite(),
+                extensionCorporateMailTrap(),
+                messengerInternalBenign(),
+                calendarLegitInvite(),
+                extensionAllowlistBenign(),
+                emailItMaintenanceBenign(),
             )
 
         /** Фишинговое письмо «срочная смена пароля». */
@@ -1279,6 +1286,593 @@ class ScenarioRegistry {
                         ),
                     ),
                     uiKind = StepUiKind.GENERIC,
+                ),
+            ),
+        )
+
+        /** Мессенджер: переслано из канала со «срочной» ссылкой. */
+        fun messengerForwardedPhish(): InternalScenario = InternalScenario(
+            id = "messenger-forwarded-phish",
+            title = "Мессенджер: переслано из канала",
+            type = ScenarioType.SOCIAL,
+            hubChannel = ScenarioHubChannel.SECURITY,
+            description = "В рабочем чате переслали пост из публичного канала с «бонусом для сотрудников» и ссылкой на сторонний домен.",
+            steps = listOf(
+                InternalStep(
+                    id = "mfp-1",
+                    situationBrief = """
+                        Вы в корпоративном мессенджере. В общем чате команды появилось пересланное сообщение из стороннего канала:
+                        обещание «бонуса» и ссылка, которой вы не доверяете.
+                    """.trimIndent(),
+                    narrative = """
+                        Перешли из нашего канала 🔥
+
+                        Личный кабинет бонусов только для штата:
+                        https://guardsim-bonus-login.tel/verify
+
+                        Регистрация до 18:00, иначе слот сгорит. Проверено HR (говорят в посте).
+                    """.trimIndent(),
+                    narrativeNoise = "Антон: завтра стендап в 10:00\nЛена: ок, буду",
+                    choices = listOf(
+                        InternalChoice(
+                            id = "mfp-1-a",
+                            label = "Перейду по ссылке — вдруг корпоративная программа",
+                            correct = false,
+                            explanationWhenChosen = "Пересылка из публичного канала и давление по времени — типичная связка. Легитимные бонусы оформляют через известные HR-порталы, не через случайные домены.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Учётные данные могли утечь на поддельную страницу входа.",
+                        ),
+                        InternalChoice(
+                            id = "mfp-1-b",
+                            label = "Не перехожу; сообщу в ИБ / отмечу канал как ненадёжный и предупрежу чат текстом без ссылки",
+                            correct = true,
+                            explanationWhenChosen = "Верно: не кликать, предупредить коллег без распространения вредоносной ссылки, при необходимости — тикет в ИБ.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "mfp-1-c",
+                            label = "Перешлю ссылку всем в отделе, пусть сами решают",
+                            correct = false,
+                            explanationWhenChosen = "Массовая пересылка увеличивает число кликов. Лучше краткое предупреждение без активной ссылки.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.CHAT_MESSENGER,
+                    simChatTitle = "Команда · Проект Альфа",
+                    simChatForwardFrom = "Канал «IT-выгоды и лайфхаки»",
+                    simChatSenderLabel = "Неизвестный контакт · переслано",
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "mfp-1-hr",
+                            title = "Как устроены бонусы",
+                            body = "Корпоративные бонусы и компенсации публикуются во внутреннем HR-портале или официальном письме с домена компании — не из случайных Telegram-каналов.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "mfp-1-link",
+                            label = "Открыть ссылку guardsim-bonus-login.tel",
+                            choiceId = "mfp-1-a",
+                            variant = "LINK",
+                        ),
+                        InternalHotspot(
+                            id = "mfp-1-safe",
+                            label = "Предупредить чат и не переходить",
+                            choiceId = "mfp-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "mfp-1-fwd",
+                            label = "Переслать ссылку отделу",
+                            choiceId = "mfp-1-c",
+                            variant = "SHARE",
+                        ),
+                    ),
+                    pressureSeconds = 55,
+                ),
+            ),
+        )
+
+        /** Календарь: фейковое приглашение Teams/Zoom со ссылкой в описании. */
+        fun calendarFakeTeamsInvite(): InternalScenario = InternalScenario(
+            id = "calendar-fake-teams-invite",
+            title = "Календарь: подозрительное приглашение",
+            type = ScenarioType.EMAIL,
+            hubChannel = ScenarioHubChannel.SECURITY,
+            description = "В календаре появилось приглашение на «обязательную» встречу с угрозой блокировки и ссылкой на сторонний домен.",
+            steps = listOf(
+                InternalStep(
+                    id = "cft-1",
+                    situationBrief = """
+                        Вы открыли виджет календаря. Новое приглашение якобы от IT-службы: срочная проверка учётных записей в Teams,
+                        в описании — ссылка «подключиться к конференции».
+                    """.trimIndent(),
+                    narrative = """
+                        Все руководители обязаны подключиться для проверки MFA и лицензий.
+
+                        Присоединиться к конференции:
+                        https://teams-verify.co/join/meeting-urgent?id=7f3a9b
+
+                        Неявка в течение 2 часов = временная приостановка учётной записи по регламенту безопасности.
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "cft-1-a",
+                            label = "Сразу открою ссылку из описания — не хочу блокировки",
+                            correct = false,
+                            explanationWhenChosen = "Домен teams-verify.co не принадлежит Microsoft. Приглашения в Teams из экосистемы Microsoft используют официальные домены и обычно приходят через корпоративную почту с проверяемым отправителем.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Возможен ввод учётных данных на поддельной странице. Сообщите в ИБ и смените пароль через официальный портал.",
+                        ),
+                        InternalChoice(
+                            id = "cft-1-b",
+                            label = "Проверю организатора и домен; открою встречу только из корпоративного календаря / напишу в IT по известному номеру",
+                            correct = true,
+                            explanationWhenChosen = "Верно: верификация вторым каналом и отказ от клика по ссылке из подозрительного приглашения.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "cft-1-c",
+                            label = "Приму приглашение и отвечу «Maybe» — так безопаснее",
+                            correct = false,
+                            explanationWhenChosen = "Ответ «Maybe» всё равно может подтвердить активность ящика и не устраняет риск фишинга. Нужна проверка источника.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.CALENDAR_INVITE,
+                    emailSubject = "Обязательно: проверка учётных записей Microsoft Teams",
+                    emailFrom = "IT ServiceDesk <servicedesk-notify@teams-verify.co>",
+                    simCalendarWhen = "Сегодня, 15:30–16:00 (Europe/Moscow)",
+                    simCalendarWhere = "Онлайн — ссылка в описании приглашения",
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "cft-1-dom",
+                            title = "Домен",
+                            body = "Официальные письма Microsoft 365 обычно идут с доменов microsoft.com, protection.outlook.com или вашего корпоративного тенанта — не teams-verify.co.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "cft-1-join",
+                            label = "Кнопка «Подключиться к конференции»",
+                            choiceId = "cft-1-a",
+                            variant = "LINK",
+                        ),
+                        InternalHotspot(
+                            id = "cft-1-check",
+                            label = "Проверить через IT / корпоративный календарь",
+                            choiceId = "cft-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "cft-1-maybe",
+                            label = "Ответить «Возможно»",
+                            choiceId = "cft-1-c",
+                            variant = "REPLY",
+                        ),
+                    ),
+                    pressureSeconds = 60,
+                ),
+            ),
+        )
+
+        /** Магазин расширений: «для корпоративной почты» с чрезмерными разрешениями. */
+        fun extensionCorporateMailTrap(): InternalScenario = InternalScenario(
+            id = "extension-corporate-mail-trap",
+            title = "Расширение для «корпоративной почты»",
+            type = ScenarioType.EMAIL,
+            hubChannel = ScenarioHubChannel.SECURITY,
+            description = "В выдаче магазина расширений — предложение установить дополнение для Gmail с опасным набором разрешений.",
+            steps = listOf(
+                InternalStep(
+                    id = "ecm-1",
+                    situationBrief = """
+                        Вы смотрите страницу расширения в каталоге (имитация Chrome Web Store).
+                        Расширение обещает «защиту вложений» для корпоративной почты, но запрашивает доступ ко всем сайтам и данным почты.
+                    """.trimIndent(),
+                    narrative = """
+                        Запрашиваемые разрешения:
+                        • Читать и изменять все ваши данные на всех сайтах
+                        • Читать, изменять и удалять письма в Gmail
+                        • Доступ к контактам
+
+                        12 400 пользователей · ★★★★☆ (4.3) · Обновлено вчера
+                    """.trimIndent(),
+                    simExtensionName = "MailShield Pro for Gmail",
+                    simExtensionPublisher = "DevTools Media LLC",
+                    simExtensionBlurb = "Умные уведомления о VIP-письмах и «безопасное» сканирование вложений в один клик.",
+                    choices = listOf(
+                        InternalChoice(
+                            id = "ecm-1-a",
+                            label = "Установлю — в описании написано про безопасность",
+                            correct = false,
+                            explanationWhenChosen = "Сочетание «все сайты» + полный доступ к почте — красный флаг. В организациях расширения согласуются через ИТ; случайные издатели не должны получать такие права.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Расширение могло перехватывать сессии и переписку. Отзовите доступ, прогоните проверку рабочей станции.",
+                        ),
+                        InternalChoice(
+                            id = "ecm-1-b",
+                            label = "Не устанавливаю; уточню в ИТ, есть ли такое в белом списке, или сообщу о подозрительном расширении",
+                            correct = true,
+                            explanationWhenChosen = "Правильно: корпоративный контроль расширений и минимальные права.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "ecm-1-c",
+                            label = "Установлю только на личный профиль браузера — так не затронет работу",
+                            correct = false,
+                            explanationWhenChosen = "На одной машине личный и рабочий профиль часто разделяются неполно. Риск утечки и смешения данных остаётся.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.EXTENSION_STORE,
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "ecm-1-pol",
+                            title = "Политика",
+                            body = "В компании допускаются только расширения из утверждённого списка ИТ. Запрос «читать все сайты» почти никогда не оправдан для почтового плагина.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "ecm-1-install",
+                            label = "Установить расширение",
+                            choiceId = "ecm-1-a",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "ecm-1-it",
+                            label = "Спросить ИБ / не устанавливать",
+                            choiceId = "ecm-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "ecm-1-personal",
+                            label = "Только в личный профиль",
+                            choiceId = "ecm-1-c",
+                            variant = "ACTION",
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        /** Мессенджер: переслано из официального HR-канала, ссылка на корпоративный интранет — угрозы нет. */
+        fun messengerInternalBenign(): InternalScenario = InternalScenario(
+            id = "messenger-internal-benign",
+            title = "Мессенджер: объявление из официального канала",
+            type = ScenarioType.SOCIAL,
+            hubChannel = ScenarioHubChannel.SECURITY,
+            description = "В чате переслано сообщение из верифицированного внутреннего канала HR со ссылкой на интранет и спокойным текстом без давления.",
+            steps = listOf(
+                InternalStep(
+                    id = "mib-1",
+                    situationBrief = """
+                        Вы в корпоративном мессенджере. Коллега переслал пост из официального канала «HR — объявления»:
+                        напоминание о дедлайне подачи заявок на отпуск и ссылка на раздел интранета.
+                    """.trimIndent(),
+                    narrative = """
+                        Переслано из корпоративного канала.
+
+                        До 15 числа можно подать заявку на отпуск Q2 в системе self-service:
+                        https://intranet.acme-corp.example/hr/leave-requests
+
+                        Подробности и FAQ — на странице; поддержка HR: hr@acme-corp.example
+                    """.trimIndent(),
+                    narrativeNoise = "Марина: спасибо, оформлю на выходных\nОлег: встреча по ретро в 16:00",
+                    choices = listOf(
+                        InternalChoice(
+                            id = "mib-1-a",
+                            label = "Перейду по ссылке сразу, не глядя на адрес — ведь это наш чат",
+                            correct = false,
+                            explanationWhenChosen = "Даже в доверенном чате полезно на секунду проверить домен: привычка «смотреть на URL» защищает, когда канал подменят или перешлют не то.",
+                            scoreDelta = 0,
+                        ),
+                        InternalChoice(
+                            id = "mib-1-b",
+                            label = "Проверю домен (intranet.acme-corp.example) и открою ссылку в корпоративном браузере — это обычная внутренняя процедура",
+                            correct = true,
+                            explanationWhenChosen = "Верно: признаки легитимности есть (официальный канал, корпоративный домен, нет срочности и угроз). Сверка домена — норма, паника не нужна.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "mib-1-c",
+                            label = "Скину ссылку в открытый внешний чат или соцсеть, чтобы обсудить с друзьями",
+                            correct = false,
+                            explanationWhenChosen = "Внутренние ссылки и регламенты не для публичных каналов — риск утечки и нарушения политики.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.CHAT_MESSENGER,
+                    simChatTitle = "Команда · HR и офис",
+                    simChatForwardFrom = "Канал «HR — объявления» (верифицирован)",
+                    simChatSenderLabel = "Екатерина · переслано",
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "mib-1-note",
+                            title = "Регламент",
+                            body = "Объявления об отпусках публикуются в верифицированном HR-канале и на интранете. Домен acme-corp.example — корпоративный; внешних «бонусных» доменов и таймеров здесь нет.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "mib-1-link",
+                            label = "Открыть ссылку intranet…/leave-requests",
+                            choiceId = "mib-1-a",
+                            variant = "LINK",
+                        ),
+                        InternalHotspot(
+                            id = "mib-1-ok",
+                            label = "Проверить домен и открыть во внутренней среде",
+                            choiceId = "mib-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "mib-1-leak",
+                            label = "Поделиться ссылкой во внешнем чате",
+                            choiceId = "mib-1-c",
+                            variant = "SHARE",
+                        ),
+                    ),
+                    pressureSeconds = 45,
+                ),
+            ),
+        )
+
+        /** Календарь: обычное приглашение от IT с доменом организации и ссылкой Microsoft Teams. */
+        fun calendarLegitInvite(): InternalScenario = InternalScenario(
+            id = "calendar-legit-invite",
+            title = "Календарь: плановый бриф от IT",
+            type = ScenarioType.EMAIL,
+            hubChannel = ScenarioHubChannel.SECURITY,
+            description = "В календаре — стандартное приглашение от IT на корпоративном домене, без угроз и без подозрительных ссылок.",
+            steps = listOf(
+                InternalStep(
+                    id = "cli-1",
+                    situationBrief = """
+                        В корпоративном календаре появилось приглашение от IT: короткий бриф по обновлению политики паролей.
+                        Организатор — адрес с домена компании; в описании — типичная ссылка присоединения к Teams.
+                    """.trimIndent(),
+                    narrative = """
+                        Добрый день. Приглашаем на 30-минутный информационный созвон: что меняется в политике паролей и MFA.
+
+                        Подключение:
+                        https://teams.microsoft.com/l/meetup-join/19%3ameeting_example%40thread.v2/0?context=%7b%22Tid%22%3a%22…%22%7d
+
+                        Запись не требуется — достаточно присутствия руководителей групп. Вопросы можно задать в тикет-системе после встречи.
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "cli-1-a",
+                            label = "Отклоню все приглашения от IT без чтения — так безопаснее от фишинга",
+                            correct = false,
+                            explanationWhenChosen = "Полный бойкот легитимных приглашений мешает работе. Важно различать признаки подделки и нормальные корпоративные приглашения.",
+                            scoreDelta = 0,
+                        ),
+                        InternalChoice(
+                            id = "cli-1-b",
+                            label = "Приму приглашение и подключусь через кнопку в календаре: организатор с корпоративного домена, ссылка teams.microsoft.com",
+                            correct = true,
+                            explanationWhenChosen = "Верно: домен организации в поле организатора и официальный хост Teams — типичная безопасная картина. Угрозы в условиях нет.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "cli-1-c",
+                            label = "Войду по «такой же» ссылке из SMS или личного WhatsApp, если пришлют",
+                            correct = false,
+                            explanationWhenChosen = "Дубли встреч во внешних каналах могут быть подделкой. Ориентируйтесь на запись в корпоративном календаре и известные контакты IT.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.CALENDAR_INVITE,
+                    emailSubject = "IT: бриф по обновлению политики паролей и MFA",
+                    emailFrom = "IT Календарь <it-calendar@acme-corp.example>",
+                    simCalendarWhen = "Чт, 11:00–11:30 (Europe/Moscow)",
+                    simCalendarWhere = "Microsoft Teams — ссылка в описании (корпоративная учётная запись)",
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "cli-1-hint",
+                            title = "На что смотреть",
+                            body = "Здесь нет угроз блокировки учётки, нет посторонних доменов вместо Microsoft и нет давления «за два часа». Это соответствует обычным служебным приглашениям.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "cli-1-decline",
+                            label = "Отклонить все от IT",
+                            choiceId = "cli-1-a",
+                            variant = "REPLY",
+                        ),
+                        InternalHotspot(
+                            id = "cli-1-join",
+                            label = "Присоединиться к Microsoft Teams",
+                            choiceId = "cli-1-b",
+                            variant = "LINK",
+                        ),
+                        InternalHotspot(
+                            id = "cli-1-side",
+                            label = "Искать вход по ссылке из личного мессенджера",
+                            choiceId = "cli-1-c",
+                            variant = "ACTION",
+                        ),
+                    ),
+                    pressureSeconds = 50,
+                ),
+            ),
+        )
+
+        /** Расширение из белого списка ИТ с узкими разрешениями — установка укладывается в политику. */
+        fun extensionAllowlistBenign(): InternalScenario = InternalScenario(
+            id = "extension-allowlist-benign",
+            title = "Расширение из списка ИТ",
+            type = ScenarioType.EMAIL,
+            hubChannel = ScenarioHubChannel.SECURITY,
+            description = "В каталоге — утверждённое корпоративное расширение с минимальными правами и издателем организации.",
+            steps = listOf(
+                InternalStep(
+                    id = "eab-1",
+                    situationBrief = """
+                        Вы открыли карточку расширения, которое ИТ разослало в рассылке как добавленное в белый список.
+                        Запрашиваются только права на почту и календарь Google Workspace в рамках рабочего домена — без «всех сайтов».
+                    """.trimIndent(),
+                    narrative = """
+                        Запрашиваемые разрешения:
+                        • Читать и изменять данные на сайтах mail.google.com и calendar.google.com
+                        • Показывать уведомления
+
+                        Подпись издателя проверена (Acme Corp). Установка через корпоративную политику Chrome.
+                    """.trimIndent(),
+                    simExtensionName = "Acme Workspace Toolbar",
+                    simExtensionPublisher = "Acme Corporation (IT)",
+                    simExtensionBlurb = "Корпоративные шаблоны писем и быстрые ссылки на тикеты — только для рабочего аккаунта.",
+                    choices = listOf(
+                        InternalChoice(
+                            id = "eab-1-a",
+                            label = "Установлю из магазина по инструкции ИТ — права узкие, издатель компания",
+                            correct = true,
+                            explanationWhenChosen = "Верно: типичный безопасный паттерн — утверждённый список, ограниченные хосты, известный издатель. Угрозы в описанных условиях нет.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "eab-1-b",
+                            label = "Поставлю «аналог» с похожим названием со стороннего сайта — так быстрее",
+                            correct = false,
+                            explanationWhenChosen = "Обход магазина и неофициальные копии — основной риск. Даже если карточка в каталоге выглядит безопасно, установка должна идти по каналу ИТ.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Сторонняя сборка могла содержать вредоносный код. Удалите неизвестное расширение и обратитесь в ИТ.",
+                        ),
+                        InternalChoice(
+                            id = "eab-1-c",
+                            label = "Откажусь от любых расширений, даже из списка ИТ — иначе не сплю спокойно",
+                            correct = false,
+                            explanationWhenChosen = "Избыточный отказ от утверждённых инструментов снижает продуктивность без выигрыша в безопасности, если политика соблюдена.",
+                            scoreDelta = 0,
+                        ),
+                    ),
+                    uiKind = StepUiKind.EXTENSION_STORE,
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "eab-1-pol",
+                            title = "Политика",
+                            body = "ИТ публикует список разрешённых расширений и способ установки. Нет запроса «прочитать все сайты», нет неизвестного издателя — сценарий штатный.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "eab-1-install",
+                            label = "Установить (по инструкции ИТ)",
+                            choiceId = "eab-1-a",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "eab-1-side",
+                            label = "Скачать аналог с другого сайта",
+                            choiceId = "eab-1-b",
+                            variant = "ACTION",
+                        ),
+                        InternalHotspot(
+                            id = "eab-1-refuse",
+                            label = "Отказаться от утверждённого расширения",
+                            choiceId = "eab-1-c",
+                            variant = "ACTION",
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        /** Обычное письмо IT о плановых работах: корпоративный домен, нейтральный тон, ссылка только на статус интранета. */
+        fun emailItMaintenanceBenign(): InternalScenario = InternalScenario(
+            id = "email-it-maintenance-benign",
+            title = "Почта: плановые работы IT",
+            type = ScenarioType.EMAIL,
+            hubChannel = ScenarioHubChannel.SECURITY,
+            description = "Информационное письмо о окне обслуживания VPN: без запроса паролей и без посторонних доменов.",
+            steps = listOf(
+                InternalStep(
+                    id = "eit-1",
+                    situationBrief = """
+                        Утром в почте — уведомление от IT о плановом окне обслуживания VPN в выходные.
+                        Тон нейтральный, вложений нет, пароль не просят.
+                    """.trimIndent(),
+                    narrative = """
+                        Коллеги, в субботу с 02:00 до 04:00 (МСК) будет недоступен корпоративный VPN для профилактики.
+                        Статус и переносы — на странице https://status.intranet.acme-corp.example
+
+                        Вопросы: it-help@acme-corp.example или тикет в ServiceNow. С уважением, команда IT.
+                    """.trimIndent(),
+                    choices = listOf(
+                        InternalChoice(
+                            id = "eit-1-a",
+                            label = "Считаю письмо подозрительным и перешлю всему отделу с просьбой никому не заходить в почту",
+                            correct = false,
+                            explanationWhenChosen = "Массовая паника без анализа создаёт шум. Сначала проверьте отправителя и домен ссылок — здесь они корпоративные и сценарий штатный.",
+                            scoreDelta = 0,
+                        ),
+                        InternalChoice(
+                            id = "eit-1-b",
+                            label = "Оценю отправителя и ссылку: домен компании, нет срочности и кражи учётки — это обычное сервисное уведомление",
+                            correct = true,
+                            explanationWhenChosen = "Верно: признаки фишинга отсутствуют. Достаточно учесть окно работ при планировании задач; при сомнениях можно подтвердить в тикет-системе одним запросом, а не паникой.",
+                            scoreDelta = 4,
+                        ),
+                        InternalChoice(
+                            id = "eit-1-c",
+                            label = "Введу пароль на всякий случай по ссылке из письма «для проверки доступа»",
+                            correct = false,
+                            explanationWhenChosen = "В этом письме пароль не запрашивается — если бы появилась такая форма на сторонней странице, это был бы красный флаг. Не вводите учётные данные по сомнительным запросам.",
+                            scoreDelta = 0,
+                            criticalIfWrong = true,
+                            consequenceBeat = "Вы сошлись с вымышленным сценарием: на реальной фишинговой странице учётные данные могли бы утечь. Всегда сверяйте, что от вас вообще просят.",
+                        ),
+                    ),
+                    uiKind = StepUiKind.EMAIL_CLIENT,
+                    emailSubject = "Плановое обслуживание VPN: суббота 02:00–04:00 МСК",
+                    emailFrom = "IT Notifications <it-noreply@acme-corp.example>",
+                    investigationPanels = listOf(
+                        InternalInvestigationPanel(
+                            id = "eit-1-chk",
+                            title = "Чек-лист",
+                            body = "Корпоративный From, ссылка на status.intranet.*, нет вложений и угроз блокировки — типовое легитимное уведомление.",
+                        ),
+                    ),
+                    investigationBonusThreshold = 1,
+                    hotspots = listOf(
+                        InternalHotspot(
+                            id = "eit-1-panic",
+                            label = "Переслать всем: «не заходить в почту»",
+                            choiceId = "eit-1-a",
+                            variant = "SHARE",
+                        ),
+                        InternalHotspot(
+                            id = "eit-1-ok",
+                            label = "Принять как сервисное уведомление",
+                            choiceId = "eit-1-b",
+                            variant = "FROM",
+                        ),
+                        InternalHotspot(
+                            id = "eit-1-pw",
+                            label = "«Подтвердить паролем» на сторонней странице",
+                            choiceId = "eit-1-c",
+                            variant = "LINK",
+                        ),
+                    ),
+                    narrativeNoise = """
+                        ---
+                        Вы получили это письмо как сотрудник Acme Corp. Не отвечайте на этот адрес — создано автоматически.
+                        RITM-448821 · Internal · Confidential
+                    """.trimIndent(),
+                    pressureSeconds = 40,
                 ),
             ),
         )

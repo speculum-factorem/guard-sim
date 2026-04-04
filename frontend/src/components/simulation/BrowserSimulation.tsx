@@ -107,7 +107,7 @@ export function BrowserSimulation(props: {
 
   const closeFirstTab = useCallback(() => {
     setActiveTab(1);
-    setTabToast("Вкладка с заданием закрыта в симуляции — переключитесь обратно через список вкладок.");
+    setTabToast("Вкладка с заданием закрыта — выберите её снова в списке вкладок.");
   }, []);
 
   return (
@@ -196,7 +196,7 @@ export function BrowserSimulation(props: {
             >
               <span
                 className="browser-chrome-lock browser-chrome-lock--sim"
-                title="Симуляция: замок «HTTPS» здесь декоративный. Подделывают и иконку, и адрес — проверяйте домен посимвольно."
+                title="Замок «безопасно» здесь для вида. Подделывают и иконку, и адрес — сверяйте домен в строке целиком."
               >
                 🔒
               </span>
@@ -206,7 +206,7 @@ export function BrowserSimulation(props: {
                 type="text"
                 value={omnibox}
                 onChange={(e) => setOmnibox(e.target.value)}
-                aria-label="Адресная строка (учебная симуляция, без перехода по сети)"
+                aria-label="Адресная строка (без перехода в интернет)"
               />
             </label>
             <div className="browser-chrome-toolbar-end">
@@ -236,7 +236,7 @@ export function BrowserSimulation(props: {
                   className="browser-chrome-menu-item"
                   role="menuitem"
                   onClick={() => {
-                    setTabToast("История посещений недоступна в симуляции");
+                    setTabToast("История в этом окне недоступна");
                     setChromeMenuOpen(false);
                   }}
                 >
@@ -247,7 +247,7 @@ export function BrowserSimulation(props: {
                   className="browser-chrome-menu-item"
                   role="menuitem"
                   onClick={() => {
-                    setTabToast("Загрузки: в симуляции пусто");
+                    setTabToast("Список загрузок пуст");
                     setChromeMenuOpen(false);
                   }}
                 >
@@ -269,7 +269,7 @@ export function BrowserSimulation(props: {
                   className="browser-chrome-menu-item"
                   role="menuitem"
                   onClick={() => {
-                    setTabToast("Настройки Chrome недоступны в симуляции");
+                    setTabToast("Настройки браузера здесь не открываются");
                     setChromeMenuOpen(false);
                   }}
                 >

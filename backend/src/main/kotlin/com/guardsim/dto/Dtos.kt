@@ -57,6 +57,14 @@ data class StepPublicDto(
     val pressureSeconds: Int?,
     val redFlagGame: RedFlagGameDto?,
     val situationBrief: String?,
+    val simChatTitle: String?,
+    val simChatForwardFrom: String?,
+    val simChatSenderLabel: String?,
+    val simCalendarWhen: String?,
+    val simCalendarWhere: String?,
+    val simExtensionName: String?,
+    val simExtensionPublisher: String?,
+    val simExtensionBlurb: String?,
 )
 
 data class ScenarioSummaryDto(

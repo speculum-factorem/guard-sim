@@ -19,4 +19,20 @@ data class InternalStep(
     val redFlagGame: InternalRedFlagGame? = null,
     /** Текст «ситуации» для игрока (мета-описание); контент интерфейса — в [narrative] */
     val situationBrief: String? = null,
+    /** [CHAT_MESSENGER] Заголовок чата в шапке окна */
+    val simChatTitle: String? = null,
+    /** [CHAT_MESSENGER] Подпись «Переслано из …» */
+    val simChatForwardFrom: String? = null,
+    /** [CHAT_MESSENGER] Подпись отправителя пересланного сообщения */
+    val simChatSenderLabel: String? = null,
+    /** [CALENDAR_INVITE] Когда встреча (строка для UI) */
+    val simCalendarWhen: String? = null,
+    /** [CALENDAR_INVITE] Где / платформа */
+    val simCalendarWhere: String? = null,
+    /** [EXTENSION_STORE] Название расширения */
+    val simExtensionName: String? = null,
+    /** [EXTENSION_STORE] Издатель */
+    val simExtensionPublisher: String? = null,
+    /** [EXTENSION_STORE] Краткое описание под названием */
+    val simExtensionBlurb: String? = null,
 )

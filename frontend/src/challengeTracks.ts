@@ -47,4 +47,17 @@ export const CHALLENGE_TRACKS: ChallengeTrackDef[] = [
     scenarioIds: ["combined-ceo-phish", "exec-wire-vishing"],
     accent: "orange",
   },
+  {
+    id: "benign-baseline",
+    title: "Когда угрозы нет",
+    description:
+      "Штатные уведомления IT, внутренний мессенджер, календарь и расширения из белого списка — учимся не паниковать зря и не ломать работу.",
+    scenarioIds: [
+      "email-it-maintenance-benign",
+      "messenger-internal-benign",
+      "calendar-legit-invite",
+      "extension-allowlist-benign",
+    ],
+    accent: "yellow",
+  },
 ];

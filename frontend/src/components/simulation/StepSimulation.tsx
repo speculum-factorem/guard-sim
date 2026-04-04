@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
 import type { ChoicePublic, StepPublic } from "../../types";
 import { BrowserSimulation } from "./BrowserSimulation";
+import { CalendarInviteSimulation } from "./CalendarInviteSimulation";
+import { ChatMessengerSimulation } from "./ChatMessengerSimulation";
 import { EmailClientSimulation } from "./EmailClientSimulation";
+import { ExtensionStoreSimulation } from "./ExtensionStoreSimulation";
 import { GenericWorkspaceSimulation } from "./GenericWorkspaceSimulation";
 import { SocialFeedSimulation } from "./SocialFeedSimulation";
 import { TicketSimulation } from "./TicketSimulation";
@@ -61,6 +64,36 @@ export function StepSimulation(props: {
           disabled={disabled}
           onChoose={onChoose}
           choiceButtons={genericChoices}
+          childrenFooter={childrenFooter}
+          splitLayout={splitLayout}
+        />
+      );
+    case "CHAT_MESSENGER":
+      return (
+        <ChatMessengerSimulation
+          step={step}
+          disabled={disabled}
+          onChoose={onChoose}
+          childrenFooter={childrenFooter}
+          splitLayout={splitLayout}
+        />
+      );
+    case "CALENDAR_INVITE":
+      return (
+        <CalendarInviteSimulation
+          step={step}
+          disabled={disabled}
+          onChoose={onChoose}
+          childrenFooter={childrenFooter}
+          splitLayout={splitLayout}
+        />
+      );
+    case "EXTENSION_STORE":
+      return (
+        <ExtensionStoreSimulation
+          step={step}
+          disabled={disabled}
+          onChoose={onChoose}
           childrenFooter={childrenFooter}
           splitLayout={splitLayout}
         />

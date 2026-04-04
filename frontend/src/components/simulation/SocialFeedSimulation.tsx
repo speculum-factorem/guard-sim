@@ -3,29 +3,21 @@ import { useEffect, useMemo, useState } from "react";
 import { stepAnalysisText } from "../../missionText";
 import type { StepPublic } from "../../types";
 import { NarrativeNoiseBlock } from "./NarrativeNoiseBlock";
-import { mockSavedPosts, mockSocialFriends } from "./simMockData";
+import { mockFeedDecorPosts, mockSavedPosts, mockSocialFriends, type MockFeedDecorPost } from "./simMockData";
 
-function SkeletonCard(props: { variant: "top" | "bottom"; onOpenDetail: () => void }) {
+function MockFeedDecorCard(props: { post: MockFeedDecorPost; onOpen: () => void }) {
   return (
-    <button
-      type="button"
-      className="sim-fb-card sim-fb-skeleton sim-fb-skeleton-interactive"
-      aria-label="Заглушка поста в ленте"
-      onClick={props.onOpenDetail}
-    >
-      <div className="sim-fb-skeleton-head">
-        <span className="sim-fb-skeleton-avatar" />
-        <div className="sim-fb-skeleton-lines">
-          <span className="sim-fb-skeleton-line sim-fb-skeleton-line-short" />
-          <span className="sim-fb-skeleton-line sim-fb-skeleton-line-meta" />
+    <button type="button" className="sim-fb-card sim-fb-mock-post" aria-label={`Пост: ${props.post.author}`} onClick={props.onOpen}>
+      <div className="sim-social-card-head sim-fb-mock-post-head">
+        <div className="sim-social-avatar sim-fb-mock-avatar" aria-hidden>
+          {props.post.initials}
+        </div>
+        <div>
+          <div className="sim-social-author">{props.post.author}</div>
+          <div className="social-card-meta">{props.post.timeMeta}</div>
         </div>
       </div>
-      <div className="sim-fb-skeleton-body">
-        <span className="sim-fb-skeleton-line" />
-        <span className="sim-fb-skeleton-line" />
-        <span className="sim-fb-skeleton-line sim-fb-skeleton-line-medium" />
-      </div>
-      <span className="sim-fb-skeleton-hint">Нажмите, чтобы открыть заглушку</span>
+      <p className="sim-fb-mock-snippet">{props.post.preview}</p>
     </button>
   );
 }
@@ -33,10 +25,10 @@ function SkeletonCard(props: { variant: "top" | "bottom"; onOpenDetail: () => vo
 function navStripMessage(key: "home" | "friends" | "watch" | "grid" | "menu"): string {
   const map: Record<typeof key, string> = {
     home: "",
-    friends: "Раздел «Друзья»: заявок нет. Активное задание — в карточке ниже.",
-    watch: "Раздел «Видео»: рекомендации выключены в симуляции. Задание — в ленте ниже.",
-    grid: "Раздел «Меню»: сетка ярлыков. Учебный пост с ответами — ниже.",
-    menu: "Меню аккаунта: здесь только навигация. Ответ по заданию — кнопки в карточке поста.",
+    friends: "Здесь список контактов. Пост с заданием — в основной ленте ниже.",
+    watch: "В этом разделе нет роликов с заданием. Вернитесь на главную ленту — там карточка с текстом и ответами.",
+    grid: "Ярлыки приложений. Пост, по которому нужно ответить, — в ленте ниже.",
+    menu: "Пункты меню только для навигации. Выбор ответа — кнопки под постом с заданием.",
   };
   return map[key] ?? "";
 }
@@ -55,7 +47,7 @@ export function SocialFeedSimulation(props: {
   const [search, setSearch] = useState("");
   const [navKey, setNavKey] = useState<"home" | "friends" | "watch" | "grid" | "menu">("home");
   const [sidebarKey, setSidebarKey] = useState<"feed" | "friends" | "saved">("feed");
-  const [skeletonPanel, setSkeletonPanel] = useState<null | "top" | "bottom">(null);
+  const [decorDialogPost, setDecorDialogPost] = useState<MockFeedDecorPost | null>(null);
   const [liked, setLiked] = useState(false);
   const [baseLikes, setBaseLikes] = useState(12);
   const [commentOpen, setCommentOpen] = useState(false);
@@ -68,14 +60,14 @@ export function SocialFeedSimulation(props: {
     if (!searchQ) {
       return true;
     }
-    return analysisText.toLowerCase().includes(searchQ) || "неизвестная страница".includes(searchQ);
+    return analysisText.toLowerCase().includes(searchQ);
   }, [searchQ, analysisText]);
 
   useEffect(() => {
     setSearch("");
     setNavKey("home");
     setSidebarKey("feed");
-    setSkeletonPanel(null);
+    setDecorDialogPost(null);
     setLiked(false);
     setCommentOpen(false);
     setCommentDraft("");
@@ -98,33 +90,31 @@ export function SocialFeedSimulation(props: {
 
   const friendsMock = useMemo(() => mockSocialFriends(step.id), [step.id]);
   const savedMock = useMemo(() => mockSavedPosts(step.id), [step.id]);
+  const [decorTop, decorBottom] = useMemo(() => mockFeedDecorPosts(step.id), [step.id]);
 
   const stripNav = navStripMessage(navKey);
   const stripSidebar =
     sidebarKey === "feed"
       ? ""
       : sidebarKey === "friends"
-        ? "Контакты: условие задания — в карточке поста ниже."
-        : "Сохранённое: нажмите запись — краткая подсказка внизу.";
+        ? "Список друзей. Текст задания — в карточке поста в ленте."
+        : "Сохранённые записи: нажмите строку, чтобы увидеть подсказку.";
 
   return (
     <div className="ui-frame ui-frame-social sim-fb-root sim-social-layout">
       {simToast ? <div className="sim-mini-toast">{simToast}</div> : null}
-      {skeletonPanel ? (
+      {decorDialogPost ? (
         <>
           <button
             type="button"
             className="sim-sim-backdrop"
             aria-label="Закрыть"
-            onClick={() => setSkeletonPanel(null)}
+            onClick={() => setDecorDialogPost(null)}
           />
           <div className="sim-fb-skeleton-panel" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-            <h3 className="sim-fb-skeleton-panel-title">Заглушка поста</h3>
-            <p className="sim-fb-skeleton-panel-text">
-              В демонстрационной ленте только одна настоящая карточка с заданием. Этот блок имитирует бесконечную ленту —
-              прокрутка и лайки здесь не ведут к новым сценариям.
-            </p>
-            <button type="button" className="btn btn-primary" onClick={() => setSkeletonPanel(null)}>
+            <h3 className="sim-fb-skeleton-panel-title">{decorDialogPost.dialogTitle}</h3>
+            <p className="sim-fb-skeleton-panel-text">{decorDialogPost.dialogBody}</p>
+            <button type="button" className="btn btn-primary" onClick={() => setDecorDialogPost(null)}>
               Закрыть
             </button>
           </div>
@@ -137,8 +127,8 @@ export function SocialFeedSimulation(props: {
           <div className="sim-fb-comment-panel" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
             <h3 className="sim-fb-skeleton-panel-title">Комментарий</h3>
             <p className="sim-fb-skeleton-panel-text">
-              Текст ниже не отправляется на сервер и не влияет на оценку — только тренировка привычки не кликать под
-              давлением.
+              Комментарий остаётся в этом окне и не отправляется никуда. На баллы влияет только выбор из кнопок под постом
+              с заданием.
             </p>
             <textarea
               className="sim-fb-comment-textarea"
@@ -155,7 +145,7 @@ export function SocialFeedSimulation(props: {
                 type="button"
                 className="btn"
                 onClick={() => {
-                  setSimToast("В учебной ленте публикация отключена — текст остаётся только в этой форме.");
+                  setSimToast("Публикация отключена — текст остаётся только в этой форме.");
                 }}
               >
                 Опубликовать
@@ -192,10 +182,10 @@ export function SocialFeedSimulation(props: {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Поиск в сети"
-              aria-label="Поиск (учебная симуляция, фильтрует текст поста локально)"
+              aria-label="Поиск по тексту поста в ленте"
             />
           </div>
-          <nav className="sim-fb-nav" aria-label="Разделы (симуляция)">
+          <nav className="sim-fb-nav" aria-label="Разделы ленты">
             {(
               [
                 ["home", "⌂"],
@@ -263,8 +253,8 @@ export function SocialFeedSimulation(props: {
           {stripSidebar ? <p className="sim-fb-context-strip sim-fb-context-strip--sidebar">{stripSidebar}</p> : null}
           {!narrativeHit && searchQ ? (
             <p className="sim-fb-search-miss" role="status">
-              По запросу «{search.trim()}» в тексте поста совпадений нет — условие может быть в панели слева (режим
-              раздельного экрана).
+              По запросу «{search.trim()}» в тексте поста совпадений нет. Откройте раздел «Условие», если ищете формулировку
+              задания.
             </p>
           ) : null}
 
@@ -298,14 +288,14 @@ export function SocialFeedSimulation(props: {
               <button
                 type="button"
                 className="sim-fb-fake-video-play"
-                onClick={() => setSimToast("Воспроизведение недоступно — учебный ролик-заглушка.")}
+                onClick={() => setSimToast("Воспроизведение недоступно — это превью для интерфейса.")}
               >
                 <div className="sim-fb-fake-video" />
                 <span className="sim-fb-fake-video-play-ico" aria-hidden>
                   ▶
                 </span>
               </button>
-              <p>Нажмите на превью — воспроизведение в симуляции недоступно.</p>
+              <p>Нажмите на превью — видео здесь не запускается.</p>
             </div>
           ) : null}
           {navKey === "grid" ? (
@@ -315,7 +305,7 @@ export function SocialFeedSimulation(props: {
                   key={i}
                   type="button"
                   className="sim-fb-placeholder-tile"
-                  onClick={() => setSimToast(`Ярлык ${i + 1}: демонстрационный раздел`)}
+                  onClick={() => setSimToast(`Раздел «${i + 1}» — только интерфейс, без задания.`)}
                 >
                   {i + 1}
                 </button>
@@ -353,16 +343,16 @@ export function SocialFeedSimulation(props: {
             </ul>
           ) : null}
 
-          <SkeletonCard variant="top" onOpenDetail={() => setSkeletonPanel("top")} />
+          <MockFeedDecorCard post={decorTop} onOpen={() => setDecorDialogPost(decorTop)} />
 
           <div className="social-card sim-social-card sim-fb-card sim-fb-card-main">
             <div className="sim-social-card-head">
               <div className="sim-social-avatar" aria-hidden>
-                ?
+                П
               </div>
               <div>
-                <div className="sim-social-author">Неизвестная страница</div>
-                <div className="social-card-meta">Рекомендации · сейчас</div>
+                <div className="sim-social-author">Подборка для вас</div>
+                <div className="social-card-meta">Лента · сейчас</div>
               </div>
             </div>
             {splitLayout ? (
@@ -385,11 +375,11 @@ export function SocialFeedSimulation(props: {
               </div>
             )}
             {noise}
-            <div className="sim-fb-light-actions" role="group" aria-label="Реакции (симуляция)">
+            <div className="sim-fb-light-actions" role="group" aria-label="Реакции">
               <button
                 type="button"
                 className={liked ? "sim-fb-like-btn sim-fb-like-btn--on" : "sim-fb-like-btn"}
-                title="Лайк не влияет на оценку — только имитация ленты"
+                title="Лайк только для вида ленты, на оценку не влияет"
                 onClick={() => setLiked((v) => !v)}
               >
                 <span className="sim-fb-like-ico" aria-hidden>
@@ -397,13 +387,13 @@ export function SocialFeedSimulation(props: {
                 </span>
                 <span>Нравится</span>
               </button>
-              <span className="sim-fb-like-meta" title="Случайное число для атмосферы">
+              <span className="sim-fb-like-meta" title="Число как в соцсетях, без влияния на задание">
                 {baseLikes + (liked ? 1 : 0)}
               </span>
               <button
                 type="button"
                 className="sim-fb-comment-btn"
-                title="Написать комментарий (локально)"
+                title="Открыть форму комментария"
                 onClick={() => setCommentOpen(true)}
               >
                 Комментировать
@@ -426,7 +416,7 @@ export function SocialFeedSimulation(props: {
             ) : null}
           </div>
 
-          <SkeletonCard variant="bottom" onOpenDetail={() => setSkeletonPanel("bottom")} />
+          <MockFeedDecorCard post={decorBottom} onOpen={() => setDecorDialogPost(decorBottom)} />
         </div>
       </div>
       {childrenFooter}

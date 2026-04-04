@@ -53,6 +53,12 @@ function missionWindowLabel(step: StepPublic): string {
       return "Тикет ИБ";
     case "MINI_URL_COMPARE":
       return "Окно браузера";
+    case "CHAT_MESSENGER":
+      return "Мессенджер";
+    case "CALENDAR_INVITE":
+      return "Календарь";
+    case "EXTENSION_STORE":
+      return "Магазин расширений";
     default:
       return "Задание";
   }
@@ -587,13 +593,8 @@ export function SimulationPage() {
       ) : null}
 
       {!detail || !sessionId || (!completed && !step) ? (
-        <div className="sim-loading-panel" aria-busy="true" aria-live="polite">
-          <div className="sim-loading-skeleton sim-loading-skeleton--crumb" />
-          <div className="sim-loading-skeleton sim-loading-skeleton--title" />
-          <div className="sim-loading-skeleton-grid">
-            <div className="sim-loading-skeleton sim-loading-skeleton--col" />
-            <div className="sim-loading-skeleton sim-loading-skeleton--col sim-loading-skeleton--col-wide" />
-          </div>
+        <div className="sim-loading-panel sim-loading-panel--message" aria-busy="true" aria-live="polite">
+          <p className="sim-loading-message">Загружаем задание…</p>
         </div>
       ) : null}
 

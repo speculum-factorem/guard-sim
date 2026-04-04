@@ -13,7 +13,7 @@ export function mockMailBodyForRow(row: MockMailRow): string {
   if (row.isTask) {
     return "";
   }
-  return `Здравствуйте.\n\nЭто служебное письмо «${row.subject}». Демонстрационный текст для почтового клиента.\n\nС уважением,\nСлужба уведомлений`;
+  return `Здравствуйте.\n\nЭто автоматическое уведомление по теме «${row.subject}». Текст приведён для заполнения почтового ящика.\n\nС уважением,\nСлужба уведомлений`;
 }
 
 const MOCK_SENDERS = [
@@ -31,7 +31,7 @@ export function mockInboxRows(stepId: string, taskFrom: string, taskSubject: str
     id: taskId,
     from: taskFrom,
     subject: taskSubject,
-    snippet: "См. условие слева…",
+    snippet: "Требуется ваша реакция по заданию",
     isTask: true,
   };
   const others: MockMailRow[] = MOCK_SENDERS.map((m, i) => ({
@@ -51,7 +51,7 @@ export function mockFolderRows(folderId: string, stepId: string): MockMailRow[] 
   const s = seedFromStepId(`${folderId}-${stepId}`);
   const base = [
     { from: "Архив <archive@local>", subject: "Старое уведомление", snippet: "Автоочистка через 30 дней…" },
-    { from: "Система <mailer-daemon@>", subject: "Доставка не удалась", snippet: "550 Mailbox unavailable…" },
+    { from: "Система <mailer-daemon@>", subject: "Письмо не доставлено", snippet: "Ящик получателя недоступен…" },
   ];
   return base.map((m, i) => ({
     id: `fold-${folderId}-${s}-${i}`,
@@ -94,10 +94,69 @@ export type MockTicketActivity = { id: string; who: string; when: string; text: 
 export function mockTicketActivity(stepId: string): MockTicketActivity[] {
   const s = seedFromStepId(stepId);
   return [
-    { id: `a1-${stepId}`, who: "Система", when: "сегодня, 09:12", text: "Тикет создан из очереди email-security." },
-    { id: `a2-${stepId}`, who: "Марина (ИБ)", when: "сегодня, 09:40", text: `Приоритет P${(s % 3) + 2} — проверить домен отправителя.` },
-    { id: `a3-${stepId}`, who: "Бот", when: "сегодня, 09:41", text: "SLA отсчёт запущен (учебные данные)." },
+    { id: `a1-${stepId}`, who: "Система", when: "сегодня, 09:12", text: "Обращение зарегистрировано, очередь мониторинга почты." },
+    { id: `a2-${stepId}`, who: "Марина (ИБ)", when: "сегодня, 09:40", text: `Приоритет P${(s % 3) + 2} — проверить домен и подпись отправителя.` },
+    { id: `a3-${stepId}`, who: "Бот", when: "сегодня, 09:41", text: "Таймер ответа по регламенту запущен." },
   ];
+}
+
+export type MockFeedDecorPost = {
+  id: string;
+  author: string;
+  initials: string;
+  timeMeta: string;
+  preview: string;
+  dialogTitle: string;
+  dialogBody: string;
+};
+
+const FEED_DECOR_POSTS: Omit<MockFeedDecorPost, "id">[] = [
+  {
+    author: "Соседский чат",
+    initials: "С",
+    timeMeta: "вчера · 2 комментария",
+    preview: "Кто-нибудь видел объявление про розыгрыш техники? Ссылка ведёт на страницу без названия…",
+    dialogTitle: "Пост из соседского чата",
+    dialogBody:
+      "Обычная публикация в ленте. На проверку влияет только пост с кнопками ответа под заданием — он выделен в ленте отдельно.",
+  },
+  {
+    author: "Доставка за час",
+    initials: "Д",
+    timeMeta: "3 ч назад · реклама",
+    preview: "Скидка 90% на премиум — успейте оформить до полуночи! Нажмите и получите подарок.",
+    dialogTitle: "Рекламный пост",
+    dialogBody:
+      "Такие карточки часто встречаются в ленте. Ваша задача описана в другом посте — с тем текстом, что дан в условии, и с вариантами действий.",
+  },
+  {
+    author: "Новости района",
+    initials: "Н",
+    timeMeta: "5 ч назад",
+    preview: "Сегодня перекроют улицу Ленина с 10:00 до 14:00. Парковка у школы временно закрыта.",
+    dialogTitle: "Новости",
+    dialogBody: "Локальная заметка без отношения к заданию. Ответ выбирайте в карточке с условием сценария.",
+  },
+  {
+    author: "Мама в декрете ☕",
+    initials: "М",
+    timeMeta: "вчера",
+    preview: "Поделитесь проверенными мастерами по ремонту? Нужен электрик, желательно с отзывами.",
+    dialogTitle: "Пост в группе",
+    dialogBody: "Обычное обсуждение. Задание с оценкой — только в отдельной карточке ниже или выше в этой ленте.",
+  },
+];
+
+export function mockFeedDecorPosts(stepId: string): [MockFeedDecorPost, MockFeedDecorPost] {
+  const s = seedFromStepId(`feed-${stepId}`);
+  const a = s % FEED_DECOR_POSTS.length;
+  let b = (s + 2) % FEED_DECOR_POSTS.length;
+  if (b === a) {
+    b = (b + 1) % FEED_DECOR_POSTS.length;
+  }
+  const top: MockFeedDecorPost = { ...FEED_DECOR_POSTS[a]!, id: `feed-decor-${stepId}-a` };
+  const bottom: MockFeedDecorPost = { ...FEED_DECOR_POSTS[b]!, id: `feed-decor-${stepId}-b` };
+  return [top, bottom];
 }
 
 export type MockGenericFile = { id: string; label: string; hint: string };

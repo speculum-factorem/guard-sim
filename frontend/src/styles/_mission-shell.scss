@@ -798,7 +798,10 @@
 .mission-lc-workspace--fullbleed .sim-fb-root,
 .mission-lc-workspace--fullbleed .sim-chrome-root,
 .mission-lc-workspace--fullbleed .sim-ticket-layout,
-.mission-lc-workspace--fullbleed .sim-generic-workspace {
+.mission-lc-workspace--fullbleed .sim-generic-workspace,
+.mission-lc-workspace--fullbleed .sim-chat-root,
+.mission-lc-workspace--fullbleed .sim-cal-root,
+.mission-lc-workspace--fullbleed .sim-ext-root {
   width: 100%;
   min-height: 100%;
 }

@@ -20,20 +20,72 @@ const WIN_LABELS: Record<WinId, { title: string; menu: string; taskbar: string }
 };
 
 const WIN_LAYOUT: Record<WinId, { top: string; left: string; width: string }> = {
-  explorer: { top: "10%", left: "12%", width: "min(440px, 90vw)" },
-  antivirus: { top: "12%", left: "40%", width: "min(380px, 88vw)" },
-  firewall: { top: "14%", left: "54%", width: "min(460px, 92vw)" },
-  console: { top: "46%", left: "14%", width: "min(520px, 94vw)" },
-  taskmgr: { top: "8%", left: "24%", width: "min(560px, 95vw)" },
+  explorer: { top: "10%", left: "14%", width: "min(440px, 90vw)" },
+  antivirus: { top: "12%", left: "42%", width: "min(380px, 88vw)" },
+  firewall: { top: "14%", left: "56%", width: "min(460px, 92vw)" },
+  console: { top: "46%", left: "16%", width: "min(520px, 94vw)" },
+  taskmgr: { top: "8%", left: "26%", width: "min(560px, 95vw)" },
 };
 
-const DOCK_EMOJI: Record<WinId, string> = {
-  explorer: "📁",
-  antivirus: "🛡",
-  firewall: "🧱",
-  console: "⌨",
-  taskmgr: "📊",
-};
+function parseLayoutPct(s: string): number {
+  return parseFloat(String(s).replace("%", "").trim()) || 0;
+}
+
+const WIN_POS_INITIAL: Record<WinId, { top: number; left: number }> = (WIN_IDS as readonly WinId[]).reduce(
+  (acc, id) => {
+    const L = WIN_LAYOUT[id];
+    acc[id] = { top: parseLayoutPct(L.top), left: parseLayoutPct(L.left) };
+    return acc;
+  },
+  {} as Record<WinId, { top: number; left: number }>,
+);
+
+function DockIconGlyph(props: { winId: WinId; className?: string }) {
+  const { winId, className } = props;
+  const cn = `dvs-dock-glyph${className ? ` ${className}` : ""}`;
+  switch (winId) {
+    case "explorer":
+      return (
+        <svg className={cn} viewBox="0 0 48 48" width="28" height="28" aria-hidden>
+          <rect x="6" y="10" width="36" height="26" rx="3" fill="#e8b44c" stroke="#c98f2b" strokeWidth="1.2" />
+          <path d="M6 16h14l4-4h22v24H6V16z" fill="#f5d07a" />
+        </svg>
+      );
+    case "antivirus":
+      return (
+        <svg className={cn} viewBox="0 0 48 48" width="28" height="28" aria-hidden>
+          <path d="M24 4 L40 10 V22c0 12-8 18-16 22-8-4-16-10-16-22V10L24 4z" fill="#4a90d9" stroke="#2d6bb5" strokeWidth="1.2" />
+          <path d="M17 22l5 5 10-12" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case "firewall":
+      return (
+        <svg className={cn} viewBox="0 0 48 48" width="28" height="28" aria-hidden>
+          <rect x="10" y="8" width="28" height="32" rx="2" fill="#c0392b" />
+          <rect x="14" y="14" width="8" height="8" fill="#fadbd8" opacity="0.9" />
+          <rect x="26" y="14" width="8" height="8" fill="#fadbd8" opacity="0.9" />
+          <rect x="14" y="26" width="8" height="8" fill="#fadbd8" opacity="0.9" />
+          <rect x="26" y="26" width="8" height="8" fill="#fadbd8" opacity="0.9" />
+        </svg>
+      );
+    case "console":
+      return (
+        <svg className={cn} viewBox="0 0 48 48" width="28" height="28" aria-hidden>
+          <rect x="6" y="8" width="36" height="32" rx="3" fill="#2c001e" />
+          <path d="M12 18l6 6-6 6M22 30h12" stroke="#aea79f" strokeWidth="2.5" strokeLinecap="round" />
+        </svg>
+      );
+    case "taskmgr":
+      return (
+        <svg className={cn} viewBox="0 0 48 48" width="28" height="28" aria-hidden>
+          <rect x="8" y="10" width="32" height="28" rx="2" fill="#fdfdfd" stroke="#c4c4c4" strokeWidth="1" />
+          <path d="M12 28V20l6 5 6-8 8 10v1H12z" fill="#772953" opacity="0.85" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
 
 const BAD_POPUP_TITLES = [
   "Срочно: обновите антивирус",
@@ -142,15 +194,6 @@ const CASUAL_VFS: Record<string, Record<string, FsEntry>> = {
   },
 };
 
-const DESKTOP_ICONS: { id: string; label: string; emoji: string; open: WinId }[] = [
-  { id: "i1", label: "Мои документы", emoji: "📁", open: "explorer" },
-  { id: "i2", label: "Игры", emoji: "🎮", open: "explorer" },
-  { id: "i3", label: "Браузер", emoji: "🌐", open: "explorer" },
-  { id: "i4", label: "Музыка", emoji: "🎵", open: "explorer" },
-  { id: "i5", label: "Корзина", emoji: "🗑", open: "explorer" },
-  { id: "i6", label: "Защита", emoji: "🛡", open: "antivirus" },
-];
-
 function formatTopBarClock(d: Date): string {
   return d.toLocaleString("ru-RU", {
     weekday: "short",
@@ -221,13 +264,14 @@ function useWindowManager() {
   };
 }
 
+/** Как в Ubuntu (слева): закрыть, свернуть, развернуть */
 function GnomeCaptionButtons(props: { onClose: () => void; theme?: "light" | "dark" }) {
   const { onClose, theme = "light" } = props;
   return (
-    <div className={`dvs-win-caps dvs-win-caps--yaru${theme === "dark" ? " dvs-win-caps--dark" : ""}`}>
+    <div className={`dvs-win-caps dvs-win-caps--yaru dvs-win-caps--gnome${theme === "dark" ? " dvs-win-caps--dark" : ""}`}>
+      <button type="button" className="dvs-win-cap dvs-win-cap--close" aria-label="Закрыть" onClick={onClose} />
       <button type="button" className="dvs-win-cap dvs-win-cap--min" aria-hidden tabIndex={-1} />
       <button type="button" className="dvs-win-cap dvs-win-cap--max" aria-hidden tabIndex={-1} />
-      <button type="button" className="dvs-win-cap dvs-win-cap--close" aria-label="Закрыть" onClick={onClose} />
     </div>
   );
 }
@@ -248,26 +292,34 @@ function UbuntuShowAppsIcon() {
 function DesktopWindowFrame(props: {
   winId: WinId;
   z: number;
+  position: { top: number; left: number };
   onClose: () => void;
   onPointerDown: () => void;
+  onTitleMouseDown: (e: React.MouseEvent) => void;
   children: ReactNode;
-  /** Светлое окно приложения или тёмная консоль как в Windows Terminal */
   chrome?: "app" | "terminal";
 }) {
-  const { winId, z, onClose, onPointerDown, children, chrome = "app" } = props;
+  const { winId, z, position, onClose, onPointerDown, onTitleMouseDown, children, chrome = "app" } = props;
   const L = WIN_LAYOUT[winId];
   const isTerm = chrome === "terminal";
   return (
     <div
       className={`dvs-window dvs-window--os dvs-window--ubuntu${isTerm ? " dvs-window--terminal" : ""}`}
-      style={{ top: L.top, left: L.left, width: L.width, zIndex: z }}
+      style={{
+        top: `${position.top}%`,
+        left: `${position.left}%`,
+        width: L.width,
+        zIndex: z,
+      }}
       onPointerDown={onPointerDown}
     >
       <div
-        className={`dvs-win-titlebar${isTerm ? " dvs-win-titlebar--terminal dvs-win-titlebar--ubuntu-term" : " dvs-win-titlebar--ubuntu"}`}
+        className={`dvs-win-titlebar dvs-win-titlebar--gnome${isTerm ? " dvs-win-titlebar--terminal dvs-win-titlebar--ubuntu-term" : " dvs-win-titlebar--ubuntu"}`}
+        onMouseDown={onTitleMouseDown}
       >
-        <span className="dvs-win-title">{WIN_LABELS[winId].title}</span>
         <GnomeCaptionButtons onClose={onClose} theme={isTerm ? "dark" : "light"} />
+        <span className="dvs-win-title dvs-win-title--gnome">{WIN_LABELS[winId].title}</span>
+        <span className="dvs-win-titlebar-spacer" aria-hidden />
       </div>
       <div className={`dvs-win-body${isTerm ? " dvs-win-body--terminal" : ""}`}>{children}</div>
     </div>
@@ -328,6 +380,20 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
   const [clock, setClock] = useState(() => new Date());
   const [startOpen, setStartOpen] = useState(false);
   const startRef = useRef<HTMLDivElement>(null);
+  const desktopRef = useRef<HTMLDivElement>(null);
+  const [winPos, setWinPos] = useState<Record<WinId, { top: number; left: number }>>(() => ({ ...WIN_POS_INITIAL }));
+  const winPosRef = useRef(winPos);
+  const winDragRef = useRef<null | {
+    id: WinId;
+    sx: number;
+    sy: number;
+    ot: number;
+    ol: number;
+    dw: number;
+    dh: number;
+  }>(null);
+  const [rubberBox, setRubberBox] = useState<null | { x: number; y: number; w: number; h: number }>(null);
+  const rubberOriginRef = useRef<null | { ox: number; oy: number }>(null);
   const shell = useWindowManager();
   const [phase, setPhase] = useState<Phase>("playing");
 
@@ -357,6 +423,10 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
   useEffect(() => {
     rhAvRef.current = rhAv;
   }, [rhAv]);
+
+  useEffect(() => {
+    winPosRef.current = winPos;
+  }, [winPos]);
 
   /* ── Уровень 5: ботнет ── */
   const [nbBlocked, setNbBlocked] = useState<Set<string>>(() => new Set());
@@ -397,6 +467,9 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
     setCasualSelected(null);
     setConsoleLines(["GuardSim Console v1.0", "Введите команду и нажмите Enter."]);
     setConsoleInput("");
+    setWinPos({ ...WIN_POS_INITIAL });
+    setRubberBox(null);
+    rubberOriginRef.current = null;
     // eslint-disable-next-line react-hooks/exhaustive-deps -- сброс при смене сценария
   }, [virusId]);
 
@@ -557,6 +630,96 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
     shell.bringToFront(id);
   };
 
+  const handleWinTitleMouseDown = useCallback(
+    (id: WinId, e: React.MouseEvent) => {
+      if (e.button !== 0) return;
+      if ((e.target as HTMLElement).closest("button")) return;
+      const desk = desktopRef.current;
+      if (!desk) return;
+      e.preventDefault();
+      const r = desk.getBoundingClientRect();
+      const p = winPosRef.current[id];
+      winDragRef.current = {
+        id,
+        sx: e.clientX,
+        sy: e.clientY,
+        ot: p.top,
+        ol: p.left,
+        dw: Math.max(1, r.width),
+        dh: Math.max(1, r.height),
+      };
+      shell.bringToFront(id);
+      document.body.style.cursor = "grabbing";
+      document.body.style.userSelect = "none";
+
+      const onMove = (ev: MouseEvent) => {
+        const d = winDragRef.current;
+        if (!d) return;
+        const dx = ((ev.clientX - d.sx) / d.dw) * 100;
+        const dy = ((ev.clientY - d.sy) / d.dh) * 100;
+        let top = d.ot + dy;
+        let left = d.ol + dx;
+        top = Math.max(4, Math.min(80, top));
+        left = Math.max(0.5, Math.min(72, left));
+        setWinPos((prev) => ({ ...prev, [d.id]: { top, left } }));
+      };
+      const onUp = () => {
+        winDragRef.current = null;
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("mouseup", onUp);
+      };
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseup", onUp);
+    },
+    [shell],
+  );
+
+  const onRubberPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    const desk = desktopRef.current;
+    if (!desk) return;
+    const r = desk.getBoundingClientRect();
+    const x = e.clientX - r.left;
+    const y = e.clientY - r.top;
+    rubberOriginRef.current = { ox: x, oy: y };
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      /* ignore */
+    }
+    setRubberBox({ x, y, w: 0, h: 0 });
+  }, []);
+
+  const onRubberPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!rubberOriginRef.current) return;
+    const desk = desktopRef.current;
+    if (!desk) return;
+    const r = desk.getBoundingClientRect();
+    const cx = e.clientX - r.left;
+    const cy = e.clientY - r.top;
+    const { ox, oy } = rubberOriginRef.current;
+    setRubberBox({
+      x: Math.min(ox, cx),
+      y: Math.min(oy, cy),
+      w: Math.abs(cx - ox),
+      h: Math.abs(cy - oy),
+    });
+  }, []);
+
+  const endRubber = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    rubberOriginRef.current = null;
+    setRubberBox(null);
+    try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   const wormEntries = WORM_VFS[wormPath];
   const wormParent = wormPath.includes("/") ? wormPath.slice(0, wormPath.lastIndexOf("/")) : null;
   const casualParent = casualPath.includes("/") ? casualPath.slice(0, casualPath.lastIndexOf("/")) : null;
@@ -628,40 +791,37 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
           Сменить угрозу
         </Link>
       </div>
-      <div className="dvs-desktop" aria-label="Симуляция рабочего стола">
+      <div ref={desktopRef} className="dvs-desktop" aria-label="Симуляция рабочего стола">
         <div className={`dvs-wallpaper dvs-wallpaper--${wallpaperId}`} aria-hidden />
 
-        <div className="dvs-desktop-icons">
-          <div className="dvs-desktop-icons-inner">
-            {DESKTOP_ICONS.map((ic) => (
-              <button
-                key={ic.id}
-                type="button"
-                className="dvs-desk-icon"
-                title={`Открыть: ${ic.label}`}
-                onClick={() => {
-                  shell.openWindow(ic.open);
-                  shell.bringToFront(ic.open);
-                  if (ic.id === "i2") setCasualPath("C:/Users/Maxim/Desktop/Игры");
-                  if (ic.id === "i1") setCasualPath("C:/Users/Maxim/Documents");
-                }}
-              >
-                <span className="dvs-desk-icon-ico" aria-hidden>
-                  {ic.emoji}
-                </span>
-                <span className="dvs-desk-icon-label">{ic.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+        <div
+          className="dvs-desktop-select-surface"
+          onPointerDown={onRubberPointerDown}
+          onPointerMove={onRubberPointerMove}
+          onPointerUp={endRubber}
+          onPointerCancel={endRubber}
+        />
+        {rubberBox && rubberBox.w > 2 && rubberBox.h > 2 ? (
+          <div
+            className="dvs-rubber-band"
+            style={{
+              left: rubberBox.x,
+              top: rubberBox.y,
+              width: rubberBox.w,
+              height: rubberBox.h,
+            }}
+          />
+        ) : null}
 
         {/* Окна (док и меню приложений) */}
         {shell.open.explorer ? (
           <DesktopWindowFrame
             winId="explorer"
             z={shell.zIndexFor("explorer")}
+            position={winPos.explorer}
             onClose={() => shell.closeWindow("explorer")}
             onPointerDown={() => shell.bringToFront("explorer")}
+            onTitleMouseDown={(e) => handleWinTitleMouseDown("explorer", e)}
           >
             {virusId === "file_worm" ? (
               <>
@@ -772,8 +932,10 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
           <DesktopWindowFrame
             winId="antivirus"
             z={shell.zIndexFor("antivirus")}
+            position={winPos.antivirus}
             onClose={() => shell.closeWindow("antivirus")}
             onPointerDown={() => shell.bringToFront("antivirus")}
+            onTitleMouseDown={(e) => handleWinTitleMouseDown("antivirus", e)}
           >
             <div className="dvs-av-deco">
               <p className="dvs-av-deco-status">● Мониторинг в реальном времени: включён</p>
@@ -841,8 +1003,10 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
           <DesktopWindowFrame
             winId="firewall"
             z={shell.zIndexFor("firewall")}
+            position={winPos.firewall}
             onClose={() => shell.closeWindow("firewall")}
             onPointerDown={() => shell.bringToFront("firewall")}
+            onTitleMouseDown={(e) => handleWinTitleMouseDown("firewall", e)}
           >
             <>
               <p className="dvs-win-hint">Профиль: частная сеть</p>
@@ -895,8 +1059,10 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
           <DesktopWindowFrame
             winId="console"
             z={shell.zIndexFor("console")}
+            position={winPos.console}
             onClose={() => shell.closeWindow("console")}
             onPointerDown={() => shell.bringToFront("console")}
+            onTitleMouseDown={(e) => handleWinTitleMouseDown("console", e)}
             chrome="terminal"
           >
             <div className="dvs-console-out" role="log">
@@ -942,8 +1108,10 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
           <DesktopWindowFrame
             winId="taskmgr"
             z={shell.zIndexFor("taskmgr")}
+            position={winPos.taskmgr}
             onClose={() => shell.closeWindow("taskmgr")}
             onPointerDown={() => shell.bringToFront("taskmgr")}
+            onTitleMouseDown={(e) => handleWinTitleMouseDown("taskmgr", e)}
           >
             <div className="dvs-tm-tabs">
               <button type="button" className={`dvs-tm-tab${tmTab === "proc" ? " dvs-tm-tab--on" : ""}`} onClick={() => setTmTab("proc")}>
@@ -1116,12 +1284,13 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
           ? p1Popups.map((pop) => (
               <div
                 key={pop.id}
-                className="dvs-window dvs-window--popup dvs-window--threat"
+                className="dvs-window dvs-window--popup dvs-window--threat dvs-window--ubuntu"
                 style={{ top: `${pop.top}%`, left: `${pop.left}%`, width: "min(280px, 82vw)", zIndex: pop.z }}
               >
-                <div className="dvs-win-titlebar">
-                  <span className="dvs-win-title">{pop.title}</span>
+                <div className="dvs-win-titlebar dvs-win-titlebar--gnome dvs-win-titlebar--ubuntu dvs-win-titlebar--popup-gnome">
                   <GnomeCaptionButtons onClose={() => closeP1Popup(pop.id)} />
+                  <span className="dvs-win-title dvs-win-title--gnome">{pop.title}</span>
+                  <span className="dvs-win-titlebar-spacer" aria-hidden />
                 </div>
                 <div className="dvs-win-body dvs-win-body--compact">
                   <p>Подозрительное окно (симуляция).</p>
@@ -1160,7 +1329,7 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
                 onClick={() => activateFromDock(id)}
               >
                 <span className="dvs-dock-btn-ico" aria-hidden>
-                  {DOCK_EMOJI[id]}
+                  <DockIconGlyph winId={id} />
                 </span>
               </button>
             ))}
@@ -1182,7 +1351,7 @@ function DesktopVirusGame(props: { virusId: DesktopVirusId }) {
               {(WIN_IDS as readonly WinId[]).map((id) => (
                 <button key={id} type="button" className="dvs-ubuntu-flyout-item" role="menuitem" onClick={() => openFromStart(id)}>
                   <span className="dvs-ubuntu-flyout-ico" aria-hidden>
-                    {DOCK_EMOJI[id]}
+                    <DockIconGlyph winId={id} />
                   </span>
                   {WIN_LABELS[id].menu}
                 </button>

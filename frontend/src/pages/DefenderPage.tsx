@@ -65,6 +65,182 @@ const EDGES: [NodeId, NodeId][] = [
 
 const ALL_NODE_IDS: NodeId[] = ["inet", "fw", "web01", "app01", "db01", "dc01"];
 
+/** Подсеть для симуляции nmap (и алиасы в help). */
+const NMAP_SUBNET = "10.10.0.0/24";
+const NMAP_SUBNET_ALIASES = new Set(["10.10.0.0/24", "10.10.0/24", "10.10.0.0", "corp", "corp.lan", "internal"]);
+
+function normalizeNmapSubnet(arg: string): string | null {
+  const t = arg.toLowerCase().replace(/\s+/g, "");
+  if (t === "10.10.0.0/24" || t === "10.10.0/24" || t === "10.10.0.0") return NMAP_SUBNET;
+  if (NMAP_SUBNET_ALIASES.has(t)) return NMAP_SUBNET;
+  return null;
+}
+
+type PushTermFn = (text: string, type?: TermLineType) => void;
+
+function emitWiresharkCapture(scenarioId: string, nodeId: NodeId, pushTerm: PushTermFn) {
+  const host = NODE_DEFS[nodeId].label;
+  pushTerm(`━━ Wireshark · симулированный захват · ${host} (${nodeId}) ━━`, "info");
+  pushTerm("  No.  Time      Source           Destination      Proto  Length  Info", "output");
+  pushTerm("  ---  --------  ---------------  ---------------  -----  ------  ----", "output");
+
+  const rows: { line: string; anomaly?: boolean }[] = [];
+
+  if (scenarioId === "sqlslayer") {
+    rows.push({ line: "  12   0.0001    203.45.178.92    10.10.0.12       TCP    74      SYN → 443" });
+    rows.push({ line: "  18   0.0042    10.10.0.12       203.45.178.92    TCP    66      ACK" });
+    if (nodeId === "web01") {
+      rows.push({ line: "  44   0.1120    203.45.178.92    10.10.0.12       HTTP   512     POST /login.php — payload: %27+OR+%271%27%3D%271", anomaly: true });
+    } else {
+      rows.push({ line: "  44   0.1120    10.10.0.12       10.10.0.20       HTTP   428     GET /health 200" });
+    }
+    rows.push({ line: "  51   0.2401    10.10.0.12       8.8.8.8          DNS    98      A? cdn.example.com" });
+  } else if (scenarioId === "tigerrat") {
+    rows.push({ line: "  07   0.0008    10.10.0.20       10.10.0.44       TCP    72      49667 → 135 SYN" });
+    rows.push({ line: "  15   0.0310    10.10.0.44       10.10.0.20       TCP    64      RST" });
+    if (nodeId === "app01" || nodeId === "web01") {
+      rows.push({ line: "  88   0.9055    10.10.0.20       185.220.101.47   TLS    1436    Application Data (encrypted) — длительная сессия, heartbeat 60s", anomaly: true });
+    } else {
+      rows.push({ line: "  88   0.9055    10.10.0.20       52.84.12.1       TLS    512   API sync (legit CDN)" });
+    }
+    rows.push({ line: "  99   1.2000    10.10.0.44       10.10.0.20       SMB2   240     Session Setup" });
+  } else {
+    // vaultbreaker
+    rows.push({ line: "  03   0.0002    203.45.178.92    10.10.0.12       TCP    74      SYN → 445" });
+    rows.push({ line: "  22   0.0088    203.45.178.92    10.10.0.12       SMB    1208    Negotiate Protocol" });
+    if (nodeId === "fw" || nodeId === "web01") {
+      rows.push({ line: "  31   0.0190    203.45.178.92    10.10.0.12       SMB    2048    Trans2 FIND_FIRST2 — MS17-010 exploit pattern (ETERNALBLUE)", anomaly: true });
+    } else {
+      rows.push({ line: "  31   0.0190    10.10.0.12       10.10.0.20       SMB    896     Tree Connect \\\\APP-01\\IPC$" });
+    }
+    rows.push({ line: "  40   0.0401    10.10.0.20       10.10.0.30       TCP    66      22 → 5432 (forwarded)" });
+  }
+
+  for (const r of rows) {
+    pushTerm(r.line, r.anomaly ? "error" : "output");
+  }
+  const anomalyHint =
+    scenarioId === "sqlslayer" && nodeId === "web01"
+      ? "Аномалия: SQL-инъекция в HTTP POST (URL-encoded OR 1=1)."
+      : scenarioId === "tigerrat" && (nodeId === "app01" || nodeId === "web01")
+        ? "Аномалия: исходящий долгий TLS к 185.220.101.47 — типичный C2 / внешний хост вне allowlist."
+        : scenarioId === "vaultbreaker" && (nodeId === "fw" || nodeId === "web01")
+          ? "Аномалия: SMB с сигнатурой MS17-010 (EternalBlue) с внешнего IP."
+          : "На этом узле явных отклонений в выборке нет — смотри строки, помеченные как подозрительные на других хостах.";
+  pushTerm(`★ ${anomalyHint}`, "info");
+}
+
+function emitNmapScan(scenarioId: string, pushTerm: PushTermFn) {
+  pushTerm(`Starting Nmap 7.94 ( https://nmap.org ) — симуляция сканирования ${NMAP_SUBNET}`, "info");
+  pushTerm("Interesting ports on 10.10.0.1 (gateway.corp):", "output");
+  pushTerm("  PORT    STATE SERVICE", "output");
+  pushTerm("  22/tcp  open  ssh", "output");
+  pushTerm("  53/tcp  open  domain", "output");
+  pushTerm("", "output");
+  pushTerm("Interesting ports on 10.10.0.12 (web-01):", "output");
+  pushTerm("  PORT     STATE SERVICE", "output");
+  pushTerm("  22/tcp   open  ssh", "output");
+  pushTerm("  80/tcp   open  http", "output");
+  pushTerm("  443/tcp  open  https", "output");
+  pushTerm("", "output");
+  pushTerm("Interesting ports on 10.10.0.20 (app-01):", "output");
+  pushTerm("  PORT     STATE SERVICE", "output");
+  pushTerm("  22/tcp   open  ssh", "output");
+  pushTerm("  8080/tcp open  http-proxy", "output");
+  pushTerm("", "output");
+
+  if (scenarioId === "sqlslayer") {
+    pushTerm("Interesting ports on 10.10.0.88 (legacy-mysql):", "output");
+    pushTerm("  PORT      STATE SERVICE", "output");
+    pushTerm("  3306/tcp  open  mysql", "output");
+    pushTerm("  4444/tcp  open  krb524   ← АНОМАЛИЯ: порт часто используется ботнетами / reverse shell", "error");
+  } else if (scenarioId === "tigerrat") {
+    pushTerm("Interesting ports on 10.10.0.44 (dc-01):", "output");
+    pushTerm("  PORT      STATE SERVICE", "output");
+    pushTerm("  88/tcp    open  kerberos-sec", "output");
+    pushTerm("  135/tcp   open  msrpc", "output");
+    pushTerm("  389/tcp   open  ldap", "output");
+    pushTerm("  5985/tcp  open  wsman", "output");
+    pushTerm("  47001/tcp open  winrm      ← АНОМАЛИЯ: нестандартный listener WinRM на высоком порту (часто persistence)", "error");
+  } else {
+    pushTerm("Interesting ports on 10.10.0.30 (db-01):", "output");
+    pushTerm("  PORT      STATE SERVICE", "output");
+    pushTerm("  22/tcp    open  ssh", "output");
+    pushTerm("  5432/tcp  open  postgresql", "output");
+    pushTerm("  3389/tcp  open  ms-wbt-server  ← АНОМАЛИЯ: RDP на DB-сервере (нарушение сегментации)", "error");
+  }
+  pushTerm("", "output");
+  pushTerm(`Nmap done: 256 IP addresses (6 hosts up) scanned in 2.31s  [sim]`, "output");
+}
+
+const STRINGS_FILES: Record<string, { title: string; lines: string[] }> = {
+  "/var/www/.svc.php": {
+    title: "/var/www/.svc.php",
+    lines: [
+      "<?php",
+      "@eval($_POST['x']);",
+      "base64_decode",
+      "HTTP/1.1 200 OK",
+    ],
+  },
+  "/tmp/.config/.cache.bin": {
+    title: "/tmp/.config/.cache.bin",
+    lines: [
+      "LockBit",
+      "vssadmin delete shadows",
+      "\\\\DC-01\\C$",
+      "MS17_010",
+    ],
+  },
+  "dropper.bin": {
+    title: "dropper.bin",
+    lines: [
+      "curl",
+      "bash",
+      "/dev/tcp/",
+    ],
+  },
+  "/opt/app/shell.jsp": {
+    title: "/opt/app/shell.jsp",
+    lines: [
+      "Runtime.getRuntime().exec",
+      "cmd.exe /c",
+    ],
+  },
+};
+
+function resolveStringsPath(raw: string): string | null {
+  const t = raw.trim().replace(/\\/g, "/");
+  const lower = t.toLowerCase();
+  if (STRINGS_FILES[lower]) return lower;
+  if (STRINGS_FILES[t]) return t;
+  const base = lower.split("/").pop() ?? lower;
+  const hit = Object.keys(STRINGS_FILES).find((k) => k.endsWith(base) || k.split("/").pop() === base);
+  return hit ?? null;
+}
+
+function emitStringsDump(resolvedPath: string, pushTerm: PushTermFn) {
+  const art = STRINGS_FILES[resolvedPath];
+  if (!art) {
+    pushTerm("Внутренняя ошибка: артефакт не найден.", "error");
+    return;
+  }
+  pushTerm(`strings (sim) — ${art.title}`, "info");
+  pushTerm("--- printable sequences ---", "output");
+  for (const ln of art.lines) {
+    const suspicious =
+      ln.includes("eval") ||
+      ln.includes("base64") ||
+      ln.includes("LockBit") ||
+      ln.includes("vssadmin") ||
+      ln.includes("MS17") ||
+      ln.includes("Runtime.getRuntime") ||
+      ln.includes("/dev/tcp");
+    pushTerm(`  ${ln}`, suspicious ? "error" : "output");
+  }
+  pushTerm("★ Ищи нехарактерные для легитимного ПО строки (eval, вызов shell, шифровальщик, эксплойт).", "info");
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // SCENARIOS
 // ═══════════════════════════════════════════════════════════════════════
@@ -506,7 +682,7 @@ export function DefenderPage() {
     setTermLines([
       { id: 1, type: "system", text: `SOC TERMINAL v2.1 — ${sc.name}` },
       { id: 2, type: "system", text: `Атака типа «${sc.attackType}» активна. Действуй быстро.` },
-      { id: 3, type: "info",   text: "Введи 'help' для списка команд. Tab — автодополнение узлов." },
+      { id: 3, type: "info",   text: "Введи 'help'. Tab — автодополнение узлов. Есть wireshark, nmap, strings." },
       { id: 4, type: "info",   text: `Цель атакующего: ${NODE_DEFS[sc.loseNode].label}` },
     ]);
     setTermInput("");
@@ -632,6 +808,9 @@ export function DefenderPage() {
         pushTerm("  block            — заблокировать IP атакующего        [КД 18с]");
         pushTerm("  patch <node>     — применить патч безопасности        [КД 25с]");
         pushTerm("  logs <node>      — просмотреть логи / IoC узла");
+        pushTerm(`  wireshark <node> — симулированный дамп трафика (ищи аномалию)`);
+        pushTerm(`  nmap <subnet>    — скан портов (${NMAP_SUBNET}, corp.lan …)`);
+        pushTerm("  strings <file>   — извлечь строки из файла (вредоносный артефакт)");
         pushTerm("  status           — состояние всех узлов сети");
         pushTerm("  abort            — прервать миссию");
         pushTerm("  clear            — очистить терминал");
@@ -676,6 +855,42 @@ export function DefenderPage() {
         actCheckLogs(id);
         break;
       }
+      case "wireshark":
+      case "tshark": {
+        const id = needNode(); if (!id) break;
+        if (!scenario) break;
+        emitWiresharkCapture(scenario.id, id, pushTerm);
+        break;
+      }
+      case "nmap": {
+        const subArg = argRaw;
+        if (!subArg) {
+          pushTerm(`Ошибка: укажи подсеть. Пример: nmap ${NMAP_SUBNET}  или  nmap corp.lan`, "error");
+          break;
+        }
+        if (!normalizeNmapSubnet(subArg)) {
+          pushTerm(`Неизвестная подсеть. Доступно: ${NMAP_SUBNET}, corp.lan, internal`, "error");
+          break;
+        }
+        if (!scenario) break;
+        emitNmapScan(scenario.id, pushTerm);
+        break;
+      }
+      case "strings": {
+        const rawParts = line.split(/\s+/).filter(Boolean);
+        const fileArg = rawParts.slice(1).join(" ");
+        if (!fileArg) {
+          pushTerm("Ошибка: укажи путь к файлу. Пример: strings /var/www/.svc.php  или  strings dropper.bin", "error");
+          break;
+        }
+        const key = resolveStringsPath(fileArg);
+        if (!key) {
+          pushTerm(`Файл не в симуляции. Доступны: ${Object.keys(STRINGS_FILES).join(", ")}`, "error");
+          break;
+        }
+        emitStringsDump(key, pushTerm);
+        break;
+      }
       case "clear": {
         setTermLines([]);
         return;
@@ -687,7 +902,7 @@ export function DefenderPage() {
       default:
         pushTerm(`Команда не найдена: ${cmd}. Введи 'help' для списка.`, "error");
     }
-  }, [nodes, pushTerm, actIsolate, actKillProc, actBlockIp, actPatch, actCheckLogs]);
+  }, [nodes, scenario, pushTerm, actIsolate, actKillProc, actBlockIp, actPatch, actCheckLogs]);
 
   const handleTermKey = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -838,6 +1053,7 @@ export function DefenderPage() {
                 { key: "BLOCK IP", desc: "Добавить firewall rule — +2с к каждому ходу атакующего", cd: "18с" },
                 { key: "ПРИМЕНИТЬ ПАТЧ", desc: "Устранить уязвимость — узел становится защищённым", cd: "25с" },
                 { key: "АНАЛИЗ ЛОГОВ", desc: "Просмотреть индикаторы на узле — +10 очков", cd: "—" },
+                { key: "WIRESHARK / NMAP / STRINGS", desc: "Симуляция дампа, скана портов и strings по артефактам — для разбора", cd: "—" },
               ].map((a) => (
                 <div key={a.key} className="defender-briefing-action-row">
                   <span className="defender-briefing-action-key">{a.key}</span>
@@ -1032,7 +1248,7 @@ export function DefenderPage() {
             <span className="def-dot def-dot--g" />
           </div>
           <span className="def-terminal-title">SOC TERMINAL</span>
-          <span className="def-terminal-hint">help · Tab-автодополнение · ↑↓ история</span>
+          <span className="def-terminal-hint">help · wireshark · nmap · strings · Tab · ↑↓</span>
           <button
             type="button"
             className="def-terminal-abort"

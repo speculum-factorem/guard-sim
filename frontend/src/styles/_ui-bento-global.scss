@@ -13,7 +13,8 @@
   background: transparent;
 }
 
-.app-shell:has(> .main.main--defender) {
+.app-shell:has(> .main.main--defender),
+.app-shell:has(> .main.main--desktop-virus) {
   min-height: 100dvh;
 }
 
@@ -663,6 +664,16 @@ button.app-nav-pill.app-nav-pill--icon:disabled {
 /* SOC Defender: без нижнего отступа под футер — высота игры считается от 100dvh */
 .main.main--defender {
   --def-chrome-h: clamp(120px, 18vh, 160px);
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 clamp(8px, 2vw, 16px) 8px;
+  box-sizing: border-box;
+}
+
+.main.main--desktop-virus {
+  --dvs-chrome-h: clamp(120px, 18vh, 168px);
   flex: 1 1 auto;
   min-height: 0;
   display: flex;

@@ -20,6 +20,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const isChallenges = pathname === "/challenges";
   const isPlay = pathname.startsWith("/play/");
   const isDefender = pathname === "/defender";
+  const isDesktopVirus = pathname === "/desktop-virus" || pathname.startsWith("/desktop-virus/");
   const isLogin = pathname === "/login";
   const isRegister = pathname === "/register";
   const isAccount = pathname === "/account";
@@ -131,6 +132,14 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 SOC Defender
               </Link>
               <Link
+                to={navTo("/desktop-virus")}
+                className={`app-nav-pill${isDesktopVirus ? " app-nav-pill--active" : ""}`}
+                aria-current={isDesktopVirus ? "page" : undefined}
+                onClick={() => setNavOpen(false)}
+              >
+                Рабочий стол
+              </Link>
+              <Link
                 to={navTo(DASHBOARD_TASKS_HREF)}
                 className={`app-nav-pill app-nav-pill--primary${isPlay ? " app-nav-pill--active" : ""}`}
                 aria-current={isPlay ? "page" : undefined}
@@ -197,7 +206,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
             ? "main main--bento"
             : isDefender
               ? "main main--bento main--defender"
-              : "main main--bento main--bento-padded"
+              : isDesktopVirus
+                ? "main main--bento main--desktop-virus"
+                : "main main--bento main--bento-padded"
         }
       >
         {children}

@@ -7,6 +7,7 @@ import { DefenderPage } from "./pages/DefenderPage";
 import { LandingGate } from "./pages/LandingGate";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
+import { DesktopVirusPage } from "./pages/DesktopVirusPage";
 import { SimulationPage } from "./pages/SimulationPage";
 import { AppLayout } from "./layout/AppLayout";
 
@@ -54,6 +55,22 @@ export default function App() {
           element={
             <RequireAppAccess>
               <DefenderPage />
+            </RequireAppAccess>
+          }
+        />
+        <Route
+          path="/desktop-virus"
+          element={
+            <RequireAppAccess>
+              <DesktopVirusPage />
+            </RequireAppAccess>
+          }
+        />
+        <Route
+          path="/desktop-virus/:virusId"
+          element={
+            <RequireAppAccess>
+              <DesktopVirusPage />
             </RequireAppAccess>
           }
         />

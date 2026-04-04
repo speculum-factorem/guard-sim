@@ -1,0 +1,653 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Desktop virus simulation — faux OS desktop inside GuardSim shell
+   ═══════════════════════════════════════════════════════════════════════ */
+
+$dc: #00d4ff;
+$dg: #3dffa0;
+$dr: #ff3b30;
+$dy: #ffe600;
+$panel: rgba(12, 14, 28, 0.94);
+$border: rgba(0, 212, 255, 0.22);
+
+.main.main--desktop-virus > .dvs-root {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dvs-root {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Select screen ─────────────────────────────────────────────────────── */
+
+.dvs-page--select {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 32px 16px 48px;
+}
+
+.dvs-select-inner {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.dvs-select-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.dvs-select-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: $dc;
+  border: 1px solid rgba($dc, 0.45);
+  padding: 4px 12px;
+  border-radius: 2px;
+  margin-bottom: 12px;
+}
+
+.dvs-select-title {
+  font-family: var(--font-display, sans-serif);
+  font-size: clamp(26px, 4vw, 44px);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #fff;
+  margin: 0 0 12px;
+  text-shadow: 0 0 24px rgba($dc, 0.35);
+}
+
+.dvs-select-lead {
+  margin: 0 auto;
+  max-width: 52ch;
+  color: var(--ui-dark-gray, #b8c8e0);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.dvs-select-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.dvs-select-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 18px 18px 16px;
+  border-radius: var(--bento-radius-lg, 14px);
+  border: 1px solid $border;
+  background: linear-gradient(145deg, rgba(13, 16, 32, 0.98), rgba(8, 10, 22, 0.99));
+  color: var(--bento-ink, #dde4f0);
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  font: inherit;
+
+  &:hover {
+    border-color: rgba($dc, 0.55);
+    box-shadow: 0 0 0 1px rgba($dc, 0.12), 0 12px 40px rgba(0, 0, 0, 0.45);
+    transform: translateY(-2px);
+  }
+}
+
+.dvs-select-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.dvs-select-card-name {
+  font-weight: 800;
+  font-size: 16px;
+  color: #fff;
+}
+
+.dvs-select-diff {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.dvs-select-diff--easy {
+  background: rgba($dg, 0.12);
+  color: $dg;
+  border: 1px solid rgba($dg, 0.35);
+}
+
+.dvs-select-diff--med {
+  background: rgba($dy, 0.1);
+  color: $dy;
+  border: 1px solid rgba($dy, 0.35);
+}
+
+.dvs-select-diff--hard {
+  background: rgba($dr, 0.12);
+  color: #ff6b64;
+  border: 1px solid rgba($dr, 0.4);
+}
+
+.dvs-select-card-sub {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: rgba($dc, 0.85);
+}
+
+.dvs-select-card-desc {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ui-dark-gray, #b8c8e0);
+}
+
+.dvs-select-card-cta {
+  font-size: 12px;
+  font-weight: 700;
+  color: $dc;
+}
+
+.dvs-select-foot {
+  margin-top: 28px;
+  text-align: center;
+}
+
+.dvs-link-back {
+  color: var(--ui-gray, #6b7c9a);
+  font-size: 14px;
+  text-decoration: none;
+
+  &:hover {
+    color: $dc;
+  }
+}
+
+/* ─── Game shell ────────────────────────────────────────────────────────── */
+
+.dvs-page--game {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dvs-game-chrome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 4px 0;
+}
+
+.dvs-game-brief {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.dvs-game-title {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.dvs-game-goal {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ui-dark-gray, #b8c8e0);
+  max-width: 70ch;
+}
+
+.dvs-game-exit {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: $dc;
+  text-decoration: none;
+  padding: 8px 14px;
+  border: 1px solid rgba($dc, 0.35);
+  border-radius: var(--bento-radius, 10px);
+
+  &:hover {
+    background: rgba($dc, 0.08);
+  }
+}
+
+.dvs-desktop {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 280px;
+  height: calc(100dvh - var(--dvs-chrome-h, 160px));
+  max-height: calc(100dvh - var(--dvs-chrome-h, 160px));
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba($dc, 0.18);
+  box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.35);
+}
+
+.dvs-wallpaper {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 20%, rgba(0, 212, 255, 0.09), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 85% 70%, rgba(157, 78, 255, 0.08), transparent 50%),
+    linear-gradient(168deg, #0c1022 0%, #070a14 48%, #0a1528 100%);
+}
+
+/* ─── Windows ───────────────────────────────────────────────────────────── */
+
+.dvs-window {
+  position: absolute;
+  z-index: 2;
+  background: $panel;
+  border: 1px solid $border;
+  border-radius: 8px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  max-height: 78%;
+  overflow: hidden;
+}
+
+.dvs-window--threat {
+  z-index: 4;
+  border-color: rgba($dr, 0.45);
+  box-shadow: 0 0 0 1px rgba($dr, 0.15), 0 16px 40px rgba($dr, 0.12);
+}
+
+.dvs-win-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dvs-win-titlebar--alert {
+  background: rgba($dr, 0.12);
+}
+
+.dvs-win-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e8eef8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dvs-win-close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba($dr, 0.35);
+  }
+}
+
+.dvs-win-body {
+  padding: 14px 16px 16px;
+  overflow: auto;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(220, 230, 245, 0.9);
+}
+
+.dvs-win-body--compact {
+  padding-top: 10px;
+}
+
+.dvs-win-hint {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: rgba($dc, 0.9);
+}
+
+.dvs-win-hint--small {
+  margin: 12px 0 0;
+  color: var(--ui-gray, #6b7c9a);
+}
+
+.dvs-fake-tree {
+  margin: 0;
+  padding-left: 18px;
+  color: rgba(220, 230, 245, 0.85);
+}
+
+.dvs-file-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.dvs-file-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: rgba($dc, 0.06);
+  }
+}
+
+.dvs-file-row--selected {
+  background: rgba($dc, 0.14);
+  outline: 1px solid rgba($dc, 0.35);
+}
+
+.dvs-file-ico {
+  opacity: 0.85;
+}
+
+.dvs-toolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.dvs-notif-card {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 14px;
+
+  strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #fff;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(220, 230, 245, 0.88);
+  }
+}
+
+.dvs-notif-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.dvs-tm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th,
+  td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  th {
+    color: var(--ui-gray, #6b7c9a);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
+
+.dvs-tm-hot td {
+  color: $dr;
+  font-weight: 700;
+}
+
+.dvs-fw-timer {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: rgba(220, 230, 245, 0.9);
+
+  strong {
+    color: $dy;
+  }
+}
+
+.dvs-fw-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dvs-fw-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+  code {
+    font-size: 12px;
+    color: $dc;
+  }
+}
+
+.dvs-fw-label {
+  display: block;
+  font-size: 11px;
+  color: var(--ui-gray, #6b7c9a);
+  margin-top: 2px;
+}
+
+/* ─── Taskbar ───────────────────────────────────────────────────────────── */
+
+.dvs-taskbar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: rgba(6, 8, 18, 0.92);
+  border-top: 1px solid rgba($dc, 0.2);
+  backdrop-filter: blur(12px);
+}
+
+.dvs-start-btn {
+  width: 36px;
+  height: 34px;
+  border-radius: 6px;
+  border: 1px solid rgba($dc, 0.25);
+  background: rgba($dc, 0.08);
+  color: $dc;
+  font-size: 16px;
+  cursor: default;
+  opacity: 0.5;
+}
+
+.dvs-taskbar-apps {
+  flex: 1;
+}
+
+.dvs-taskbar-clock {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(220, 230, 245, 0.85);
+  padding-right: 6px;
+}
+
+/* ─── HUD & overlay ─────────────────────────────────────────────────────── */
+
+.dvs-hud {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba($dc, 0.2);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(220, 230, 245, 0.95);
+}
+
+.dvs-hud-ok {
+  color: $dg;
+}
+
+.dvs-hud-bad {
+  color: $dr;
+}
+
+.dvs-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(3, 5, 12, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.dvs-overlay-card {
+  max-width: 400px;
+  width: 100%;
+  padding: 28px 24px;
+  border-radius: 14px;
+  border: 1px solid $border;
+  background: linear-gradient(160deg, rgba(16, 20, 40, 0.98), rgba(8, 10, 22, 0.99));
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+}
+
+.dvs-result-win {
+  margin: 0 0 10px;
+  font-family: var(--font-display, sans-serif);
+  font-size: 28px;
+  color: $dg;
+}
+
+.dvs-result-loss {
+  margin: 0 0 10px;
+  font-family: var(--font-display, sans-serif);
+  font-size: 28px;
+  color: $dr;
+}
+
+.dvs-overlay-text {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ui-dark-gray, #b8c8e0);
+}
+
+.dvs-overlay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.dvs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.dvs-btn--primary {
+  background: rgba($dc, 0.2);
+  border-color: rgba($dc, 0.5);
+  color: #fff;
+
+  &:hover {
+    background: rgba($dc, 0.32);
+  }
+}
+
+.dvs-btn--ghost {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(220, 230, 245, 0.9);
+
+  &:hover {
+    border-color: rgba($dc, 0.35);
+    color: #fff;
+  }
+}
+
+.dvs-btn--danger {
+  background: rgba($dr, 0.15);
+  border-color: rgba($dr, 0.45);
+  color: #ff7a73;
+
+  &:hover:not(:disabled) {
+    background: rgba($dr, 0.28);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.dvs-btn--small {
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.dvs-btn--blocked {
+  border-color: rgba($dr, 0.5) !important;
+  color: $dr !important;
+}

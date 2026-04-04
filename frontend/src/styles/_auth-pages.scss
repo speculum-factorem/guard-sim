@@ -116,6 +116,7 @@
   border: var(--bento-border);
   border-radius: var(--bento-radius-lg);
   box-shadow: var(--shadow-bento-lg);
+  overflow: hidden;
 }
 
 .auth-card--enhanced::before {
@@ -125,7 +126,7 @@
   right: 0;
   top: 0;
   height: 5px;
-  border-radius: var(--bento-radius-lg) var(--bento-radius-lg) 0 0;
+  border-radius: 0;
   background: linear-gradient(90deg, #5fd4a8 0%, var(--bento-orange) 52%, #c4b5fd 100%);
 }
 

@@ -113,7 +113,7 @@ export function BrowserSimulation(props: {
   return (
     <div className="ui-frame ui-frame-url-compare sim-browser-layout sim-chrome-root">
       {tabToast ? <div className="sim-mini-toast">{tabToast}</div> : null}
-      <div className="browser-chrome-chrome" aria-hidden>
+      <div className="browser-chrome-chrome sim-app-bar" aria-hidden>
         <div className="browser-chrome-titlebar">
           <span className="browser-chrome-dot browser-chrome-dot-r" />
           <span className="browser-chrome-dot browser-chrome-dot-y" />
@@ -164,7 +164,7 @@ export function BrowserSimulation(props: {
             <div className="browser-chrome-nav">
               <button
                 type="button"
-                className="browser-nav-btn"
+                className="app-nav-pill app-nav-pill--icon"
                 title="Назад"
                 disabled={histIdx <= 0}
                 onClick={goBack}
@@ -173,7 +173,7 @@ export function BrowserSimulation(props: {
               </button>
               <button
                 type="button"
-                className="browser-nav-btn"
+                className="app-nav-pill app-nav-pill--icon"
                 title="Вперёд"
                 disabled={histIdx >= pages.length - 1}
                 onClick={goForward}
@@ -182,7 +182,7 @@ export function BrowserSimulation(props: {
               </button>
               <button
                 type="button"
-                className={`browser-nav-btn browser-nav-reload${reloading ? " sim-browser-reloading" : ""}`}
+                className={`app-nav-pill app-nav-pill--icon browser-nav-reload${reloading ? " sim-browser-reloading" : ""}`}
                 title="Обновить"
                 onClick={runReload}
               >
@@ -212,7 +212,7 @@ export function BrowserSimulation(props: {
             <div className="browser-chrome-toolbar-end">
               <button
                 type="button"
-                className="browser-toolbar-ico browser-toolbar-ico-btn"
+                className="app-nav-pill app-nav-pill--icon"
                 title="Меню Chrome"
                 aria-expanded={chromeMenuOpen}
                 onClick={() => setChromeMenuOpen((v) => !v)}

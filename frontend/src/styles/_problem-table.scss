@@ -343,14 +343,23 @@
 
 .lc-td-title {
   vertical-align: top;
+  position: relative;
 }
 
 .lc-tr:hover td {
   background: rgba(255, 219, 88, 0.28) !important;
 }
 
-.lc-tr:hover .lc-td-title {
-  box-shadow: inset 3px 0 0 var(--bento-orange);
+.lc-tr:hover .lc-td-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 0 2px 2px 0;
+  background: linear-gradient(180deg, var(--bento-orange) 0%, var(--bento-yellow) 34%, var(--bento-mint) 67%, var(--bento-lilac) 100%);
+  pointer-events: none;
 }
 
 .lc-tr--locked .lc-title-desc {
@@ -450,22 +459,25 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 7px 16px;
-  font-size: 13px;
-  font-weight: 700;
+  padding: 10px 18px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   text-decoration: none;
   color: #fff;
-  background: var(--bento-orange);
+  background: linear-gradient(180deg, #ff6a32 0%, var(--bento-orange) 100%);
   border: var(--bento-border);
   border-radius: var(--bento-radius);
-  box-shadow: var(--shadow-bento-xs);
+  box-shadow: var(--shadow-bento-sm);
   transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
 }
 
 .lc-btn-solve:hover {
-  filter: brightness(1.05);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-bento-sm);
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-bento-md);
   color: #fff;
 }
 

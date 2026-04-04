@@ -122,10 +122,10 @@ export function TicketSimulation(props: {
           </div>
         </aside>
         <div className="sim-ticket-main">
-          <div className="sim-ticket-toolbar">
+          <div className="sim-ticket-toolbar sim-app-bar sim-app-bar--sub">
             <button
               type="button"
-              className={watching ? "sim-ticket-tool sim-ticket-tool--on" : "sim-ticket-tool"}
+              className={watching ? "app-nav-pill app-nav-pill--natural app-nav-pill--active" : "app-nav-pill app-nav-pill--natural"}
               title="Следить за тикетом (локально, на оценку не влияет)"
               onClick={() => setWatching((w) => !w)}
             >
@@ -149,11 +149,7 @@ export function TicketSimulation(props: {
                 ))}
               </select>
             </label>
-            <button
-              type="button"
-              className="sim-ticket-tool"
-              onClick={() => setTicketToast("Ссылка на тикет скопирована (имитация)")}
-            >
+            <button type="button" className="app-nav-pill app-nav-pill--natural" onClick={() => setTicketToast("Ссылка на тикет скопирована (имитация)")}>
               Копировать ссылку
             </button>
             <label className="sim-ticket-assign">
@@ -174,7 +170,7 @@ export function TicketSimulation(props: {
               </select>
             </label>
           </div>
-          <div className="ticket-header sim-ticket-header">
+          <div className="ticket-header sim-ticket-header sim-app-bar sim-app-bar--sub">
             <span className="ticket-priority">{priority.split("—")[0]?.trim() ?? "P3"}</span>
             <h2 className="ticket-title">{subject}</h2>
             <p className="ticket-from">{from}</p>
@@ -204,7 +200,7 @@ export function TicketSimulation(props: {
               />
               <button
                 type="button"
-                className="sim-ticket-tool"
+                className="app-nav-pill app-nav-pill--natural"
                 onClick={() => {
                   setTicketToast(
                     internalNote.trim()

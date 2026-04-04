@@ -1,6 +1,8 @@
 /* Список задач на дашборде — современная карточка + лёгкий аркадный акцент */
 
 .dashboard-page--arcade.lc-theme {
+  --task-rainbow: linear-gradient(90deg, #fb923c, #fbbf24, #34d399, #a78bfa);
+  --task-rainbow-strip: linear-gradient(180deg, #fb923c 0%, #fbbf24 32%, #34d399 64%, #a78bfa 100%);
   --task-surface: #ffffff;
   --task-surface-muted: #f8f7f4;
   --task-border: rgba(15, 23, 42, 0.09);
@@ -104,10 +106,11 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
+  height: 3px;
   z-index: 2;
-  background: linear-gradient(90deg, #fb923c, #fbbf24, #34d399, #a78bfa);
-  opacity: 0.85;
+  border-radius: 20px 20px 0 0;
+  background: var(--task-rainbow);
+  opacity: 0.92;
   pointer-events: none;
 }
 
@@ -255,12 +258,25 @@
   background: #fcfcfb;
 }
 
+.dashboard-page--arcade.lc-theme .lc-td-title {
+  position: relative;
+}
+
 .dashboard-page--arcade.lc-theme .lc-tr:hover td {
   background: #fffbeb !important;
 }
 
-.dashboard-page--arcade.lc-theme .lc-tr:hover .lc-td-title {
-  box-shadow: inset 3px 0 0 #f97316;
+.dashboard-page--arcade.lc-theme .lc-tr:hover .lc-td-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  border-radius: 0 3px 3px 0;
+  background: var(--task-rainbow-strip);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .dashboard-page--arcade.lc-theme .lc-status {
@@ -335,17 +351,21 @@
 }
 
 .dashboard-page--arcade.lc-theme .lc-btn-solve {
-  padding: 9px 16px;
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  text-transform: none;
-  border-width: 1px;
-  border-color: rgba(15, 23, 42, 0.12);
-  border-radius: 10px;
-  background: linear-gradient(180deg, #ff7a45 0%, #ea580c 100%);
-  box-shadow: 0 1px 2px rgba(234, 88, 12, 0.25), 3px 3px 0 rgba(15, 23, 42, 0.1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #fff;
+  border: var(--bento-border);
+  border-radius: var(--bento-radius);
+  background: linear-gradient(180deg, #ff6a32 0%, var(--bento-orange) 100%);
+  box-shadow: var(--shadow-bento-sm);
   transition:
     transform 0.18s var(--task-ease),
     box-shadow 0.18s var(--task-ease),
@@ -355,7 +375,7 @@
 .dashboard-page--arcade.lc-theme .lc-btn-solve:hover {
   transform: translateY(-1px);
   filter: brightness(1.04);
-  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35), 4px 4px 0 rgba(15, 23, 42, 0.12);
+  box-shadow: var(--shadow-bento-md);
   color: #fff;
 }
 
@@ -409,6 +429,10 @@
 }
 
 @media (max-width: 720px) {
+  .dashboard-page--arcade.lc-theme .lc-problems-surface::before {
+    border-radius: 16px 16px 0 0;
+  }
+
   .dashboard-page--arcade.lc-theme .lc-problems-surface {
     border-radius: 16px;
   }

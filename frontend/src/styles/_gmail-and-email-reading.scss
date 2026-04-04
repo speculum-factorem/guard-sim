@@ -1,48 +1,27 @@
-/* Gmail-подобная оболочка почты */
+/* Почтовый клиент — neo-bento GuardSim (не клон Gmail) */
 .sim-gmail-root {
   position: relative;
   display: flex;
   flex-direction: column;
   min-height: 300px;
+  font-family: var(--font-body);
+  color: var(--bento-ink);
 }
 
 .sim-gmail-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 10px 6px 6px;
-  background: var(--gm-surface);
-  border-bottom: 1px solid #e8eaed;
-  box-shadow: 0 1px 0 rgba(60, 64, 67, 0.05);
-}
-
-.sim-gmail-icon-btn {
-  border: none;
-  background: transparent;
-  padding: 8px 10px;
-  border-radius: 50%;
-  font-size: 18px;
-  line-height: 1;
-  color: var(--gm-text-secondary);
-  cursor: pointer;
-  opacity: 0.85;
-}
-
-.sim-gmail-header-ico-btn {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 50%;
-  font: inherit;
-  line-height: 1;
-  padding: 0;
+  flex-wrap: wrap;
 }
 
 .sim-gmail-product {
-  font-size: 22px;
+  font-family: var(--font-display);
+  font-size: 17px;
   font-weight: 400;
-  color: #5f6368;
-  letter-spacing: -0.02em;
+  color: var(--bento-ink);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   user-select: none;
 }
 
@@ -53,10 +32,11 @@
   gap: 10px;
   max-width: 720px;
   margin: 0 auto;
-  padding: 6px 14px;
-  background: #eaf1fb;
-  border-radius: 999px;
-  border: none;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: var(--radius-pill);
+  border: var(--bento-border);
+  box-shadow: var(--shadow-bento-xs);
 }
 
 .sim-gmail-search-icon {
@@ -72,59 +52,54 @@
   min-width: 0;
   outline: none;
   cursor: default;
-  color: var(--gm-text-secondary);
+  color: var(--bento-ink);
 }
 
 .sim-gmail-search::placeholder {
-  color: #5f6368;
+  color: rgba(18, 18, 18, 0.45);
 }
 
 .sim-gmail-header-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
-}
-
-.sim-gmail-header-ico {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-size: 16px;
-  color: #5f6368;
-  opacity: 0.9;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .sim-gmail-body {
   display: flex;
   flex: 1;
   min-height: 0;
-  background: #f6f8fc;
+  background: linear-gradient(180deg, #f3eee6 0%, #ebe4d8 100%);
 }
 
 .sim-gmail-rail {
   width: 196px;
   flex-shrink: 0;
   padding: 12px 8px 16px;
-  border-right: 1px solid #e8eaed;
-  background: #f6f8fc;
+  border-right: var(--bento-border);
+  background: rgba(255, 253, 248, 0.85);
 }
 
 .sim-gmail-compose {
   width: calc(100% - 8px);
   margin: 0 4px 16px;
   padding: 12px 20px;
-  border: none;
-  border-radius: 999px;
-  background: #c2e7ff;
-  color: #001d35;
-  font-size: 14px;
-  font-weight: 600;
-  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.25);
+  border: var(--bento-border);
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, #ff6a32 0%, var(--bento-orange) 100%);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: var(--shadow-bento-sm);
   cursor: pointer;
-  letter-spacing: 0.02em;
+}
+
+.sim-gmail-compose:hover {
+  filter: brightness(1.05);
 }
 
 .sim-gmail-folders {
@@ -136,43 +111,46 @@
 .sim-gmail-folder {
   text-align: left;
   padding: 8px 18px 8px 22px;
-  border: none;
-  border-radius: 0 999px 999px 0;
+  border: 2px solid transparent;
+  border-radius: 0 var(--bento-radius) var(--bento-radius) 0;
   background: transparent;
   font-size: 14px;
-  color: #3c4043;
+  font-weight: 600;
+  color: var(--bento-ink);
   cursor: pointer;
 }
 
 .sim-gmail-folder:not(.sim-gmail-folder-active) {
-  opacity: 0.78;
+  opacity: 0.72;
 }
 
 .sim-gmail-folder:not(.sim-gmail-folder-active):hover {
   opacity: 1;
-  background: rgba(60, 64, 67, 0.06);
+  background: rgba(255, 90, 31, 0.1);
 }
 
 .sim-gmail-folder-active {
-  background: #d3e3fd;
-  font-weight: 700;
-  color: #001d35;
+  background: rgba(255, 90, 31, 0.16);
+  border-color: var(--bento-orange);
+  font-weight: 800;
+  color: var(--bento-ink);
   opacity: 1 !important;
   cursor: pointer;
+  box-shadow: var(--shadow-bento-xs);
 }
 
 .sim-gmail-split {
   display: flex;
   flex: 1;
   min-width: 0;
-  background: var(--gm-surface);
+  background: #fff;
 }
 
 .sim-gmail-list-col {
   width: 260px;
   flex-shrink: 0;
-  border-right: 1px solid #e8eaed;
-  background: var(--gm-surface);
+  border-right: var(--bento-border);
+  background: #fff;
   overflow: auto;
 }
 
@@ -181,7 +159,7 @@
   text-align: left;
   padding: 12px 14px;
   border: none;
-  border-bottom: 1px solid #f1f3f4;
+  border-bottom: 1px solid rgba(18, 18, 18, 0.08);
   background: transparent;
   display: flex;
   flex-direction: column;
@@ -190,8 +168,8 @@
 }
 
 .sim-gmail-list-row-active {
-  background: #f2f6fc;
-  border-left: 4px solid #1a73e8;
+  background: rgba(255, 90, 31, 0.1);
+  border-left: 4px solid var(--bento-orange);
   padding-left: 10px;
 }
 
@@ -206,7 +184,7 @@
 .sim-gmail-list-row-wrap {
   display: flex;
   align-items: stretch;
-  border-bottom: 1px solid #f1f3f4;
+  border-bottom: 1px solid rgba(18, 18, 18, 0.07);
 }
 
 .sim-gmail-star-btn {
@@ -242,13 +220,13 @@
 
 .sim-gmail-list-from {
   font-size: 13px;
-  font-weight: 700;
-  color: #202124;
+  font-weight: 800;
+  color: var(--bento-ink);
 }
 
 .sim-gmail-list-subject {
   font-size: 13px;
-  color: #202124;
+  color: var(--bento-ink);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -257,7 +235,7 @@
 
 .sim-gmail-list-snippet {
   font-size: 12px;
-  color: #5f6368;
+  color: rgba(18, 18, 18, 0.55);
 }
 
 /* Симуляции: почта (чтение), браузер, соцсеть, тикет, общий режим */
@@ -270,27 +248,17 @@
 .sim-email-reading-toolbar {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--gm-border);
-  background: var(--gm-surface);
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.sim-email-tool {
-  border: none;
-  background: transparent;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 15px;
-  color: var(--gm-text-secondary);
+.sim-email-reading-toolbar .app-nav-pill:not(.app-nav-pill--icon) {
+  font-size: 13px;
+  padding: 8px 14px;
 }
 
-.sim-email-tool-primary {
-  background: var(--gm-blue-light);
-  color: var(--ui-primary);
+.sim-email-reading-toolbar .app-nav-pill--natural:not(.app-nav-pill--icon) {
   font-weight: 600;
-  font-size: 14px;
 }
 
 .sim-email-from-btn {
@@ -496,25 +464,26 @@
 }
 
 .sim-email-drawer-link {
-  border: none;
+  border: 2px solid transparent;
   background: transparent;
   text-align: left;
   padding: 10px 12px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--bento-radius);
   font: inherit;
   font-size: 14px;
   cursor: pointer;
-  color: var(--gm-text);
+  color: var(--bento-ink);
 }
 
 .sim-email-drawer-link:hover {
-  background: rgba(26, 115, 232, 0.08);
+  background: rgba(255, 90, 31, 0.12);
 }
 
 .sim-email-drawer-link--active {
-  background: var(--gm-blue-light);
-  color: var(--ui-primary);
-  font-weight: 600;
+  background: rgba(255, 90, 31, 0.18);
+  color: var(--bento-ink);
+  border: 2px solid var(--bento-orange);
+  font-weight: 800;
 }
 
 .sim-email-form-row {
@@ -532,13 +501,14 @@
 
 .sim-email-form-input,
 .sim-email-form-textarea {
-  border: 1px solid var(--gm-border);
-  border-radius: var(--radius-sm);
+  border: var(--bento-border);
+  border-radius: var(--bento-radius);
   padding: 8px 10px;
   font: inherit;
   font-size: 14px;
   width: 100%;
   box-sizing: border-box;
+  background: #fff;
 }
 
 .sim-email-form-textarea {
@@ -562,17 +532,17 @@
 }
 
 .sim-email-app-tile {
-  border: 1px solid var(--gm-border);
-  border-radius: var(--radius-sm);
+  border: var(--bento-border);
+  border-radius: var(--bento-radius);
   padding: 14px 8px;
-  background: var(--ui-bg);
+  background: #fff;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
 }
 
 .sim-email-app-tile:hover {
-  border-color: var(--ui-primary);
-  background: var(--gm-blue-light);
+  border-color: var(--bento-orange);
+  background: rgba(255, 90, 31, 0.1);
 }
 

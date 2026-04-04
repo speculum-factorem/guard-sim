@@ -5,8 +5,8 @@
 }
 
 .sim-ticket-aside {
-  border-right: 1px solid var(--gm-border);
-  background: var(--ui-light-gray);
+  border-right: var(--bento-border);
+  background: linear-gradient(180deg, #fff 0%, #f5f3ef 100%);
   padding: 16px 12px;
 }
 
@@ -105,9 +105,10 @@
 .sim-ticket-thread-item {
   margin: 0;
   padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--gm-border);
-  background: var(--gm-surface);
+  border-radius: var(--bento-radius);
+  border: var(--bento-border);
+  background: #fff;
+  box-shadow: var(--shadow-bento-xs);
 }
 
 .sim-ticket-thread-who {
@@ -206,28 +207,11 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 12px;
-  padding: 8px 16px;
-  border-bottom: 1px solid var(--gm-border);
-  background: #fafafa;
 }
 
-.sim-ticket-tool {
-  border: 1px solid var(--gm-border);
-  background: var(--ui-bg);
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.sim-ticket-tool:hover {
-  border-color: var(--ui-primary);
-}
-
-.sim-ticket-tool--on {
-  background: rgba(251, 191, 36, 0.25);
-  border-color: #d97706;
+.sim-ticket-toolbar .app-nav-pill {
+  font-size: 12px;
+  padding: 8px 14px;
 }
 
 .sim-ticket-assign {
@@ -303,19 +287,20 @@
 }
 
 .sim-generic-attach-chip {
-  border: 1px solid var(--gm-border);
-  background: #f8fafc;
+  border: var(--bento-border);
+  background: #fff;
   border-radius: var(--radius-pill);
   padding: 6px 12px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  color: var(--gm-text);
+  color: var(--bento-ink);
+  box-shadow: var(--shadow-bento-xs);
 }
 
 .sim-generic-attach-chip:hover {
-  border-color: var(--ui-primary);
-  background: var(--gm-blue-light);
+  border-color: var(--bento-orange);
+  background: rgba(255, 90, 31, 0.1);
 }
 
 .sim-generic-chrome {
@@ -323,9 +308,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 10px 16px;
-  background: var(--ui-dark-purple);
-  color: var(--ui-white);
+  color: var(--bento-ink);
 }
 
 .sim-generic-chrome-left {
@@ -338,24 +321,8 @@
 .sim-generic-chrome-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-shrink: 0;
-}
-
-.sim-generic-chrome-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.15);
-  color: inherit;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.sim-generic-chrome-btn:hover {
-  background: rgba(255, 255, 255, 0.28);
 }
 
 .sim-generic-body--font-sm .sim-generic-narrative,
@@ -369,19 +336,26 @@
 }
 
 .sim-generic-title {
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 0.04em;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .sim-generic-badge {
   font-size: 11px;
-  opacity: 0.85;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, #ff6a32 0%, var(--bento-orange) 100%);
+  color: #fff;
+  border: 2px solid rgba(18, 18, 18, 0.12);
 }
 
 .sim-generic-body {
   padding: 20px;
-  background: var(--gm-surface);
+  background: linear-gradient(180deg, #fff 0%, #faf8f5 100%);
 }
 
 .sim-generic-narrative {

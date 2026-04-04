@@ -175,8 +175,8 @@ export function SocialFeedSimulation(props: {
         </>
       ) : null}
 
-      <header className="sim-fb-topbar">
-        <div className="sim-fb-topbar-inner">
+      <header className="sim-fb-topbar sim-app-bar">
+        <div className="sim-fb-topbar-inner sim-app-bar-inner">
           <div className="sim-fb-brand">
             <span className="sim-fb-logo" aria-hidden>
               f
@@ -208,7 +208,9 @@ export function SocialFeedSimulation(props: {
               <button
                 key={key}
                 type="button"
-                className={navKey === key ? "sim-fb-nav-btn sim-fb-nav-btn-active" : "sim-fb-nav-btn"}
+                className={
+                  navKey === key ? "app-nav-pill app-nav-pill--icon app-nav-pill--active" : "app-nav-pill app-nav-pill--icon"
+                }
                 aria-pressed={navKey === key}
                 onClick={() => setNavKey(key)}
               >
@@ -223,21 +225,33 @@ export function SocialFeedSimulation(props: {
         <aside className="sim-fb-sidebar" aria-label="Ярлыки">
           <button
             type="button"
-            className={sidebarKey === "feed" ? "sim-fb-shortcut sim-fb-shortcut-active" : "sim-fb-shortcut"}
+            className={
+              sidebarKey === "feed"
+                ? "app-nav-pill app-nav-pill--natural app-nav-pill--stretch app-nav-pill--active"
+                : "app-nav-pill app-nav-pill--natural app-nav-pill--stretch"
+            }
             onClick={() => setSidebarKey("feed")}
           >
             Главная
           </button>
           <button
             type="button"
-            className={sidebarKey === "friends" ? "sim-fb-shortcut sim-fb-shortcut-active" : "sim-fb-shortcut"}
+            className={
+              sidebarKey === "friends"
+                ? "app-nav-pill app-nav-pill--natural app-nav-pill--stretch app-nav-pill--active"
+                : "app-nav-pill app-nav-pill--natural app-nav-pill--stretch"
+            }
             onClick={() => setSidebarKey("friends")}
           >
             Друзья
           </button>
           <button
             type="button"
-            className={sidebarKey === "saved" ? "sim-fb-shortcut sim-fb-shortcut-active" : "sim-fb-shortcut"}
+            className={
+              sidebarKey === "saved"
+                ? "app-nav-pill app-nav-pill--natural app-nav-pill--stretch app-nav-pill--active"
+                : "app-nav-pill app-nav-pill--natural app-nav-pill--stretch"
+            }
             onClick={() => setSidebarKey("saved")}
           >
             Сохранённое

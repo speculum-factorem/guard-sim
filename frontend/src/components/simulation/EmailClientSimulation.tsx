@@ -417,8 +417,8 @@ export function EmailClientSimulation(props: {
         </>
       ) : null}
 
-      <header className="sim-gmail-header">
-        <button type="button" className="sim-gmail-icon-btn" title="Меню" onClick={() => setPanel("menu")}>
+      <header className="sim-gmail-header sim-app-bar">
+        <button type="button" className="app-nav-pill app-nav-pill--icon" title="Меню" onClick={() => setPanel("menu")}>
           ☰
         </button>
         <span className="sim-gmail-product">Почта</span>
@@ -436,18 +436,13 @@ export function EmailClientSimulation(props: {
           />
         </div>
         <div className="sim-gmail-header-actions">
-          <button type="button" className="sim-gmail-header-ico sim-gmail-header-ico-btn" title="Справка" onClick={() => setPanel("help")}>
+          <button type="button" className="app-nav-pill app-nav-pill--icon" title="Справка" onClick={() => setPanel("help")}>
             ?
           </button>
-          <button
-            type="button"
-            className="sim-gmail-header-ico sim-gmail-header-ico-btn"
-            title="Настройки"
-            onClick={() => setPanel("settings")}
-          >
+          <button type="button" className="app-nav-pill app-nav-pill--icon" title="Настройки" onClick={() => setPanel("settings")}>
             ⚙
           </button>
-          <button type="button" className="sim-gmail-header-ico sim-gmail-header-ico-btn" title="Приложения" onClick={() => setPanel("apps")}>
+          <button type="button" className="app-nav-pill app-nav-pill--icon" title="Приложения" onClick={() => setPanel("apps")}>
             ▦
           </button>
         </div>
@@ -552,28 +547,38 @@ export function EmailClientSimulation(props: {
               </div>
             ) : (
               <>
-                <div className="sim-email-reading-toolbar">
-                  <button type="button" className="sim-email-tool" title="К списку писем" onClick={() => setListOnly(true)}>
+                <div className="sim-email-reading-toolbar sim-app-bar sim-app-bar--sub">
+                  <button
+                    type="button"
+                    className="app-nav-pill app-nav-pill--icon"
+                    title="К списку писем"
+                    onClick={() => setListOnly(true)}
+                  >
                     ←
                   </button>
-                  <button type="button" className="sim-email-tool" title="Обновить" onClick={runRefresh}>
+                  <button type="button" className="app-nav-pill app-nav-pill--icon" title="Обновить" onClick={runRefresh}>
                     ↻
                   </button>
                   {replyHs ? (
                     <button
                       type="button"
-                      className="sim-email-tool sim-email-tool-primary"
+                      className="app-nav-pill app-nav-pill--natural app-nav-pill--primary"
                       disabled={disabled}
                       onClick={() => onChoose(replyHs.choiceId)}
                     >
                       Ответить
                     </button>
                   ) : (
-                    <button type="button" className="sim-email-tool" title="Ответить (черновик)" onClick={() => setPanel("replyDecoy")}>
+                    <button
+                      type="button"
+                      className="app-nav-pill app-nav-pill--natural"
+                      title="Ответить (черновик)"
+                      onClick={() => setPanel("replyDecoy")}
+                    >
                       Ответить
                     </button>
                   )}
-                  <button type="button" className="sim-email-tool" title="Ещё действия" onClick={() => setPanel("more")}>
+                  <button type="button" className="app-nav-pill app-nav-pill--icon" title="Ещё действия" onClick={() => setPanel("more")}>
                     ⋯
                   </button>
                 </div>

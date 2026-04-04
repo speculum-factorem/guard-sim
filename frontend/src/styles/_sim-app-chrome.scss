@@ -1,0 +1,68 @@
+/* Шапки симуляций — визуально согласованы с основным .app-bar */
+
+.sim-app-bar {
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  padding: 12px clamp(12px, 2.5vw, 28px) 12px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  border-bottom: 2px solid var(--bento-ink);
+  box-shadow: 0 6px 0 rgba(10, 10, 10, 0.06), 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+
+.sim-app-bar:not(.sim-app-bar--sub)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--bento-orange) 0%,
+    #ff8c5c 28%,
+    #5fd4a8 55%,
+    #c4b5fd 78%,
+    var(--bento-orange) 100%
+  );
+  background-size: 220% 100%;
+  animation: app-bar-track-marquee 10s linear infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sim-app-bar:not(.sim-app-bar--sub)::before {
+    animation: none;
+    background-size: 100% 100%;
+  }
+}
+
+/* Вторичная полоса (тулбар под основной шапкой): без градиентной дорожки */
+.sim-app-bar.sim-app-bar--sub {
+  padding: 10px clamp(12px, 2.5vw, 22px);
+  box-shadow: 0 1px 0 rgba(10, 10, 10, 0.06);
+}
+
+.sim-app-bar-inner {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Браузер: внутренние полосы без двойных отступов — градиент как у app-bar */
+.browser-chrome-chrome.sim-app-bar {
+  padding: 0;
+}
+
+/* Двухколоночный режим миссии: шапка «Условие / Разбор» — та же дорожка, компактнее тень */
+.mission-lc-tabs.sim-app-bar {
+  padding: 0;
+  box-shadow: 0 1px 0 rgba(10, 10, 10, 0.07);
+}

@@ -593,7 +593,7 @@ export function SimulationPage() {
               <MissionWindow bodyClassName="mission-window-body--lc">
                 <div className="mission-lc">
                     <aside className="mission-lc-desc" aria-label="Условие задания">
-                      <div className="mission-lc-tabs" role="tablist" aria-label="Разделы задания">
+                      <div className="mission-lc-tabs sim-app-bar" role="tablist" aria-label="Разделы задания">
                         <div className="mission-lc-tabs-main">
                           <span className="mission-lc-tab mission-lc-tab--active" role="tab" aria-selected={true}>
                             Условие

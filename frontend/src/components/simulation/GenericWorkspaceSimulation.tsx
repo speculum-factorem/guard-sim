@@ -47,18 +47,18 @@ export function GenericWorkspaceSimulation(props: {
   return (
     <div className="ui-frame sim-generic-workspace">
       {fileHint ? <div className="sim-mini-toast">{fileHint}</div> : null}
-      <div className="sim-generic-chrome">
+      <div className="sim-generic-chrome sim-app-bar">
         <div className="sim-generic-chrome-left">
           <span className="sim-generic-title">Задание</span>
           <span className="sim-generic-badge">{SITE_NAME}</span>
         </div>
         <div className="sim-generic-chrome-actions">
-          <button type="button" className="sim-generic-chrome-btn" title="Краткая справка" onClick={() => setHelpOpen(true)}>
+          <button type="button" className="app-nav-pill app-nav-pill--icon" title="Краткая справка" onClick={() => setHelpOpen(true)}>
             ?
           </button>
           <button
             type="button"
-            className="sim-generic-chrome-btn"
+            className="app-nav-pill app-nav-pill--natural app-nav-pill--icon"
             title="Размер текста (локально для блока)"
             onClick={() => setFontScale((s) => ((s + 1) % 3) as 0 | 1 | 2)}
           >

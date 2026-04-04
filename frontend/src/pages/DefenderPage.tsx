@@ -8,6 +8,9 @@ import { Link } from "react-router-dom";
 type NodeId = "inet" | "fw" | "web01" | "app01" | "db01" | "dc01";
 type NodeStatus = "clean" | "scanning" | "compromised" | "isolated" | "defended";
 type Phase = "select" | "briefing" | "playing" | "won" | "lost";
+type GameMode = "training" | "combat";
+type PlaybookKey = "logs" | "wireshark" | "nmap" | "strings" | "block" | "kill" | "isolate" | "patch";
+type PlaybookFlags = Record<PlaybookKey, boolean>;
 type TermLineType = "input" | "output" | "error" | "info" | "system";
 interface TermLine { id: number; type: TermLineType; text: string }
 
@@ -37,10 +40,15 @@ interface Scenario {
   description: string;
   briefing: string;
   attackPath: NodeId[];
+  /** Базовый интервал хода (сек.) в боевом режиме */
   tickInterval: number;
   arrivalLogs: Partial<Record<NodeId, string[]>>;
   loseNode: NodeId;
   loseMessage: string;
+  /** Ключ из STRINGS_FILES — обязателен для закрытия инцидента */
+  stringsArtifact: string;
+  /** Узел, на котором нужно выполнить patch по протоколу */
+  patchPlaybookNode: NodeId;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -219,6 +227,10 @@ function resolveStringsPath(raw: string): string | null {
   return hit ?? null;
 }
 
+function normStringsKey(k: string): string {
+  return k.replace(/\\/g, "/").toLowerCase();
+}
+
 function emitStringsDump(resolvedPath: string, pushTerm: PushTermFn) {
   const art = STRINGS_FILES[resolvedPath];
   if (!art) {
@@ -250,13 +262,13 @@ const SCENARIOS: Scenario[] = [
     id: "sqlslayer",
     name: "SQL SLAYER",
     difficulty: "easy",
-    diffLabel: "Новичок",
+    diffLabel: "Сюжет 1",
     diffColor: "#3dffa0",
     attackType: "SQL-инъекция",
-    description: "Автоматизированный бот нашёл уязвимую форму входа и целенаправленно движется к базе данных клиентов.",
-    briefing: "IDS зафиксировал аномальный трафик с 203.45.178.92.\n\nИдёт автоматизированная SQL-инъекция через форму авторизации. Атакующий уже обошёл WAF.\n\nВектор: INTERNET → FW → WEB-01 → APP-01 → DB-01\n\nЦель противника — DB-01 (85 000 записей клиентов).\nКаждые 7 секунд атака продвигается на один шаг.",
+    description: "Бот давит форму входа и движется к БД. Одинаковый темп во всех сюжетах; победа только после полного протокола SOC.",
+    briefing: "IDS: аномальный трафик с 203.45.178.92. SQL-инъекция через login, WAF обойден.\n\nВектор: INTERNET → FW → WEB-01 → APP-01 → DB-01. Цель — DB-01.\n\nПОБЕДА: все узлы на пути закрыты (изоляция или патч) И выполнен полный чеклист: logs, wireshark, nmap, strings (артефакт сценария), block, kill, isolate, patch на узле из брифинга.",
     attackPath: ["inet", "fw", "web01", "app01", "db01"],
-    tickInterval: 7,
+    tickInterval: 6,
     arrivalLogs: {
       fw:    ["Сканирование портов с 203.45.178.92", "143 неудачных попытки аутентификации за 60 сек"],
       web01: ["SQL payload обнаружен: ' OR '1'='1", "WAF bypass через URL-encoding — фильтр обойдён"],
@@ -265,18 +277,20 @@ const SCENARIOS: Scenario[] = [
     },
     loseNode: "db01",
     loseMessage: "Злоумышленник получил доступ к базе данных. 85 000 записей клиентов скомпрометированы.",
+    stringsArtifact: "/opt/app/shell.jsp",
+    patchPlaybookNode: "web01",
   },
   {
     id: "tigerrat",
     name: "TIGER RAT",
     difficulty: "medium",
-    diffLabel: "Средний",
+    diffLabel: "Сюжет 2",
     diffColor: "#ffe600",
-    attackType: "APT / боковое перемещение",
-    description: "APT-группа использует легитимные инструменты Windows (Living off the Land). Цель — контроллер домена для Golden Ticket.",
-    briefing: "Threat Intel: APT-группа TIGER активна в вашей сети.\n\nИспользуют WMI, PowerShell, NTLM relay — стандартные инструменты ОС. Антивирус молчит.\n\nВектор: INTERNET → FW → WEB-01 → APP-01 → DC-01\n\nЕсли они захватят DC-01 — Golden Ticket даст постоянный привилегированный доступ ко ВСЕЙ инфраструктуре.\nКаждые 5 секунд атака продвигается на один шаг.",
+    attackType: "APT / LoL",
+    description: "APT в сети, движение к DC. Нужны расследование (логи, трафик, nmap, strings) и все действия реагирования.",
+    briefing: "APT TIGER: WMI, PowerShell, NTLM relay. Вектор: INTERNET → … → DC-01 (Golden Ticket).\n\nstrings: веб-шелл /var/www/.svc.php. patch только на APP-01 после kill на этом узле.\nПолный чеклист в шапке игры обязателен для закрытия инцидента.",
     attackPath: ["inet", "fw", "web01", "app01", "dc01"],
-    tickInterval: 5,
+    tickInterval: 6,
     arrivalLogs: {
       fw:    ["Cobalt Strike beacon в трафике HTTPS (порт 443)", "Нестандартное использование RDP — подозрительная сессия"],
       web01: ["PHP web-shell загружен: /var/www/.svc.php", "Mimikatz-variant запущен в памяти процесса w3wp.exe"],
@@ -285,18 +299,20 @@ const SCENARIOS: Scenario[] = [
     },
     loseNode: "dc01",
     loseMessage: "Контроллер домена скомпрометирован. Golden Ticket создан. Атакующий имеет постоянный доступ ко всей инфраструктуре.",
+    stringsArtifact: "/var/www/.svc.php",
+    patchPlaybookNode: "app01",
   },
   {
     id: "vaultbreaker",
     name: "VAULT BREAKER",
     difficulty: "hard",
-    diffLabel: "Эксперт",
+    diffLabel: "Сюжет 3",
     diffColor: "#ff2d78",
-    attackType: "Ransomware LockBit 3.0",
-    description: "LockBit 3.0 через EternalBlue. Параллельно шифрует и уничтожает резервные копии. Времени критически мало.",
-    briefing: "КРИТИЧЕСКИЙ ИНЦИДЕНТ — НЕМЕДЛЕННЫЙ ОТВЕТ ТРЕБУЕТСЯ.\n\nОбнаружен LockBit 3.0 variant. Эксплуатирует MS17-010 (EternalBlue) по SMB.\nАвтоматически удаляет теневые копии перед шифрованием.\n\nВектор: INTERNET → FW → WEB-01 → APP-01 → DB-01\n\nПосле захвата APP-01 ransomware также атакует DC-01.\nКаждые 4 секунды — новый шаг. Действуй немедленно.",
+    attackType: "Ransomware",
+    description: "LockBit / EternalBlue к БД. Тот же ритм хода; без полного протокола инцидент не считается закрытым.",
+    briefing: "LockBit 3.0, MS17-010 по SMB. Вектор к DB-01.\n\nstrings: /tmp/.config/.cache.bin. patch на APP-01.\nЧеклист: logs, wireshark, nmap, strings, block, kill, isolate, patch — всё должно быть выполнено хотя бы раз.",
     attackPath: ["inet", "fw", "web01", "app01", "db01"],
-    tickInterval: 4,
+    tickInterval: 6,
     arrivalLogs: {
       fw:    ["EternalBlue exploit MS17-010 — АКТИВНО на порт 445", "Массовое SMB-сканирование всей подсети /24"],
       web01: ["LockBit dropper: /tmp/.config/.cache.bin", "Шифрование /var/www/* началось — 100% за 8 сек"],
@@ -305,6 +321,8 @@ const SCENARIOS: Scenario[] = [
     },
     loseNode: "db01",
     loseMessage: "Ransomware зашифровал базу данных. Резервных копий нет. Инфраструктура парализована. Требование выкупа: 50 BTC.",
+    stringsArtifact: "/tmp/.config/.cache.bin",
+    patchPlaybookNode: "app01",
   },
 ];
 
@@ -351,6 +369,69 @@ const STATUS_LABEL: Record<NodeStatus, string> = {
   isolated: "ИЗОЛИРОВАН",
   defended: "ЗАЩИЩЁН",
 };
+
+const PLAYBOOK_ORDER: PlaybookKey[] = ["logs", "wireshark", "nmap", "strings", "block", "kill", "isolate", "patch"];
+
+const PLAYBOOK_SHORT: Record<PlaybookKey, string> = {
+  logs: "logs",
+  wireshark: "shark",
+  nmap: "nmap",
+  strings: "str",
+  block: "block",
+  kill: "kill",
+  isolate: "iso",
+  patch: "patch",
+};
+
+function emptyPlaybook(): PlaybookFlags {
+  return {
+    logs: false,
+    wireshark: false,
+    nmap: false,
+    strings: false,
+    block: false,
+    kill: false,
+    isolate: false,
+    patch: false,
+  };
+}
+
+function playbookComplete(p: PlaybookFlags): boolean {
+  return PLAYBOOK_ORDER.every((k) => p[k]);
+}
+
+function firstMissingPlaybook(p: PlaybookFlags): PlaybookKey | null {
+  for (const k of PLAYBOOK_ORDER) {
+    if (!p[k]) return k;
+  }
+  return null;
+}
+
+function cooldownSec(base: number, mode: GameMode): number {
+  return Math.max(2, Math.round(base * (mode === "training" ? 0.45 : 1)));
+}
+
+function tickForMode(sc: Scenario, mode: GameMode): number {
+  if (mode === "training") return Math.max(12, Math.round(sc.tickInterval * 2.2));
+  return Math.max(5, sc.tickInterval);
+}
+
+function PlaybookBar({ flags, training }: { flags: PlaybookFlags; training: boolean }) {
+  const miss = firstMissingPlaybook(flags);
+  return (
+    <div className="defender-playbook" aria-label="Чеклист протокола SOC">
+      <span className="defender-playbook-label">ЧЕКЛИСТ</span>
+      {PLAYBOOK_ORDER.map((k) => (
+        <span
+          key={k}
+          className={`def-playbook-chip${flags[k] ? " def-playbook-chip--done" : ""}${training && miss === k ? " def-playbook-chip--hint" : ""}`}
+        >
+          {flags[k] ? "✓" : "○"} {PLAYBOOK_SHORT[k]}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 // ═══════════════════════════════════════════════════════════════════════
 // SUB-COMPONENTS
@@ -506,10 +587,12 @@ function LogPanel({ logs }: { logs: Log[] }) {
 
 export function DefenderPage() {
   const [phase, setPhase] = useState<Phase>("select");
+  const [gameMode, setGameMode] = useState<GameMode>("combat");
   const [scenario, setScenario] = useState<Scenario | null>(null);
   const [nodes, setNodes] = useState<Record<NodeId, NodeState>>(initNodes);
   const [attackerIdx, setAttackerIdx] = useState(0);
   const [countdown, setCountdown] = useState(0);
+  const [tickSeconds, setTickSeconds] = useState(6);
   const [selectedNode, setSelectedNode] = useState<NodeId | null>(null);
   const [logs, setLogs] = useState<Log[]>([]);
   const [score, setScore] = useState(0);
@@ -519,12 +602,15 @@ export function DefenderPage() {
   const [scoreFloats, setScoreFloats] = useState<{ id: number; text: string; ok: boolean }[]>([]);
   const [threatLevel, setThreatLevel] = useState(0);
   const [alertFlash, setAlertFlash] = useState(false);
+  const [playbook, setPlaybook] = useState<PlaybookFlags>(emptyPlaybook);
   const [termLines, setTermLines] = useState<TermLine[]>([]);
   const [termInput, setTermInput] = useState("");
   const [termHistoryCmds, setTermHistoryCmds] = useState<string[]>([]);
   const [_termHistoryIdx, setTermHistoryIdx] = useState(-1);
   const termOutputRef = useRef<HTMLDivElement>(null);
   const termInputRef = useRef<HTMLInputElement>(null);
+  const protocolWarnedRef = useRef(false);
+  const winTriggeredRef = useRef(false);
 
   const pushTerm = useCallback((text: string, type: TermLineType = "output") => {
     setTermLines((prev) => [...prev.slice(-299), { id: Date.now() + Math.random(), type, text }]);
@@ -543,6 +629,10 @@ export function DefenderPage() {
   const flashAlert = useCallback(() => {
     setAlertFlash(true);
     setTimeout(() => setAlertFlash(false), 600);
+  }, []);
+
+  const markPlaybook = useCallback((k: PlaybookKey) => {
+    setPlaybook((prev) => (prev[k] ? prev : { ...prev, [k]: true }));
   }, []);
 
   // ── Game loop ───────────────────────────────────────────────────────
@@ -635,7 +725,7 @@ export function DefenderPage() {
                   }
                   return n2;
                 });
-              }, (sc.tickInterval * 1000) - 100);
+              }, (tickSeconds * 1000) - 100);
             }
 
             return updated;
@@ -644,12 +734,12 @@ export function DefenderPage() {
           return prevIdx + 1;
         });
 
-        return scenario.tickInterval + (ipBlocked ? 2 : 0);
+        return tickSeconds + (ipBlocked ? 2 : 0);
       });
     }, 1000);
 
     return () => clearInterval(tick);
-  }, [phase, scenario, ipBlocked, addLog, addFloat, flashAlert]);
+  }, [phase, scenario, ipBlocked, tickSeconds, addLog, addFloat, flashAlert, pushTerm]);
 
   // ── Win condition check ─────────────────────────────────────────────
   useEffect(() => {
@@ -665,12 +755,18 @@ export function DefenderPage() {
     setScenario(sc);
     setNodes(initNodes());
     setAttackerIdx(0);
-    setCountdown(sc.tickInterval);
+    const t0 = tickForMode(sc, gameMode);
+    setTickSeconds(t0);
+    setCountdown(t0);
+    setPlaybook(emptyPlaybook());
+    protocolWarnedRef.current = false;
+    winTriggeredRef.current = false;
     setSelectedNode(null);
     setLogs([
       mkLog("info", `Инцидент ${sc.name} — ответные меры активированы`),
       mkLog("warn", "SIEM: аномальная активность зафиксирована"),
       mkLog("crit", `Атака типа «${sc.attackType}» — подтверждено`),
+      mkLog("info", `Протокол SOC: закрой все пункты чеклиста + удержи путь к ${NODE_DEFS[sc.loseNode].label}`),
     ]);
     setScore(500);
     setElapsed(0);
@@ -679,17 +775,21 @@ export function DefenderPage() {
     setThreatLevel(15);
     setScoreFloats([]);
     setAlertFlash(false);
+    const modeLine = gameMode === "training"
+      ? "Режим ТРЕНИРОВКА: медленнее ход атакующего, короче КД команд, подсказка на чеклисте."
+      : "Режим БОЕВОЙ: стандартные КД и темп.";
     setTermLines([
       { id: 1, type: "system", text: `SOC TERMINAL v2.1 — ${sc.name}` },
-      { id: 2, type: "system", text: `Атака типа «${sc.attackType}» активна. Действуй быстро.` },
-      { id: 3, type: "info",   text: "Введи 'help'. Tab — автодополнение узлов. Есть wireshark, nmap, strings." },
-      { id: 4, type: "info",   text: `Цель атакующего: ${NODE_DEFS[sc.loseNode].label}` },
+      { id: 2, type: "system", text: modeLine },
+      { id: 3, type: "info",   text: "Победа только при полном чеклисте (logs, wireshark, nmap, strings, block, kill, isolate, patch) и закрытом пути." },
+      { id: 4, type: "info",   text: `strings: ${sc.stringsArtifact} · patch: ${NODE_DEFS[sc.patchPlaybookNode].label}` },
+      { id: 5, type: "info",   text: "Введи 'help'. Tab — узлы." },
     ]);
     setTermInput("");
     setTermHistoryCmds([]);
     setTermHistoryIdx(-1);
     setPhase("playing");
-  }, []);
+  }, [gameMode]);
 
   // ── Actions ─────────────────────────────────────────────────────────
   const actIsolate = useCallback((nodeId: NodeId) => {
@@ -698,17 +798,19 @@ export function DefenderPage() {
       if (n.cdIsolate > 0) { pushTerm(`[ERR] ${NODE_DEFS[nodeId].label}: isolate на перезарядке (${n.cdIsolate}с)`, "error"); return prev; }
       if (n.status === "isolated") { pushTerm(`[WARN] ${NODE_DEFS[nodeId].label}: уже изолирован`, "error"); return prev; }
       if (nodeId === "inet") { pushTerm(`[ERR] Нельзя изолировать внешний интернет`, "error"); return prev; }
+      if (n.attacker) { pushTerm(`[ERR] На ${NODE_DEFS[nodeId].label} активен атакующий — сначала kill, затем isolate`, "error"); return prev; }
       addLog("info", `Изоляция ${NODE_DEFS[nodeId].label}: узел отключён от сети`);
       pushTerm(`[OK] ${NODE_DEFS[nodeId].label} изолирован — входящие/исходящие соединения разорваны  +120`, "output");
       addFloat("+120", true);
       setScore((s) => s + 120);
       setThreatLevel((t) => Math.max(0, t - 15));
+      markPlaybook("isolate");
       return {
         ...prev,
-        [nodeId]: { ...n, status: "isolated", attacker: false, cdIsolate: 20 },
+        [nodeId]: { ...n, status: "isolated", attacker: false, cdIsolate: cooldownSec(20, gameMode) },
       };
     });
-  }, [addLog, addFloat, pushTerm]);
+  }, [addLog, addFloat, pushTerm, markPlaybook, gameMode]);
 
   const actKillProc = useCallback((nodeId: NodeId) => {
     setNodes((prev) => {
@@ -719,6 +821,7 @@ export function DefenderPage() {
       pushTerm(`[OK] Процессы на ${NODE_DEFS[nodeId].label} завершены — атакующий отброшен назад  +60`, "output");
       addFloat("+60", true);
       setScore((s) => s + 60);
+      markPlaybook("kill");
       // Push attacker back one step
       if (scenario) {
         setAttackerIdx((ai) => {
@@ -726,7 +829,7 @@ export function DefenderPage() {
           if (prevNodeId) {
             setNodes((p2) => ({
               ...p2,
-              [nodeId]: { ...p2[nodeId], attacker: false, status: "compromised", cdKill: 14 },
+              [nodeId]: { ...p2[nodeId], attacker: false, status: "compromised", cdKill: cooldownSec(14, gameMode) },
               [prevNodeId]: { ...p2[prevNodeId], attacker: true },
             }));
           }
@@ -735,23 +838,28 @@ export function DefenderPage() {
       }
       return prev;
     });
-  }, [addLog, addFloat, pushTerm, scenario]);
+  }, [addLog, addFloat, pushTerm, scenario, markPlaybook, gameMode]);
 
   const actBlockIp = useCallback(() => {
     if (blockCd > 0) { pushTerm(`[ERR] block: правило на перезарядке (${blockCd}с)`, "error"); return; }
     if (ipBlocked) { pushTerm("[WARN] block: IP 203.45.178.92 уже заблокирован", "error"); return; }
     setIpBlocked(true);
-    setBlockCd(18);
+    setBlockCd(cooldownSec(18, gameMode));
     addLog("info", "Firewall rule добавлено — IP 203.45.178.92 заблокирован. +2 сек/шаг");
     pushTerm("[OK] iptables -A INPUT -s 203.45.178.92 -j DROP — правило активно  +40", "output");
     addFloat("+40", true);
     setScore((s) => s + 40);
     setThreatLevel((t) => Math.max(0, t - 10));
-  }, [blockCd, ipBlocked, addLog, addFloat, pushTerm]);
+    markPlaybook("block");
+  }, [blockCd, ipBlocked, addLog, addFloat, pushTerm, markPlaybook, gameMode]);
 
   const actPatch = useCallback((nodeId: NodeId) => {
     setNodes((prev) => {
       const n = prev[nodeId];
+      if (scenario && nodeId !== scenario.patchPlaybookNode) {
+        pushTerm(`[ERR] По протоколу патч только на ${NODE_DEFS[scenario.patchPlaybookNode].label} (${scenario.patchPlaybookNode})`, "error");
+        return prev;
+      }
       if (n.cdPatch > 0) { pushTerm(`[ERR] patch: на перезарядке (${n.cdPatch}с)`, "error"); return prev; }
       if (n.attacker) { pushTerm(`[ERR] patch: нельзя патчить узел пока атакующий активен — сначала kill`, "error"); return prev; }
       if (n.status === "clean" || n.status === "defended") { pushTerm(`[WARN] patch: ${NODE_DEFS[nodeId].label} не требует патча (статус: ${STATUS_LABEL[n.status]})`, "error"); return prev; }
@@ -760,12 +868,13 @@ export function DefenderPage() {
       pushTerm(`[OK] ${NODE_DEFS[nodeId].label}: патч установлен — узел защищён  +100`, "output");
       addFloat("+100", true);
       setScore((s) => s + 100);
+      markPlaybook("patch");
       return {
         ...prev,
-        [nodeId]: { ...n, status: "defended", cdPatch: 25 },
+        [nodeId]: { ...n, status: "defended", cdPatch: cooldownSec(25, gameMode) },
       };
     });
-  }, [addLog, addFloat, pushTerm]);
+  }, [addLog, addFloat, pushTerm, scenario, markPlaybook, gameMode]);
 
   const actCheckLogs = useCallback((nodeId: NodeId) => {
     if (!scenario) return;
@@ -779,9 +888,10 @@ export function DefenderPage() {
       for (const l of logs_) { addLog("crit", `  › ${l}`); pushTerm(`  ⚠ ${l}`, "error"); }
       pushTerm(`  +10`, "output");
     }
+    markPlaybook("logs");
     addFloat("+10", true);
     setScore((s) => s + 10);
-  }, [scenario, addLog, addFloat, pushTerm]);
+  }, [scenario, addLog, addFloat, pushTerm, markPlaybook]);
 
   const processCommand = useCallback((raw: string) => {
     const line = raw.trim();
@@ -807,10 +917,11 @@ export function DefenderPage() {
         pushTerm("  kill <node>      — завершить вредоносный процесс      [КД 14с]");
         pushTerm("  block            — заблокировать IP атакующего        [КД 18с]");
         pushTerm("  patch <node>     — применить патч безопасности        [КД 25с]");
-        pushTerm("  logs <node>      — просмотреть логи / IoC узла");
-        pushTerm(`  wireshark <node> — симулированный дамп трафика (ищи аномалию)`);
-        pushTerm(`  nmap <subnet>    — скан портов (${NMAP_SUBNET}, corp.lan …)`);
-        pushTerm("  strings <file>   — извлечь строки из файла (вредоносный артефакт)");
+        pushTerm("  logs <node>      — просмотреть логи / IoC узла (чеклист)");
+        pushTerm(`  wireshark <node> — дамп трафика (чеклист)`);
+        pushTerm(`  nmap <subnet>    — скан (${NMAP_SUBNET}, corp.lan …) (чеклист)`);
+        pushTerm("  strings <file>   — строки артефакта (нужный файл в брифинге)");
+        pushTerm("  Победа: весь чеклист + изоляция/патч на всём пути к цели.");
         pushTerm("  status           — состояние всех узлов сети");
         pushTerm("  abort            — прервать миссию");
         pushTerm("  clear            — очистить терминал");
@@ -860,6 +971,7 @@ export function DefenderPage() {
         const id = needNode(); if (!id) break;
         if (!scenario) break;
         emitWiresharkCapture(scenario.id, id, pushTerm);
+        markPlaybook("wireshark");
         break;
       }
       case "nmap": {
@@ -874,6 +986,7 @@ export function DefenderPage() {
         }
         if (!scenario) break;
         emitNmapScan(scenario.id, pushTerm);
+        markPlaybook("nmap");
         break;
       }
       case "strings": {
@@ -889,6 +1002,11 @@ export function DefenderPage() {
           break;
         }
         emitStringsDump(key, pushTerm);
+        if (scenario && normStringsKey(key) === normStringsKey(scenario.stringsArtifact)) {
+          markPlaybook("strings");
+        } else {
+          pushTerm(`[SOC] Для чеклиста нужен артефакт сценария: ${scenario?.stringsArtifact ?? "—"}`, "error");
+        }
         break;
       }
       case "clear": {
@@ -902,7 +1020,7 @@ export function DefenderPage() {
       default:
         pushTerm(`Команда не найдена: ${cmd}. Введи 'help' для списка.`, "error");
     }
-  }, [nodes, scenario, pushTerm, actIsolate, actKillProc, actBlockIp, actPatch, actCheckLogs]);
+  }, [nodes, scenario, pushTerm, actIsolate, actKillProc, actBlockIp, actPatch, actCheckLogs, markPlaybook]);
 
   const handleTermKey = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -948,25 +1066,46 @@ export function DefenderPage() {
   }, [termLines.length]);
 
   const triggerWin = useCallback(() => {
-    addLog("info", "ВСЕ АТАКУЮЩИЕ ВЫБИТЫ — Инцидент локализован");
+    addLog("info", "ПРОТОКОЛ SOC ЗАКРЫТ — путь удержан, чеклист выполнен");
     pushTerm("━━ МИССИЯ ВЫПОЛНЕНА ━━━━━━━━━━━━━━━━━━━━━━", "system");
-    pushTerm("Все атакующие нейтрализованы. Инфраструктура защищена.", "system");
+    pushTerm("Инцидент закрыт: расследование и реагирование по чеклисту завершены.", "system");
     setScore((s) => s + elapsed > 0 ? s + Math.floor(300 / Math.max(elapsed, 1) * 60) : s);
     setPhase("won");
   }, [addLog, pushTerm, elapsed]);
 
-  // Manual win check (all critical nodes protected)
+  // Подсказка, если сеть удержана, но чеклист не полон
   useEffect(() => {
     if (phase !== "playing" || !scenario) return;
     const loseN = nodes[scenario.loseNode];
-    const allPathCompromised = scenario.attackPath.every((id) => {
+    const allPathOk = scenario.attackPath.every((id) => {
       const n = nodes[id];
       return n.status === "isolated" || n.status === "defended" || id === "inet";
     });
-    if (allPathCompromised && !loseN.attacker) {
+    if (!allPathOk || loseN.attacker) {
+      protocolWarnedRef.current = false;
+      return;
+    }
+    if (!playbookComplete(playbook) && !protocolWarnedRef.current) {
+      protocolWarnedRef.current = true;
+      addLog("warn", "Путь удерживается, но инцидент не закрыт — выполни все пункты чеклиста SOC.");
+      pushTerm("[SOC] Заверши чеклист (строка под HUD): без этого отчёт не принимается.", "error");
+    }
+  }, [nodes, phase, scenario, playbook, addLog, pushTerm]);
+
+  // Победа: путь закрыт + нет атакующего на цели + полный чеклист
+  useEffect(() => {
+    if (phase !== "playing" || !scenario) return;
+    const loseN = nodes[scenario.loseNode];
+    const allPathOk = scenario.attackPath.every((id) => {
+      const n = nodes[id];
+      return n.status === "isolated" || n.status === "defended" || id === "inet";
+    });
+    if (allPathOk && !loseN.attacker && playbookComplete(playbook)) {
+      if (winTriggeredRef.current) return;
+      winTriggeredRef.current = true;
       triggerWin();
     }
-  }, [nodes, phase, scenario, triggerWin]);
+  }, [nodes, phase, scenario, playbook, triggerWin]);
 
   // ═══════════════════════════════════════════════════════════════════
   // RENDER — SELECT
@@ -980,13 +1119,38 @@ export function DefenderPage() {
             <div className="defender-select-badge">SOC DEFENDER</div>
             <h1 className="defender-select-title">INCIDENT RESPONSE</h1>
             <p className="defender-select-sub">
-              Ты — аналитик Центра мониторинга безопасности. Атака идёт прямо сейчас.
-              Выбери сценарий и останови угрозу до того, как она достигнет критического узла.
+              Два режима: тренировка (медленнее, подсказки) и боевой. Победа только после полного протокола SOC —
+              все команды расследования и реагирования из чеклиста, затем удержание пути к цели.
+            </p>
+          </div>
+
+          <div className="defender-mode-bar" role="group" aria-label="Режим игры">
+            <button
+              type="button"
+              className={`defender-mode-btn${gameMode === "training" ? " defender-mode-btn--active" : ""}`}
+              onClick={() => setGameMode("training")}
+            >
+              ТРЕНИРОВКА
+            </button>
+            <button
+              type="button"
+              className={`defender-mode-btn${gameMode === "combat" ? " defender-mode-btn--active" : ""}`}
+              onClick={() => setGameMode("combat")}
+            >
+              БОЕВОЙ
+            </button>
+            <p className="defender-mode-hint">
+              {gameMode === "training"
+                ? "Длинный интервал хода, короткие КД, подсветка следующего шага чеклиста."
+                : "Стандартный темп. Чеклист обязателен и в бою."}
             </p>
           </div>
 
           <div className="defender-scenario-grid">
-            {SCENARIOS.map((sc) => (
+            {SCENARIOS.map((sc) => {
+              const tCombat = tickForMode(sc, "combat");
+              const tTrain = tickForMode(sc, "training");
+              return (
               <button
                 key={sc.id}
                 type="button"
@@ -1002,11 +1166,11 @@ export function DefenderPage() {
                 <h2 className="defender-scenario-name" style={{ color: sc.diffColor }}>{sc.name}</h2>
                 <p className="defender-scenario-desc">{sc.description}</p>
                 <div className="defender-scenario-card-footer">
-                  <span className="defender-scenario-interval">⏱ каждые {sc.tickInterval}с</span>
+                  <span className="defender-scenario-interval">⏱ ход ~{tCombat}с боевой · ~{tTrain}с трен.</span>
                   <span className="defender-scenario-start-hint">ВЫБРАТЬ →</span>
                 </div>
               </button>
-            ))}
+            );})}
           </div>
 
           <div className="defender-select-back">
@@ -1045,15 +1209,20 @@ export function DefenderPage() {
           </div>
 
           <div className="defender-briefing-legend">
-            <h3 className="defender-briefing-legend-title">Доступные действия:</h3>
+            <h3 className="defender-briefing-legend-title">Протокол закрытия инцидента</h3>
+            <p className="defender-briefing-protocol-hint">
+              Режим: <strong>{gameMode === "training" ? "тренировка" : "боевой"}</strong>.
+              Обязательны все пункты чеклиста в игре + удержание пути. Артефакт для <code className="defender-briefing-code">strings</code>:{" "}
+              <code className="defender-briefing-code">{scenario.stringsArtifact}</code>.
+              Патч только на <strong>{NODE_DEFS[scenario.patchPlaybookNode].label}</strong>. Изоляция узла с активным атакующим запрещена без предварительного <strong>kill</strong>.
+            </p>
             <div className="defender-briefing-actions-list">
               {[
-                { key: "ИЗОЛИРОВАТЬ", desc: "Отключить узел от сети — атакующий заблокирован", cd: "20с" },
-                { key: "KILL PROCESS", desc: "Завершить вредоносный процесс — атакующий отброшен назад", cd: "14с" },
-                { key: "BLOCK IP", desc: "Добавить firewall rule — +2с к каждому ходу атакующего", cd: "18с" },
-                { key: "ПРИМЕНИТЬ ПАТЧ", desc: "Устранить уязвимость — узел становится защищённым", cd: "25с" },
-                { key: "АНАЛИЗ ЛОГОВ", desc: "Просмотреть индикаторы на узле — +10 очков", cd: "—" },
-                { key: "WIRESHARK / NMAP / STRINGS", desc: "Симуляция дампа, скана портов и strings по артефактам — для разбора", cd: "—" },
+                { key: "ЧЕКЛИСТ", desc: "logs, wireshark, nmap, strings (файл выше), block, kill, isolate, patch — каждый минимум раз", cd: "—" },
+                { key: "ИЗОЛИРОВАТЬ", desc: "Только если на узле нет активного атакующего (иначе сначала kill)", cd: "20с" },
+                { key: "KILL", desc: "Сбросить сессию противника на текущем узле", cd: "14с" },
+                { key: "BLOCK IP", desc: "Замедлить ход атакующего (+2 с к таймеру)", cd: "18с" },
+                { key: "ПАТЧ", desc: `Только узел ${NODE_DEFS[scenario.patchPlaybookNode].label} после kill`, cd: "25с" },
               ].map((a) => (
                 <div key={a.key} className="defender-briefing-action-row">
                   <span className="defender-briefing-action-key">{a.key}</span>
@@ -1094,7 +1263,7 @@ export function DefenderPage() {
           <h1 className="defender-result-title">{won ? "УГРОЗА НЕЙТРАЛИЗОВАНА" : "ИНЦИДЕНТ НЕ ЛОКАЛИЗОВАН"}</h1>
           <p className="defender-result-subtitle">
             {won
-              ? "Отличная работа. Все критические узлы защищены."
+              ? "Чеклист расследования и реагирования закрыт, путь к цели удержан."
               : scenario.loseMessage}
           </p>
 
@@ -1153,9 +1322,14 @@ export function DefenderPage() {
       {/* ── HUD ── */}
       <div className="defender-hud">
         <div className="defender-hud-left">
-          <span className="defender-hud-scenario" style={{ color: scenario.diffColor }}>
-            {scenario.name}
-          </span>
+          <div className="defender-hud-title-row">
+            <span className="defender-hud-scenario" style={{ color: scenario.diffColor }}>
+              {scenario.name}
+            </span>
+            <span className={`defender-hud-badge${gameMode === "training" ? " defender-hud-badge--train" : ""}`}>
+              {gameMode === "training" ? "ТРЕНИРОВКА" : "БОЕВОЙ"}
+            </span>
+          </div>
           <span className="defender-hud-type">{scenario.attackType}</span>
         </div>
 
@@ -1206,6 +1380,7 @@ export function DefenderPage() {
             <span style={{ color: "#3dffa0" }}>IP заблокирован (+2с/ход)</span>
           </>
         )}
+        <PlaybookBar flags={playbook} training={gameMode === "training"} />
       </div>
 
       {/* ── Main content ── */}

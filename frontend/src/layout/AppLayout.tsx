@@ -191,7 +191,17 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
-      <main className={isHome ? "main main--bento" : "main main--bento main--bento-padded"}>{children}</main>
+      <main
+        className={
+          isHome
+            ? "main main--bento"
+            : isDefender
+              ? "main main--bento main--defender"
+              : "main main--bento main--bento-padded"
+        }
+      >
+        {children}
+      </main>
       <AppFooter />
     </div>
   );

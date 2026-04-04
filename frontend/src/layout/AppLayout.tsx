@@ -9,9 +9,9 @@ import { LogoMark } from "../components/LogoMark";
 import { canUseAppRoutes, isRegisteredInUi } from "../demoMode";
 import { DASHBOARD_TASKS_HREF, loginHref } from "../navigationConstants";
 import { getPlayerId } from "../playerId";
-import { SITE_NAME } from "../siteMeta";
+import { SITE_NAME } from "../siteMeta";  
 import type { UserMe } from "../types";
-
+  
 export function AppLayout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const [navOpen, setNavOpen] = useState(false);

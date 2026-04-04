@@ -19,6 +19,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const isDashboard = pathname === "/dashboard";
   const isChallenges = pathname === "/challenges";
   const isPlay = pathname.startsWith("/play/");
+  const isDefender = pathname === "/defender";
   const isLogin = pathname === "/login";
   const isRegister = pathname === "/register";
   const isAccount = pathname === "/account";
@@ -120,6 +121,14 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 onClick={() => setNavOpen(false)}
               >
                 Челленджи
+              </Link>
+              <Link
+                to={navTo("/defender")}
+                className={`app-nav-pill${isDefender ? " app-nav-pill--active" : ""}`}
+                aria-current={isDefender ? "page" : undefined}
+                onClick={() => setNavOpen(false)}
+              >
+                SOC Defender
               </Link>
               <Link
                 to={navTo(DASHBOARD_TASKS_HREF)}

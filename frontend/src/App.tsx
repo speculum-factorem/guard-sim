@@ -3,6 +3,7 @@ import { RequireAppAccess } from "./components/RequireAppAccess";
 import { AccountPage } from "./pages/AccountPage";
 import { ChallengesPage } from "./pages/ChallengesPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { DefenderPage } from "./pages/DefenderPage";
 import { LandingGate } from "./pages/LandingGate";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -45,6 +46,14 @@ export default function App() {
           element={
             <RequireAppAccess>
               <SimulationPage />
+            </RequireAppAccess>
+          }
+        />
+        <Route
+          path="/defender"
+          element={
+            <RequireAppAccess>
+              <DefenderPage />
             </RequireAppAccess>
           }
         />

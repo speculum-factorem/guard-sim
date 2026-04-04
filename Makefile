@@ -19,7 +19,7 @@ help:
 	@echo "Docker: cp .env.example .env, задайте GUARDSIM_JWT_SECRET и POSTGRES_PASSWORD, затем: docker compose up --build"
 
 install:
-	cd $(BACKEND) && mvn -q -DskipTests compile
+	cd $(BACKEND) && mvn -q -DskipTests compile 
 	cd $(FRONTEND) && npm install
 
 build:

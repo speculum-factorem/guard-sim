@@ -87,6 +87,59 @@
   flex-shrink: 0;
 }
 
+/* Кнопка «меню» на узких экранах — разметка в _responsive.scss */
+.app-nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: var(--bento-border);
+  border-radius: var(--bento-radius);
+  background: var(--ui-white);
+  box-shadow: var(--shadow-bento-xs);
+  cursor: pointer;
+  flex-shrink: 0;
+  color: var(--bento-ink);
+  transition: background var(--transition-ui), transform 0.12s ease;
+}
+
+.app-nav-toggle:hover {
+  background: rgba(255, 90, 31, 0.1);
+}
+
+.app-nav-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-bento-xs), var(--focus-ring);
+}
+
+.app-nav-toggle-bars {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  box-shadow: 0 -7px 0 currentColor, 0 7px 0 currentColor;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.app-bar-inner--nav-open .app-nav-toggle-bars {
+  box-shadow: none;
+  transform: rotate(45deg);
+}
+
+.app-bar-inner--nav-open .app-nav-toggle-bars::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  border-radius: 1px;
+  transform: rotate(-90deg);
+}
+
 .app-user-email {
   font-size: 12px;
   font-weight: 700;

@@ -13,6 +13,7 @@ import type { UserMe } from "../types";
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
+  const [navOpen, setNavOpen] = useState(false);
   const isHome = pathname === "/";
   const isDashboard = pathname === "/dashboard";
   const isChallenges = pathname === "/challenges";
@@ -50,6 +51,23 @@ export function AppLayout({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  useEffect(() => {
+    setNavOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!navOpen) {
+      return;
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setNavOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [navOpen]);
+
   const registered = Boolean(me && !me.guest);
   const appUnlocked = canUseAppRoutes(me);
 
@@ -59,13 +77,24 @@ export function AppLayout({ children }: { children: ReactNode }) {
     <div className="app-shell">
       <header className="app-bar">
         <div className="app-bar-track" aria-hidden />
-        <div className="app-bar-inner">
+        <div className={`app-bar-inner${navOpen ? " app-bar-inner--nav-open" : ""}`}>
           <Link to="/" className="app-logo" aria-label={`${SITE_NAME} — на главную`}>
             <LogoMark className="app-logo-mark-svg" size={40} title={SITE_NAME} />
             <span className="app-logo-text">{SITE_NAME}</span>
           </Link>
 
-          <nav className="app-nav" aria-label="Основная навигация">
+          <button
+            type="button"
+            className="app-nav-toggle"
+            aria-expanded={navOpen}
+            aria-controls="app-primary-nav"
+            aria-label={navOpen ? "Закрыть меню" : "Открыть меню"}
+            onClick={() => setNavOpen((o) => !o)}
+          >
+            <span className="app-nav-toggle-bars" aria-hidden />
+          </button>
+
+          <nav className="app-nav" id="app-primary-nav" aria-label="Основная навигация">
             <Link
               to={navTo("/dashboard")}
               className={`app-nav-pill${isDashboard ? " app-nav-pill--active" : ""}`}

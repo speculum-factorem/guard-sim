@@ -1,3 +1,267 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Адаптивная вёрстка: от очень узких экранов до широких дисплеев
+   Подключается последним в index.scss — дополняет модули без дублирования
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Без горизонтального скролла страницы из‑за выступающих блоков */
+html {
+  overflow-x: hidden;
+}
+
+#root {
+  min-width: 0;
+}
+
+/* Типичные вырезы и «чёлки» — усиливаем боковые отступы там, где нужно */
+.app-bar-inner {
+  padding-left: max(clamp(14px, 3vw, 36px), env(safe-area-inset-left, 0px));
+  padding-right: max(clamp(14px, 3vw, 36px), env(safe-area-inset-right, 0px));
+}
+
+.main--bento-padded {
+  padding-left: max(clamp(16px, 3vw, 40px), env(safe-area-inset-left, 0px));
+  padding-right: max(clamp(16px, 3vw, 40px), env(safe-area-inset-right, 0px));
+  padding-bottom: max(56px, env(safe-area-inset-bottom, 0px));
+}
+
+.app-footer-inner {
+  padding-left: max(clamp(16px, 3vw, 40px), env(safe-area-inset-left, 0px));
+  padding-right: max(clamp(16px, 3vw, 40px), env(safe-area-inset-right, 0px));
+  padding-bottom: max(32px, env(safe-area-inset-bottom, 0px));
+}
+
+.home-page .bento-features,
+.home-page .bento-slider-wrap,
+.home-page .bento-cta {
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+
+/* ─── Шапка: выезжающее меню до ~900px ─── */
+@media (max-width: 900px) {
+  .app-nav-toggle {
+    display: inline-flex;
+  }
+
+  .app-bar-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 10px;
+  }
+
+  .app-logo {
+    min-width: 0;
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .app-logo-text {
+    font-size: clamp(1rem, 4.2vw, 1.35rem);
+  }
+
+  .app-nav-toggle {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .app-bar-aside {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .app-nav {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    margin: 0;
+    padding: 4px 0 8px;
+    gap: 8px;
+    border-top: 2px dashed rgba(18, 18, 18, 0.12);
+  }
+
+  .app-bar-inner--nav-open .app-nav {
+    display: flex;
+  }
+
+  .app-nav .app-nav-pill {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .app-user-chip {
+    max-width: min(100%, 100vw - 120px);
+  }
+}
+
+/* Очень узкие экраны: компактнее второй ряд (вход / регистрация) */
+@media (max-width: 380px) {
+  .app-bar-aside {
+    flex-wrap: wrap;
+    justify-content: stretch;
+  }
+
+  .app-bar-aside .app-nav-pill {
+    flex: 1 1 calc(50% - 4px);
+    justify-content: center;
+    min-width: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 11px;
+  }
+}
+
+/* Герой: стикеры не перекрывают заголовок */
+@media (max-width: 600px) {
+  .hero.hero-bento {
+    min-height: min(68vh, 520px);
+    padding-top: 40px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+
+  .hero-bento .hero-sticker {
+    width: 56px;
+    height: 56px;
+    font-size: 1.5rem;
+  }
+
+  .hero-sticker-1 {
+    top: 10%;
+    left: 4%;
+  }
+
+  .hero-sticker-2 {
+    top: 14%;
+    right: 5%;
+  }
+
+  .hero-sticker-3 {
+    bottom: 22%;
+    left: 6%;
+  }
+
+  .hero-sticker-4 {
+    bottom: 18%;
+    right: 4%;
+  }
+}
+
+@media (max-width: 400px) {
+  .hero-bento .hero-sticker {
+    display: none;
+  }
+
+  .hero-bento .hero-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-bento .hero-cta .btn {
+    width: 100%;
+  }
+}
+
+/* Сетки и карточки */
+@media (max-width: 520px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .bento-cell {
+    padding: 22px 18px;
+    min-height: 0;
+  }
+
+  .bento-slider {
+    padding: 28px 18px 44px;
+  }
+}
+
+@media (min-width: 521px) and (max-width: 720px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+}
+
+/* Маркетинговая главная: отступы */
+@media (max-width: 640px) {
+  .main:not(.main--bento) {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-bottom: 48px;
+  }
+
+  .home-page {
+    margin: 0;
+  }
+}
+
+/* Дашборд и челленджи: заголовки не прилипают к краю */
+@media (max-width: 640px) {
+  .dashboard-header {
+    padding: 18px 16px 16px;
+  }
+
+  .dashboard-page .career-panel.dashboard-career {
+    padding: 16px 16px 18px;
+  }
+
+  .challenges-hero {
+    margin-bottom: 20px;
+  }
+
+  .lc-dashboard-hero--arcade {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 18px 16px 20px;
+  }
+
+  .lc-dashboard-stats--arcade {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Миссия: вкладки и заголовки переносятся */
+@media (max-width: 720px) {
+  .mission-lc-tabs-main {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .mission-lc-tab {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: center;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .mission-lc-head.sim-app-bar,
+  .mission-lc-tabs.sim-app-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .mission-window-body--lc {
+    min-height: 0;
+  }
+}
+
+/* Симуляции: почта и тикеты (было в этом файле) */
 @media (max-width: 720px) {
   .sim-gmail-body {
     flex-direction: column;
@@ -49,5 +313,29 @@
   .sim-ticket-aside {
     border-right: none;
     border-bottom: 1px solid var(--gm-border);
+  }
+}
+
+/* Широкие экраны: не растягивать контент бесконечно */
+@media (min-width: 1440px) {
+  .dashboard-page,
+  .challenges-page,
+  .account-page {
+    max-width: min(1120px, 92vw);
+  }
+}
+
+/* Профиль: комфортные поля на телефоне */
+@media (max-width: 520px) {
+  .account-hero {
+    padding: 18px 16px;
+  }
+
+  .account-panel {
+    padding: 18px 16px;
+  }
+
+  .desk-hub-monitor {
+    grid-template-columns: 1fr;
   }
 }

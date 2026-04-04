@@ -1,11 +1,11 @@
 const STORAGE_KEY = "guardsim-player-id";
 
-/** UUID v4 без randomUUID (старые WebView / браузеры). */
+/**
+ * UUID v4 без вызова crypto.randomUUID — в части WebView его нет или он сломан,
+ * при этом getRandomValues обычно доступен.
+ */
 function newRandomUuid(): string {
   const c = globalThis.crypto;
-  if (c && typeof c.randomUUID === "function") {
-    return c.randomUUID();
-  }
   if (c && typeof c.getRandomValues === "function") {
     const bytes = new Uint8Array(16);
     c.getRandomValues(bytes);

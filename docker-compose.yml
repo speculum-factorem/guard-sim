@@ -1,7 +1,7 @@
 # GuardSim: nginx (статика + прокси /api) + Spring Boot + H2 в volume.
 # 1) cp .env.example .env  и задайте GUARDSIM_JWT_SECRET (длинная случайная строка, не короче 32 байт в UTF-8).
 # 2) docker compose up --build
-# 3) Откройте http://localhost
+# 3) Откройте http://localhost:8080 (по умолчанию; порт задаётся GUARDSIM_WEB_PORT, см. .env.example)
 services:
   backend:
     build:
@@ -30,7 +30,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      # Хост : контейнер. По умолчанию 8080, чтобы не конфликтовать с nginx/apache на :80.
+      - "${GUARDSIM_WEB_PORT:-8080}:80"
     depends_on:
       backend:
         condition: service_healthy

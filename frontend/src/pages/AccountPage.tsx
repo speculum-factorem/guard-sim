@@ -8,6 +8,7 @@ import { resetGuestPlayerId } from "../playerId";
 import { experienceSummary, levelLabel, xpIntoCurrentLevel } from "../progressLabels";
 import { useAccountScrollSpy } from "../hooks/useAccountScrollSpy";
 import { DASHBOARD_TASKS_HREF } from "../navigationConstants";
+import { AchievementBadge } from "../components/AchievementBadge";
 import { sortAchievementsForDisplay } from "../achievementSort";
 import { resolveWeeklyGoal } from "../weeklyGoalStorage";
 import type { PlayerState, ScenarioSummary, UserMe } from "../types";
@@ -453,9 +454,7 @@ export function AccountPage() {
                         key={a.id}
                         className={`account-reward-tile${a.unlocked ? " account-reward-tile--on" : " account-reward-tile--off"}`}
                       >
-                        <span className="account-reward-ico" aria-hidden title={a.unlocked ? "Получено" : "Ещё не получено"}>
-                          {a.unlocked ? "✓" : "🔒"}
-                        </span>
+                        <AchievementBadge id={a.id} unlocked={a.unlocked} size="md" />
                         <div className="account-reward-text">
                           <span className="account-reward-name">{a.title}</span>
                           <span className="account-reward-desc">{a.description}</span>

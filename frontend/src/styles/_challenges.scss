@@ -180,8 +180,8 @@
 
 .quest-roadmap--islands {
   position: relative;
-  /* Верх/низ: место под пины и половину карточки у первого/последнего узла (top в %) */
-  padding: 52px 16px 56px;
+  /* Запас под пины (до −46px) и половину карточки у крайних узлов по top % */
+  padding: 72px max(14px, env(safe-area-inset-right, 0px)) 80px max(14px, env(safe-area-inset-left, 0px));
   overflow: hidden;
   background:
     radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0, 212, 255, 0.05) 0%, transparent 55%),
@@ -245,35 +245,44 @@
   margin: 0;
   padding: 0;
   width: 100%;
+  /* Доп. буфер по вертикали внутри ol — % top считаются от высоты padding-box */
+  box-sizing: border-box;
+  padding: 8px 0 12px;
 }
 
 .quest-roadmap-stop {
   position: absolute;
-  /* Ширина ≤ ~половины дорожки: при left 24%/76% и translate(-50%) иначе карточки вылезают за блок */
-  --quest-stop-max-w: min(420px, 44%);
-  width: var(--quest-stop-max-w);
-  max-width: 100%;
-  transform: translate(-50%, -50%);
   z-index: 2;
+  box-sizing: border-box;
+  /* Без translateX(-50%): иначе широкий контент и тени визуально вылезают за .quest-track */
+  width: min(400px, calc(50% - 22px));
+  max-width: calc(50% - 22px);
+  transform: translateY(-50%);
 }
 
 .quest-roadmap-stop--left {
-  left: 24%;
+  left: max(10px, 2.5%);
+  right: auto;
 }
 
 .quest-roadmap-stop--right {
-  left: 76%;
+  right: max(10px, 2.5%);
+  left: auto;
 }
 
 .quest-roadmap-stop--solo {
   left: 50%;
-  --quest-stop-max-w: min(400px, calc(100% - 32px));
+  right: auto;
+  width: min(400px, calc(100% - 28px));
+  max-width: calc(100% - 28px);
+  transform: translate(-50%, -50%);
 }
 
 .quest-island {
   position: relative;
   display: block;
   padding-top: 8px;
+  max-width: 100%;
 }
 
 .quest-island-shore {
@@ -349,6 +358,9 @@
   justify-content: space-between;
   gap: 12px 16px;
   min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   padding: 14px 16px 14px 44px;
   background: rgba(13, 13, 31, 0.95);
   border: 1px solid rgba(0, 212, 255, 0.18);
@@ -390,7 +402,7 @@
 
 .quest-node-main {
   flex: 1;
-  min-width: min(100%, 200px);
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -411,6 +423,8 @@
   font-weight: 800;
   line-height: 1.35;
   color: var(--bento-ink);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .quest-node-attack {
@@ -455,14 +469,17 @@
 
 @media (max-width: 640px) {
   .quest-roadmap--islands {
-    padding: 48px 12px 52px;
+    padding: 64px max(10px, env(safe-area-inset-right, 0px)) 68px max(10px, env(safe-area-inset-left, 0px));
   }
 
-  /* Узкая колонка: иначе при 20%/80% карточки снова уезжают за края */
+  /* Одна колонка по центру */
   .quest-roadmap-stop--left,
   .quest-roadmap-stop--right {
     left: 50%;
-    --quest-stop-max-w: min(420px, calc(100% - 24px));
+    right: auto;
+    width: min(420px, calc(100% - 20px));
+    max-width: calc(100% - 20px);
+    transform: translate(-50%, -50%);
   }
 
   .quest-roadmap-path {

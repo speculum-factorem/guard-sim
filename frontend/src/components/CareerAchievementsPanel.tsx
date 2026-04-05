@@ -1,3 +1,4 @@
+import { AchievementBadge } from "./AchievementBadge";
 import { sortAchievementsForDisplay } from "../achievementSort";
 import { useMemo } from "react";
 import { CHALLENGE_TRACKS } from "../challengeTracks";
@@ -65,10 +66,8 @@ export function CareerAchievementsPanel({ player }: { player: PlayerState }) {
         <ul className="achievements-list">
           {achievementsSorted.map((a) => (
             <li key={a.id} className={a.unlocked ? "ach-unlocked" : "ach-locked"}>
-              <span className="ach-icon" aria-hidden title={a.unlocked ? "Получено" : "Ещё не получено"}>
-                {a.unlocked ? "✓" : "🔒"}
-              </span>
-              <div>
+              <AchievementBadge id={a.id} unlocked={a.unlocked} size="sm" />
+              <div className="ach-achieve-body">
                 <div className="ach-name">{a.title}</div>
                 <div className="ach-desc">{a.description}</div>
               </div>

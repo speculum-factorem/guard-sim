@@ -15,8 +15,8 @@ export function buildRoadPoints(stepCount: number): RoadPoint[] {
   const points: RoadPoint[] = [];
   for (let i = 0; i < stepCount; i++) {
     const t = i / (stepCount - 1);
-    /* Чуть уже к краям по Y — иначе при translate(-50%,-50%) карточки и пины вылезают за блок */
-    const y = 14 + t * 72;
+    /* Диапазон по Y внутри padding-блока дорожки (крайние узлы + пины) */
+    const y = 16 + t * 68;
     const x = i % 2 === 0 ? 22 : 78;
     points.push({ x, y });
   }

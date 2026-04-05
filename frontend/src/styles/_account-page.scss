@@ -554,8 +554,8 @@
 
 .account-reward-tile {
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
+  gap: 14px;
+  align-items: center;
   padding: 14px 16px;
   border-radius: var(--bento-radius);
   border: 1px solid rgba(0, 212, 255, 0.1);
@@ -572,28 +572,6 @@
 
 .account-reward-tile--off {
   opacity: 0.55;
-}
-
-.account-reward-tile--off .account-reward-ico {
-  background: rgba(0, 0, 0, 0.06);
-  border: 1px dashed rgba(0, 212, 255, 0.2);
-}
-
-.account-reward-ico {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: rgba(0, 212, 255, 0.06);
-  font-size: 14px;
-}
-
-.account-reward-tile--on .account-reward-ico {
-  background: rgba(255, 230, 0, 0.1);
-  border: 1px solid rgba(255, 230, 0, 0.3);
 }
 
 .account-reward-text {

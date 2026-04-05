@@ -2,11 +2,12 @@
 
 BACKEND  := backend
 FRONTEND := frontend
+MOBILE   := mobile
 
 help:
 	@echo "GuardSim — цели Makefile:"
 	@echo ""
-	@echo "  make install    Установить зависимости (Maven compile + npm install)"
+	@echo "  make install    Установить зависимости (Maven compile + npm в frontend и mobile)"
 	@echo "  make dev        Освобождает :8080, затем API и Vite (нужен PostgreSQL на localhost:5432; см. docker compose up -d postgres)"
 	@echo "  make free-port  Завершить процессы, слушающие TCP 8080 (старый Java и т.п.)"
 	@echo "  make backend    Только Spring Boot (:8080)"
@@ -23,6 +24,7 @@ help:
 install:
 	cd $(BACKEND) && mvn -q -DskipTests compile 
 	cd $(FRONTEND) && npm install
+	cd $(MOBILE) && npm install
 
 build: 
 	cd $(BACKEND) && mvn -q -DskipTests package

@@ -81,6 +81,13 @@
   color: inherit;
 }
 
+/* Кнопки в баннере наследуют color от .feedback.ok/.bad — на hover терялась читаемость */
+.lc-theme .sim-feedback-banner .btn.btn-primary,
+.lc-theme .sim-feedback-banner .btn.btn-primary:hover:not(:disabled),
+.lc-theme .sim-feedback-banner .btn.btn-primary:active:not(:disabled) {
+  color: #05060c;
+}
+
 .lc-theme .sim-feedback-continue--long-desktop {
   border-top-color: rgba(0, 212, 255, 0.18);
 }
@@ -542,6 +549,12 @@
   color: var(--lc-muted);
 }
 
+.lc-theme .consequence-dialog .btn.btn-primary,
+.lc-theme .consequence-dialog .btn.btn-primary:hover:not(:disabled),
+.lc-theme .consequence-dialog .btn.btn-primary:active:not(:disabled) {
+  color: #05060c;
+}
+
 .lc-theme .browser-chrome-chrome {
   background: rgba(8, 9, 18, 0.98);
 }
@@ -788,6 +801,7 @@
 
 .lc-theme .sim-fb-action-btn:hover:not(:disabled) {
   background: rgba(0, 212, 255, 0.16);
+  color: var(--lc-ink);
 }
 
 .lc-theme .sim-fb-fake-video-play:focus-visible {
@@ -836,6 +850,7 @@
 .lc-theme .sim-social-action-btn:hover {
   border-color: var(--arc-cyan);
   background: rgba(0, 212, 255, 0.1);
+  color: var(--lc-ink);
 }
 
 .lc-theme .sim-fb-search-mark {
@@ -958,6 +973,7 @@
   background: rgba(0, 212, 255, 0.12);
   border-color: var(--arc-cyan);
   box-shadow: 0 0 18px rgba(0, 212, 255, 0.15);
+  color: var(--lc-ink);
 }
 
 /* Завершение сценария внутри панели */
@@ -981,6 +997,12 @@
 
 .lc-theme .sim-panel--lc .completed-box--failed {
   border-color: rgba(255, 59, 48, 0.3);
+}
+
+.lc-theme .sim-panel--lc .completed-box .btn.btn-primary,
+.lc-theme .sim-panel--lc .completed-box .btn.btn-primary:hover:not(:disabled),
+.lc-theme .sim-panel--lc .completed-box .btn.btn-primary:active:not(:disabled) {
+  color: #05060c;
 }
 
 .lc-theme .sim-chat-body {

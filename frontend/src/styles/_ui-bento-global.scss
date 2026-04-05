@@ -287,16 +287,20 @@
 .btn-primary {
   background: linear-gradient(180deg, #00e5ff 0%, var(--arc-cyan) 100%);
   border: var(--bento-border);
-  color: #07080f;
+  color: #05060c;
   box-shadow: 0 0 18px rgba(0, 212, 255, 0.35);
 }
 
 .btn-primary:hover:not(:disabled) {
-  filter: brightness(1.04);
+  /* Без filter: brightness — на части кнопок в колорных блоках (разбор, модалки) текст «пропадал» при hover */
+  color: #05060c;
+  background: linear-gradient(180deg, #33ecff 0%, #00c4ea 100%);
   box-shadow: var(--shadow-bento-md);
 }
 
 .btn-primary:active:not(:disabled) {
+  color: #05060c;
+  background: linear-gradient(180deg, #00d0ef 0%, #00a8cc 100%);
   box-shadow: var(--shadow-bento-xs);
 }
 
@@ -307,6 +311,7 @@
 }
 
 .btn-secondary:hover:not(:disabled) {
+  color: var(--bento-ink);
   background: rgba(0, 212, 255, 0.1);
   border-color: rgba(0, 212, 255, 0.6);
   box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
@@ -540,6 +545,7 @@
 .red-flag-chip:hover:not(:disabled) {
   background: rgba(255, 230, 0, 0.12);
   border-color: rgba(255, 230, 0, 0.5);
+  color: var(--bento-ink);
 }
 
 .investigation-dock {

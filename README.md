@@ -343,16 +343,3 @@ guardSim/
 ├── Makefile
 └── README.md
 ```
-
----
-
-## Устранение неполадок
-
-| Симптом | Что проверить |
-|---------|----------------|
-| API не стартует на 8080 | Занят ли порт: `make free-port` или смените `server.port` |
-| Ошибки подключения к БД | Запущен ли PostgreSQL, совпадают ли URL/логин/пароль с `application.properties` |
-| Фронт не видит API локально | Запущен ли бэкенд на 8080; Vite проксирует только `/api` |
-| Docker: postgres падает | `make docker-logs-postgres`, при необходимости `make docker-reset-volumes` |
-| 401 на `/api/scenarios` | Передайте `X-GuardSim-Player` с UUID и при госте — `X-GuardSim-Demo: 1`, либо Bearer после входа |
-

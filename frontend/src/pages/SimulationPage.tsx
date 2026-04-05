@@ -47,6 +47,10 @@ function netShieldChoiceIds(step: StepPublic): Set<string> {
 }
 
 function fallbackChoices(step: StepPublic): ChoicePublic[] {
+  /* GENERIC без хотспотов: все ответы уже в GenericWorkspaceSimulation — не дублировать в childrenFooter */
+  if (step.uiKind === "GENERIC" && step.hotspots.length === 0) {
+    return [];
+  }
   const fromHotspots = hotspotChoiceIds(step);
   const game = step.urlCompareGame;
   const serp = serpPickChoiceIds(step);

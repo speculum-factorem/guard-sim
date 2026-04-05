@@ -151,7 +151,7 @@ export function HomePage() {
           <div className="bento-cell bento-cell--yellow">
             <span className="bento-cell-kicker">Контекст</span>
             <h3>Решения в сцене</h3>
-            <p>Таймер, шум в письме и вкладки расследования — давление ближе к реальному дню, без токсичности.</p>
+            <p>Таймер на шаге, шум в письме и вкладки расследования — давление ближе к реальному дню; по истечении времени шаг не засчитывается как верный.</p>
           </div>
 
           <div className="bento-cell bento-cell--mint">

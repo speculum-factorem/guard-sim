@@ -137,7 +137,7 @@ export interface StepPublic {
   phoneIncidentGame: PhoneIncidentGame | null;
   /** Лишний текст в письме — «шум» */
   narrativeNoise: string | null;
-  /** Секунды для мягкого таймера давления (без санкций при нуле) */
+  /** Секунды на шаг; по истечении шаг засчитывается как провал, баллы за него не начисляются */
   pressureSeconds: number | null;
   redFlagGame: RedFlagGame | null;
   /** Описание ситуации для игрока (вне «экрана» симуляции) */

@@ -55,7 +55,7 @@ function RoadmapTrack({
 
   const points = useMemo(() => buildRoadPoints(steps.length), [steps.length]);
   const pathD = useMemo(() => buildRoadPathD(points), [points]);
-  const mapHeightPx = Math.max(300, steps.length * 128);
+  const mapHeightPx = Math.max(340, steps.length * 140);
   const roadFilterId = useId().replace(/:/g, "");
 
   return (

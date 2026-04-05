@@ -106,22 +106,38 @@ class SessionService(
         if (current.id != stepId) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Шаг не совпадает с текущим")
         }
-        current.redFlagGame?.let { game ->
-            val mustPick = game.candidates.filter { it.isRedFlag }.map { it.id }.toSet()
-            if (mustPick.size != game.requiredPickCount) {
-                throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Некорректная конфигурация шага")
+        val pressureExpired = body.pressureExpired
+        if (!pressureExpired && body.choiceId.isBlank()) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "choiceId обязателен")
+        }
+        if (pressureExpired) {
+            val ps = current.pressureSeconds
+            if (ps == null || ps <= 0) {
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "На этом шаге нет ограничения по времени")
             }
-            val selected = body.redFlagSelectionIds.toSet()
-            if (selected != mustPick) {
-                throw ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Сначала отметьте ровно ${game.requiredPickCount} подозрительных признака: выберите фрагменты, которые реально должны насторожить.",
-                )
+        } else {
+            current.redFlagGame?.let { game ->
+                val mustPick = game.candidates.filter { it.isRedFlag }.map { it.id }.toSet()
+                if (mustPick.size != game.requiredPickCount) {
+                    throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Некорректная конфигурация шага")
+                }
+                val selected = body.redFlagSelectionIds.toSet()
+                if (selected != mustPick) {
+                    throw ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Сначала отметьте ровно ${game.requiredPickCount} подозрительных признака: выберите фрагменты, которые реально должны насторожить.",
+                    )
+                }
             }
         }
-        val chosen = scenarios.findChoice(scenario, stepId, body.choiceId)
-            ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Вариант ответа не найден")
-        val correct = chosen.correct
+        val chosen = if (pressureExpired) {
+            scenarios.firstIncorrectChoice(current)
+                ?: throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Нет неверного варианта для шага")
+        } else {
+            scenarios.findChoice(scenario, stepId, body.choiceId)
+                ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Вариант ответа не найден")
+        }
+        val correct = chosen.correct && !pressureExpired
         val critical = !correct && chosen.criticalIfWrong
         val repDelta = playerService.applyAnswerReputation(player, correct, critical)
 
@@ -178,9 +194,15 @@ class SessionService(
         val consequenceBeat =
             if (!correct && chosen.criticalIfWrong) chosen.consequenceBeat else null
 
+        val explanation = if (pressureExpired) {
+            "Время на шаг истекло. Ответ не засчитан, баллы за шаг не начислены."
+        } else {
+            chosen.explanationWhenChosen
+        }
+
         return AnswerResponse(
             correct = correct,
-            explanation = chosen.explanationWhenChosen,
+            explanation = explanation,
             totalScore = reportedScore,
             completed = completed,
             countedAsCompleted = countedAsCompleted,

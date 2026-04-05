@@ -119,13 +119,20 @@ export async function submitAnswer(
   choiceId: string,
   investigationViewedIds: string[] = [],
   redFlagSelectionIds: string[] = [],
+  options?: { pressureExpired?: boolean },
 ): Promise<AnswerResponse> {
+  const pressureExpired = !!options?.pressureExpired;
   const res = await fetch(
     `/api/sessions/${encodeURIComponent(sessionId)}/steps/${encodeURIComponent(stepId)}/answer`,
     {
       method: "POST",
       headers: withPlayerHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ choiceId, investigationViewedIds, redFlagSelectionIds }),
+      body: JSON.stringify({
+        choiceId: pressureExpired ? "" : choiceId,
+        investigationViewedIds,
+        redFlagSelectionIds,
+        pressureExpired,
+      }),
     },
   );
   return handleJson(res);

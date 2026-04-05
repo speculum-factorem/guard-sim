@@ -104,15 +104,21 @@ function PressureTimer({
   totalSeconds,
   stepId,
   frozen,
+  onExpired,
 }: {
   totalSeconds: number | null | undefined;
   stepId: string;
   frozen: boolean;
+  onExpired?: () => void;
 }) {
   const [left, setLeft] = useState(totalSeconds ?? 0);
+  const onExpiredRef = useRef(onExpired);
+  onExpiredRef.current = onExpired;
+  const firedRef = useRef(false);
 
   useEffect(() => {
     setLeft(totalSeconds ?? 0);
+    firedRef.current = false;
   }, [stepId, totalSeconds]);
 
   useEffect(() => {
@@ -120,7 +126,15 @@ function PressureTimer({
       return;
     }
     const id = window.setInterval(() => {
-      setLeft((s) => Math.max(0, s - 1));
+      setLeft((s) => {
+        if (s <= 0) return 0;
+        const next = s - 1;
+        if (next === 0 && !firedRef.current) {
+          firedRef.current = true;
+          queueMicrotask(() => onExpiredRef.current?.());
+        }
+        return next;
+      });
     }, 1000);
     return () => window.clearInterval(id);
   }, [totalSeconds, stepId, frozen]);
@@ -135,7 +149,7 @@ function PressureTimer({
   return (
     <div className={`pressure-bar-wrap${expired ? " pressure-expired" : ""}`}>
       <div className="pressure-bar-head">
-        <span className="pressure-bar-label">Условное время на шаг</span>
+        <span className="pressure-bar-label">Время на шаг</span>
         <span className="pressure-bar-seconds" aria-live="polite">
           {left} с
         </span>
@@ -145,11 +159,10 @@ function PressureTimer({
       </div>
       {expired ? (
         <p className="pressure-relaxed">
-          Таймер остановлен — в жизни такое письмо могли уже открыть. Вы всё ещё можете завершить шаг спокойно: за
-          «опоздание» штрафа нет.
+          Время вышло — шаг засчитывается как ошибка, баллы за него не начисляются.
         </p>
       ) : (
-        <p className="pressure-hint">Это имитация спешки, а не экзамен на скорость.</p>
+        <p className="pressure-hint">Уложитесь в лимит: по нулю ответ не принимается как верный.</p>
       )}
     </div>
   );
@@ -297,6 +310,7 @@ export function SimulationPage() {
   const [attackBreakdown, setAttackBreakdown] = useState<AttackBreakdown | null>(null);
 
   const pendingAfterConsequenceRef = useRef<AnswerResponse | null>(null);
+  const pressureExpiryHandledRef = useRef(false);
   /** Увеличивается при каждом bootstrap — отбрасываем ответы устаревших запросов (Strict Mode / смена сценария). */
   const sessionLoadGenerationRef = useRef(0);
   const feedbackBannerRef = useRef<HTMLDivElement>(null);
@@ -316,6 +330,7 @@ export function SimulationPage() {
     setLastInvestigationRepDelta(null);
     setRedFlagSelectionIds([]);
     setMissionPhase("condition");
+    pressureExpiryHandledRef.current = false;
   }, [step?.id]);
 
   useEffect(() => {
@@ -426,6 +441,87 @@ export function SimulationPage() {
     }
   }, []);
 
+  const applySubmitResponse = useCallback(
+    (res: AnswerResponse) => {
+      setCareerHud(res.career);
+      setLastInvestigationRepDelta(res.investigationReputationDelta);
+      if (res.career.newAchievements.length > 0) {
+        setLastAchievementToast(res.career.newAchievements.map((a) => a.title).join(" · "));
+      } else if (!res.completed) {
+        setLastAchievementToast(null);
+      }
+
+      setScore(res.totalScore);
+      setStepIndex(res.stepIndex);
+      setTotalSteps(res.totalSteps);
+
+      if (res.consequenceBeat) {
+        pendingAfterConsequenceRef.current = res;
+        setConsequenceModal(res.consequenceBeat);
+      } else {
+        pendingAfterConsequenceRef.current = null;
+        finishAnswerFlow(res);
+      }
+    },
+    [finishAnswerFlow],
+  );
+
+  const handlePressureTimerExpired = useCallback(() => {
+    if (pressureExpiryHandledRef.current) {
+      return;
+    }
+    if (
+      !sessionId ||
+      !step ||
+      busy ||
+      completed ||
+      pendingNext ||
+      consequenceModal ||
+      sessionSyncBusy ||
+      missionPhase !== "simulation"
+    ) {
+      return;
+    }
+    if (!step.pressureSeconds || step.pressureSeconds <= 0) {
+      return;
+    }
+    pressureExpiryHandledRef.current = true;
+    void (async () => {
+      setBusy(true);
+      setError(null);
+      setResumedNote(false);
+      try {
+        const res = await submitAnswer(
+          sessionId,
+          step.id,
+          "",
+          viewedInvestigationIds,
+          redFlagSelectionIds,
+          { pressureExpired: true },
+        );
+        applySubmitResponse(res);
+      } catch (e) {
+        pressureExpiryHandledRef.current = false;
+        const sessionMsg = simulationHttpErrorMessage(e);
+        setError(sessionMsg ?? (e instanceof Error ? e.message : "Ошибка отправки ответа"));
+      } finally {
+        setBusy(false);
+      }
+    })();
+  }, [
+    sessionId,
+    step,
+    busy,
+    completed,
+    pendingNext,
+    consequenceModal,
+    sessionSyncBusy,
+    missionPhase,
+    viewedInvestigationIds,
+    redFlagSelectionIds,
+    applySubmitResponse,
+  ]);
+
   const onContinue = useCallback(() => {
     if (!pendingNext) {
       return;
@@ -460,25 +556,7 @@ export function SimulationPage() {
           viewedInvestigationIds,
           redFlagSelectionIds,
         );
-        setCareerHud(res.career);
-        setLastInvestigationRepDelta(res.investigationReputationDelta);
-        if (res.career.newAchievements.length > 0) {
-          setLastAchievementToast(res.career.newAchievements.map((a) => a.title).join(" · "));
-        } else if (!res.completed) {
-          setLastAchievementToast(null);
-        }
-
-        setScore(res.totalScore);
-        setStepIndex(res.stepIndex);
-        setTotalSteps(res.totalSteps);
-
-        if (res.consequenceBeat) {
-          pendingAfterConsequenceRef.current = res;
-          setConsequenceModal(res.consequenceBeat);
-        } else {
-          pendingAfterConsequenceRef.current = null;
-          finishAnswerFlow(res);
-        }
+        applySubmitResponse(res);
       } catch (e) {
         const sessionMsg = simulationHttpErrorMessage(e);
         setError(sessionMsg ?? (e instanceof Error ? e.message : "Ошибка отправки ответа"));
@@ -495,7 +573,7 @@ export function SimulationPage() {
       consequenceModal,
       viewedInvestigationIds,
       redFlagSelectionIds,
-      finishAnswerFlow,
+      applySubmitResponse,
     ],
   );
 
@@ -811,6 +889,7 @@ export function SimulationPage() {
                               totalSeconds={step.pressureSeconds}
                               stepId={step.id}
                               frozen={choiceBlockBusy}
+                              onExpired={handlePressureTimerExpired}
                             />
                           </div>
                         ) : null}

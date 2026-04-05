@@ -18,7 +18,7 @@ data class InternalStep(
     val phoneIncidentGame: InternalPhoneIncidentGame? = null,
     /** Лишний текст (подпись, юр. мелкий шрифт) — имитация «шума» в письме */
     val narrativeNoise: String? = null,
-    /** Секунды на шаг: клиент показывает таймер; без санкций при нуле (см. интерфейс) */
+    /** Секунды на шаг: клиент показывает таймер; по нулю — шаг считается проваленным (см. pressureExpired в ответе) */
     val pressureSeconds: Int? = null,
     val redFlagGame: InternalRedFlagGame? = null,
     /** Текст «ситуации» для игрока (мета-описание); контент интерфейса — в [narrative] */

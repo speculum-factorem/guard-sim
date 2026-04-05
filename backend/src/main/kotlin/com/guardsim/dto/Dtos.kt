@@ -174,9 +174,11 @@ data class StartSessionResponse(
 )
 
 data class AnswerRequest(
-    @field:NotBlank(message = "choiceId обязателен") val choiceId: String,
+    val choiceId: String = "",
     val investigationViewedIds: List<String> = emptyList(),
     val redFlagSelectionIds: List<String> = emptyList(),
+    /** Истёк лимит времени на шаг ([StepPublicDto.pressureSeconds]); сервер засчитывает шаг как провал без баллов. */
+    val pressureExpired: Boolean = false,
 )
 
 data class AchievementDto(

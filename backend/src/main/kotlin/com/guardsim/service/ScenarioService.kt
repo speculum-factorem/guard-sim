@@ -199,4 +199,7 @@ class ScenarioService(
         val step = scenario.steps.firstOrNull { it.id == stepId } ?: return null
         return step.choices.firstOrNull { it.id == choiceId }
     }
+
+    fun firstIncorrectChoice(step: InternalStep): InternalChoice? =
+        step.choices.firstOrNull { !it.correct }
 }

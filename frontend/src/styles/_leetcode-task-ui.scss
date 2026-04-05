@@ -586,7 +586,7 @@
   min-height: 220px;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1023px) {
   .sim-loading-skeleton-grid {
     grid-template-columns: 1fr;
   }
@@ -629,7 +629,7 @@
   border-top: 1px dashed rgba(18, 18, 18, 0.15);
 }
 
-@media (min-width: 961px) {
+@media (min-width: 1024px) {
   .sim-feedback-continue--long-desktop {
     display: block;
   }
@@ -639,7 +639,7 @@
   display: none;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1023px) {
   .sim-feedback-continue--desktop {
     display: none;
   }
@@ -901,7 +901,7 @@
   border-radius: var(--bento-radius) !important;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1023px) {
   .lc-theme .mission-app-viewport--lc > .ui-frame {
     border-radius: 0 0 var(--bento-radius) var(--bento-radius) !important;
   }
@@ -923,7 +923,7 @@
   margin: 0 20px 20px;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1023px) {
   .lc-theme .mission-lc-desc {
     border-bottom-color: rgba(0, 212, 255, 0.15);
   }

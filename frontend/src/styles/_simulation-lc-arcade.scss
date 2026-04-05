@@ -422,6 +422,10 @@
   box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.28);
 }
 
+.lc-theme .browser-chrome-url-input {
+  color: var(--lc-ink);
+}
+
 .lc-theme .browser-chrome-bookmarks {
   background: rgba(0, 212, 255, 0.06);
   border-top-color: rgba(0, 212, 255, 0.14);
@@ -558,6 +562,42 @@
 
 .lc-theme .browser-chrome-toolbar-wrap {
   background: rgba(10, 11, 22, 0.96);
+}
+
+/* Поисковая выдача — тот же браузерный хром, тёмная страница результатов */
+.lc-theme .ui-frame-serp-search.sim-browser-layout {
+  background: rgba(8, 9, 18, 0.98);
+}
+
+.lc-theme .sim-serp-page {
+  background: rgba(10, 11, 22, 0.96);
+  border-top: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.lc-theme .sim-serp-hint {
+  color: var(--lc-muted);
+}
+
+.lc-theme .sim-serp-result-card {
+  border-color: rgba(0, 212, 255, 0.18);
+  background: rgba(13, 14, 28, 0.92);
+}
+
+.lc-theme .sim-serp-result-card:hover:not(:disabled) {
+  border-color: rgba(0, 212, 255, 0.45);
+  box-shadow: 0 0 18px rgba(0, 212, 255, 0.12);
+}
+
+.lc-theme .sim-serp-result-title {
+  color: var(--arc-cyan);
+}
+
+.lc-theme .sim-serp-result-url {
+  color: var(--arc-green);
+}
+
+.lc-theme .sim-serp-result-snippet {
+  color: var(--lc-muted);
 }
 
 /* Почта: формы, плитки, мета */

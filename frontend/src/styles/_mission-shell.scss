@@ -573,7 +573,7 @@
   padding: 8px 14px;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1023px) {
   .mission-split-hint {
     flex-direction: column;
     align-items: stretch;
@@ -610,7 +610,7 @@
   box-shadow: var(--shadow-bento-xs);
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1023px) {
   .mission-lc-scroll-hint {
     display: flex;
   }
@@ -836,7 +836,7 @@
   box-shadow: 0 0 14px rgba(0, 212, 255, 0.05);
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1023px) {
   .mission-lc {
     grid-template-columns: 1fr;
     min-height: unset;

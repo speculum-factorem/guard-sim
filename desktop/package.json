@@ -1,0 +1,70 @@
+{
+  "name": "guardsim-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GuardSim (КиберСтоп) — десктоп на Electron",
+  "author": "GuardSim",
+  "main": "main.cjs",
+  "scripts": {
+    "dev": "concurrently -k -n vite,electron -c blue,magenta \"npm run dev:vite\" \"npm run dev:electron\"",
+    "dev:vite": "npm run dev --prefix ../frontend -- --port 5180 --strictPort",
+    "dev:electron": "wait-on -t 120000 http://127.0.0.1:5180 && electron .",
+    "fix:electron": "rm -rf node_modules/electron && npm install electron",
+    "start": "electron .",
+    "build:web": "npm run build --prefix ../frontend -- --base ./",
+    "pack": "npm run build:web && electron-builder --dir",
+    "dist": "npm run build:web && electron-builder",
+    "clean:builder-cache": "rm -rf \"$HOME/Library/Caches/electron-builder\" \"$HOME/.cache/electron-builder\"",
+    "dist:clean": "npm run clean:builder-cache && rm -rf release && npm run dist"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "http-proxy-middleware": "^3.0.3"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "electron": "^34.5.8",
+    "electron-builder": "^25.1.8",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.guardsim.desktop",
+    "productName": "GuardSim",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs"
+    ],
+    "extraResources": [
+      {
+        "from": "../frontend/dist",
+        "to": "frontend/dist",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.education",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "zip"
+      ],
+      "category": "Education"
+    }
+  }
+}

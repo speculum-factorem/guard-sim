@@ -1,17 +1,19 @@
-.PHONY: help install build backend frontend dev clean free-port docker-up docker-logs-postgres docker-reset-volumes
+.PHONY: help install build backend frontend desktop dev clean free-port docker-up docker-logs-postgres docker-reset-volumes
 
 BACKEND  := backend
 FRONTEND := frontend
 MOBILE   := mobile
+DESKTOP  := desktop
 
 help:
 	@echo "GuardSim — цели Makefile:"
 	@echo ""
-	@echo "  make install    Установить зависимости (Maven compile + npm в frontend и mobile)"
+	@echo "  make install    Установить зависимости (Maven compile + npm в frontend, mobile, desktop)"
 	@echo "  make dev        Освобождает :8080, затем API и Vite (нужен PostgreSQL на localhost:5432; см. docker compose up -d postgres)"
 	@echo "  make free-port  Завершить процессы, слушающие TCP 8080 (старый Java и т.п.)"
 	@echo "  make backend    Только Spring Boot (:8080)"
 	@echo "  make frontend   Только фронтенд (прокси /api → 8080)"
+	@echo "  make desktop    Electron + Vite (нужен PostgreSQL и бэкенд для полного функционала)"
 	@echo "  make build      Сборка бэкенда и production-бандла фронтенда"
 	@echo "  make clean      mvn clean и удаление $(FRONTEND)/dist"
 	@echo "  make docker-up  Сборка и запуск через Docker Compose: PostgreSQL + API + web (см. .env.example)"
@@ -25,6 +27,10 @@ install:
 	cd $(BACKEND) && mvn -q -DskipTests compile 
 	cd $(FRONTEND) && npm install
 	cd $(MOBILE) && npm install
+	cd $(DESKTOP) && npm install
+
+desktop:
+	cd $(DESKTOP) && npm run dev
 
 build: 
 	cd $(BACKEND) && mvn -q -DskipTests package

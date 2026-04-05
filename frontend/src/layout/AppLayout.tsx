@@ -16,7 +16,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const [navOpen, setNavOpen] = useState(false);
   const isHome = pathname === "/";
-  const isDashboard = pathname === "/dashboard";
   const isChallenges = pathname === "/challenges";
   const isPlay = pathname.startsWith("/play/");
   const isDefender = pathname === "/defender";
@@ -107,14 +106,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
           <div className="app-header-menu" id="app-header-menu">
             <nav className="app-nav" aria-label="Основная навигация">
-              <Link
-                to={navTo("/dashboard")}
-                className={`app-nav-pill${isDashboard ? " app-nav-pill--active" : ""}`}
-                aria-current={isDashboard ? "page" : undefined}
-                onClick={() => setNavOpen(false)}
-              >
-                Дашборд
-              </Link>
               <Link
                 to={navTo("/challenges")}
                 className={`app-nav-pill${isChallenges ? " app-nav-pill--active" : ""}`}
